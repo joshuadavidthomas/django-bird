@@ -1,0 +1,23 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v2024.27-4-g3fe659b
+_src_path: /home/josh/projects/work/django-twc-package
+author_email: josh@joshthomas.dev
+author_name: Josh Thomas
+current_version: 0.1.0
+django_versions:
+- '4.2'
+- '5.0'
+- '5.1'
+docs_domain: readthedocs.io
+github_owner: joshuadavidthomas
+github_repo: bird
+module_name: bird
+package_description: A UI Kit for your Django projects
+package_name: bird
+python_versions:
+- '3.10'
+- '3.11'
+- '3.12'
+- '3.13'
+test_django_main: true
+versioning_scheme: SemVer

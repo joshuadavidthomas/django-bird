@@ -1,0 +1,9 @@
+/*
+no idea if this will screw a lot up with the furo theme
+but this does fix the line of badges in the README. only
+one of them has a link which furo makes the vertical-align
+different than just a standard img
+*/
+p a.reference img {
+  vertical-align: inherit;
+}

@@ -1,0 +1,7 @@
+{% spaceless %}
+  <div>
+    <h1>{{ title }}</h1>
+    <p>{{ content }}</p>
+    {% for _ in count %}<bird:button class="btn-primary">Click me</bird:button>{% endfor %}
+  </div>
+{% endspaceless %}
