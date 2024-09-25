@@ -114,5 +114,5 @@ def lint(session):
 
 @nox.session
 def mypy(session):
-    session.install("django-bird[dev] @ .")
+    session.install("django-bird[dev,types] @ .")
     session.run("python", "-m", "mypy", ".")
