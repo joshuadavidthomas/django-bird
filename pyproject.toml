@@ -144,8 +144,18 @@ ignore_errors = true
 ignore_missing_imports = true
 module = [
   "*.migrations.*",
-  "tests.*",
-  "docs.*"
+  "docs.*",
+  "tests.*"
+]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+  # not sure why this is needed as nox has a `py.typed` marker, but
+  # putting this in here for now until I figure out where the issue
+  # is. i'm sure i've configured it or am calling it wrong somewhere.
+  # TODO: fix missing `nox` type library error and remove this line
+  "nox.*"
 ]
 
 [tool.mypy_django_plugin]
