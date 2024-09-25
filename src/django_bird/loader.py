@@ -17,13 +17,7 @@ CUSTOM_ELEMENT_RE = re.compile(r"<bird:[^>]+>")
 class BirdLoader(FileSystemLoader):
     def __init__(self, engine: Engine):
         super().__init__(engine)
-        self._compiler = None
-
-    @property
-    def compiler(self) -> BirdCompiler:
-        if self._compiler is None:
-            self._compiler = BirdCompiler()
-        return self._compiler
+        self.compiler = BirdCompiler()
 
     @override
     def get_contents(self, origin: Origin) -> str:

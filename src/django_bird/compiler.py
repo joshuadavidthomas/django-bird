@@ -1,36 +1,14 @@
 from __future__ import annotations
 
-import re
-from typing import Match
 
-from .components import transformer
+class Compiler:
+    def compile(self, input_string: str) -> str:
+        tokens = self.tokenize(input_string)
+        parsed = self.parse(tokens)
+        return self.transform(parsed)
 
-BIRD_TAG_PATTERN = re.compile(r"<bird:(\w+)([^>]*)>(.*?)</bird:\1>")
+    def tokenize(self, input_string: str) -> str: ...
 
+    def parse(self, tokens: str) -> str: ...
 
-class BirdCompiler:
-    def __init__(self) -> None:
-        self.transformer = transformer
-
-    def compile(self, content: str) -> str:
-        parts = content.splitlines()
-        result = []
-
-        for part in parts:
-            if match := BIRD_TAG_PATTERN.search(part):
-                transformed = [item for item in self.transform_bird_line(part, match)]
-                result.append("".join(transformed))
-            else:
-                result.append(part)
-
-        return "\n".join(result)
-
-    def transform_bird_line(self, line: str, match: Match[str]):
-        start, end = match.span()
-
-        yield line[:start].strip()
-
-        tag_name, attrs, content = match.groups()
-        yield self.transformer.transform(tag_name, attrs, content)
-
-        yield line[end:].strip()
+    def transform(self, parsed_content: str) -> str: ...
