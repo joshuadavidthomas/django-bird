@@ -7,7 +7,7 @@ from django.conf import settings
 
 from .settings import DEFAULT_SETTINGS
 
-pytest_plugins = []  # type: ignore
+pytest_plugins = []
 
 
 def pytest_configure(config):
@@ -19,7 +19,6 @@ def pytest_configure(config):
 TEST_SETTINGS = {
     "INSTALLED_APPS": [
         "django_bird",
-        "django_bootstrap5",
     ],
     "TEMPLATES": [
         {

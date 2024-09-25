@@ -25,7 +25,6 @@ classifiers = [
 ]
 dependencies = [
   "django>=4.2",
-  "lxml>=5.3.0",
 ]
 description = "A UI Kit for your Django projects"
 dynamic = ["version"]
@@ -248,7 +247,4 @@ dev-dependencies = [
     "pytest-randomly>=3.15.0",
     "pytest-xdist>=3.6.1",
     "ruff>=0.6.6",
-    "types-lxml>=2024.9.16",
-    "django-bootstrap5>=24.3",
-    "scipy>=1.14.1",
 ]
