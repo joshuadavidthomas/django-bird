@@ -93,6 +93,7 @@ fail_under = 75
 [tool.coverage.run]
 omit = [
   "src/django_bird/migrations/*",
+  "src/django_bird/_typing.py",
   "tests/*"
 ]
 source = ["src/django_bird"]

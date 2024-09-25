@@ -80,30 +80,26 @@ def tests(session, django):
 @nox.session
 def coverage(session):
     session.install("django-bird[dev] @ .")
-    session.run("uv", "run", "pytest", "--cov")
 
     try:
-        summary = os.environ["GITHUB_STEP_SUMMARY"]
-        with Path(summary).open("a") as output_buffer:
-            output_buffer.write("")
-            output_buffer.write("### Coverage\n\n")
-            output_buffer.flush()
-            session.run(
-                "python",
-                "-m",
-                "coverage",
-                "report",
-                "--skip-covered",
-                "--skip-empty",
-                "--format=markdown",
-                stdout=output_buffer,
-            )
-    except KeyError:
-        session.run(
-            "python", "-m", "coverage", "html", "--skip-covered", "--skip-empty"
-        )
+        session.run("uv", "run", "pytest", "--cov")
+    finally:
+        report_cmd = ["uv", "run", "coverage", "report"]
+        html_cmd = ["uv", "run", "coverage", "html"]
 
-    session.run("uv", "run", "coverage", "report")
+        session.run(*report_cmd)
+
+        if summary := os.getenv("GITHUB_STEP_SUMMARY"):
+            report_cmd.extend(["--skip-covered", "--skip-empty", "--format=markdown"])
+
+            with Path(summary).open("a") as output_buffer:
+                output_buffer.write("")
+                output_buffer.write("### Coverage\n\n")
+                output_buffer.flush()
+                session.run(*report_cmd, stdout=output_buffer)
+        else:
+            html_cmd.extend(["--skip-covered", "--skip-empty"])
+            session.run(*html_cmd)
 
 
 @nox.session
