@@ -26,7 +26,7 @@ classifiers = [
 dependencies = [
   "django>=4.2",
 ]
-description = "A UI Kit for your Django projects"
+description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
 keywords = []
 license = {file = "LICENSE"}
