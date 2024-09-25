@@ -10,14 +10,14 @@ build:
       - just _cog
   os: ubuntu-22.04
   tools:
-    python: "3.13"
+    python: "3.12"
 
 sphinx:
-   configuration: docs/conf.py
+  configuration: docs/conf.py
 
 formats:
-   - pdf
-   - epub
+  - pdf
+  - epub
 
 python:
   install:
