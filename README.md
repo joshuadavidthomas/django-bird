@@ -1,4 +1,4 @@
-# bird
+# django-bird
 
 [![PyPI](https://img.shields.io/pypi/v/bird)](https://pypi.org/project/bird/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bird)
@@ -7,9 +7,14 @@
 <!-- django-4.2 | 5.0 | 5.1-#44B78B -->
 <!-- labelColor=%23092E20 -->
 
+High-flying components for perfectionists with deadlines.
+
+> [!CAUTION]
+> This is an experimental, pre-alpha attempt at a different approach to defining components in Django templates. It is not suitable for production use yet.
+
 ## Requirements
 
-- Python 3.8, 3.9, 3.10, 3.11, 3.12, 3.13
+- Python 3.10, 3.11, 3.12, 3.13
 - Django 4.2, 5.0, 5.1
 
 ## Installation
@@ -18,6 +23,9 @@
 
 ```bash
 python -m pip install django-bird
+# or
+uv add django-bird
+uv sync
 ```
 
 2. Add the app to your Django project's `INSTALLED_APPS`:
@@ -25,12 +33,14 @@ python -m pip install django-bird
 ```python
 INSTALLED_APPS = [
     ...,
-    "bird",
+    "django_bird",
     ...,
 ]
 ```
 
 ## Getting Started
+
+Coming soon...
 
 ## Documentation
 
@@ -38,4 +48,4 @@ Please refer to the [documentation](https://bird.readthedocs.io/) for more infor
 
 ## License
 
-`bird` is licensed under the MIT license. See the [`LICENSE`](LICENSE) file for more information.
+`django-bird` is licensed under the MIT license. See the [`LICENSE`](LICENSE) file for more information.
