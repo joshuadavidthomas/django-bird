@@ -7,8 +7,11 @@ class Compiler:
         parsed = self.parse(tokens)
         return self.transform(parsed)
 
-    def tokenize(self, input_string: str) -> str: ...
+    def tokenize(self, input_string: str) -> str:
+        return input_string
 
-    def parse(self, tokens: str) -> str: ...
+    def parse(self, tokens: str) -> str:
+        return tokens
 
-    def transform(self, parsed_content: str) -> str: ...
+    def transform(self, parsed_content: str) -> str:
+        return parsed_content
