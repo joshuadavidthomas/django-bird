@@ -95,7 +95,7 @@ omit = [
   "src/django_bird/migrations/*",
   "tests/*"
 ]
-source = ["django_bird"]
+source = ["src/django_bird"]
 
 [tool.django-stubs]
 django_settings_module = "tests.settings"

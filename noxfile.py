@@ -80,7 +80,7 @@ def tests(session, django):
 @nox.session
 def coverage(session):
     session.install("django-bird[dev] @ .")
-    session.run("python", "-m", "pytest", "--cov")
+    session.run("uv", "run", "pytest", "--cov")
 
     try:
         summary = os.environ["GITHUB_STEP_SUMMARY"]
@@ -103,16 +103,16 @@ def coverage(session):
             "python", "-m", "coverage", "html", "--skip-covered", "--skip-empty"
         )
 
-    session.run("python", "-m", "coverage", "report")
+    session.run("uv", "run", "coverage", "report")
 
 
 @nox.session
 def lint(session):
     session.install("django-bird[lint] @ .")
-    session.run("python", "-m", "pre_commit", "run", "--all-files")
+    session.run("uv", "run", "pre_commit", "run", "--all-files")
 
 
 @nox.session
 def mypy(session):
-    session.install("django-bird[dev,types] @ .")
-    session.run("python", "-m", "mypy", ".")
+    session.install("django-bird[types] @ .")
+    session.run("uv", "run", "mypy", ".")
