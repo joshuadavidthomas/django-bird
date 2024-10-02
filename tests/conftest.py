@@ -29,6 +29,7 @@ TEST_SETTINGS = {
             "OPTIONS": {
                 "builtins": [
                     "django.template.defaulttags",
+                    "django_bird.templatetags.django_bird",
                 ],
                 "loaders": [
                     "django_bird.loader.BirdLoader",
