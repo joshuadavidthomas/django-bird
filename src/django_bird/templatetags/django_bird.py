@@ -48,7 +48,7 @@ class BirdNode(template.Node):
     def render(self, context: Context) -> SafeString:
         rendered_slots = self.render_slots(context)
 
-        context = {
+        component_context = {
             "attrs": self.flat_attrs(context),
             "slot": mark_safe(
                 rendered_slots.get(self.default_slot) or context.get("slot")
@@ -58,7 +58,7 @@ class BirdNode(template.Node):
             },
         }
 
-        return render_to_string(f"bird/{self.name}.html", context)
+        return render_to_string(f"bird/{self.name}.html", component_context)
 
     def render_slots(self, context: Context) -> dict[str, str]:
         contents: dict[str, list[str]] = {self.default_slot: []}
