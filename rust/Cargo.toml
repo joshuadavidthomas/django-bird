@@ -1,0 +1,13 @@
+[package]
+name = "bird_compiler"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "bird_compiler"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.22.0"
+regex = "1.11.0"

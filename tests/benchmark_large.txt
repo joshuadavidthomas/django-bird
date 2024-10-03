@@ -1,0 +1,1 @@
+Average time to compile large template: 0.007521 seconds

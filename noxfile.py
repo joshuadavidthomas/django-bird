@@ -62,6 +62,8 @@ def test(session):
     ],
 )
 def tests(session, django):
+    session.install("pip", "maturin")
+    session.run("maturin", "develop")
     session.install("django-bird[dev] @ .")
 
     if django == DJMAIN:

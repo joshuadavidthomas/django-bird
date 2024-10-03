@@ -1,0 +1,30 @@
+Thu Oct  3 01:20:53 2024    /var/home/josh/projects/personal/django-bird/tests/compiler_stats
+
+         51072 function calls (45071 primitive calls) in 0.028 seconds
+
+   Ordered by: cumulative time
+   List reduced from 39 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.029    0.029 {built-in method builtins.exec}
+        1    0.000    0.000    0.029    0.029 <string>:1(<module>)
+        1    0.000    0.000    0.028    0.028 test_performance.py:24(compile_template)
+        1    0.000    0.000    0.028    0.028 compiler.py:340(compile)
+        1    0.000    0.000    0.017    0.017 compiler.py:127(parse)
+   1002/1    0.005    0.000    0.017    0.017 compiler.py:154(parse_elements)
+   1001/1    0.007    0.000    0.017    0.017 compiler.py:182(parse_element)
+        1    0.000    0.000    0.011    0.011 compiler.py:241(render)
+        2    0.000    0.000    0.011    0.006 compiler.py:280(_render_template)
+   4002/2    0.006    0.000    0.011    0.005 compiler.py:286(render_element)
+        1    0.000    0.000    0.005    0.005 compiler.py:250(_generate_component_id)
+     2002    0.002    0.000    0.003    0.000 compiler.py:318(_render_attributes)
+     1001    0.001    0.000    0.002    0.000 compiler.py:215(parse_attributes)
+     6002    0.001    0.000    0.001    0.000 {method 'extend' of 'list' objects}
+     8010    0.001    0.000    0.001    0.000 {built-in method builtins.len}
+     8007    0.001    0.000    0.001    0.000 {method 'append' of 'list' objects}
+     6006    0.001    0.000    0.001    0.000 {built-in method builtins.isinstance}
+     1001    0.001    0.000    0.001    0.000 {method 'match' of 're.Pattern' objects}
+     5004    0.001    0.000    0.001    0.000 {method 'isspace' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method bird_compiler.bird_compiler.tokenize}
+
+

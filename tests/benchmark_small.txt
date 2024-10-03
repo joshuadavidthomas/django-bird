@@ -1,0 +1,1 @@
+Average time to compile small template: 0.000036 seconds

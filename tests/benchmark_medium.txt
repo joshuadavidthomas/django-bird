@@ -1,0 +1,1 @@
+Average time to compile medium template: 0.000053 seconds
