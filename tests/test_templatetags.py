@@ -63,7 +63,6 @@ class TestBirdTemplateTag:
             ),
             (
                 "<button>Click me</button>",
-                "<button>Click me</button>",
                 "{% bird 'button' %}Click me{% endbird %}",
                 "<button>Click me</button>",
             ),
