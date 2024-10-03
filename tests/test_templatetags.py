@@ -78,7 +78,7 @@ class TestBirdTemplateTag:
     ):
         create_bird_template("button", component)
         t = Template(template)
-        rendered = t.render(context=Context(context))
+        rendered = t.render(context=Context({}))
         assert normalize_whitespace(rendered) == expected
 
     @pytest.mark.parametrize(
