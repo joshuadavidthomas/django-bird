@@ -34,7 +34,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          python -m nox --session "matrix"
+          python -m nox --session "gha_matrix"
 
   test:
     name: Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }}

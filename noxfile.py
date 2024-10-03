@@ -116,7 +116,7 @@ def mypy(session):
 
 
 @nox.session
-def matrix(session):
+def gha_matrix(session):
     sessions_json = session.run("nox", "-l", "--json", silent=True)
     sessions = json.loads(sessions_json)
     matrix = {
