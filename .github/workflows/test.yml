@@ -34,7 +34,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          echo "matrix=$(python -m nox -l --json | jq -c '[.[] | select(.name == "tests") | {"python-version": .python, "django-version": .call_spec.django}] | {include: .}')" >> $GITHUB_OUTPUT
+          python -m nox --session "matrix"
 
   test:
     name: Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }}

@@ -21,6 +21,9 @@ pup:
 # TESTING/TYPES
 # ----------------------------------------------------------------------
 
+nox SESSION *ARGS:
+    python -m nox --session "{{ SESSION }}" -- "{{ ARGS }}"
+
 test *ARGS:
     python -m nox --session "test" -- "{{ ARGS }}"
 
