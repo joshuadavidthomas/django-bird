@@ -117,15 +117,14 @@ def mypy(session):
 
 @nox.session
 def gha_matrix(session):
-    sessions_json = session.run("nox", "-l", "--json", silent=True)
-    sessions = json.loads(sessions_json)
+    sessions = session.run("nox", "-l", "--json", silent=True)
     matrix = {
         "include": [
             {
                 "python-version": session["python"],
                 "django-version": session["call_spec"]["django"],
             }
-            for session in sessions
+            for session in json.loads(sessions)
             if session["name"] == "tests"
         ]
     }
