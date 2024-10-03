@@ -31,14 +31,17 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
     name = bits[1].strip("'\"")
     attrs = bits[2:]
 
-    nodelist = parser.parse(("endbird",))
-    parser.delete_first_token()
+    if len(attrs) > 0 and attrs[-1] == "/":
+        nodelist = None
+    else:
+        nodelist = parser.parse(("endbird",))
+        parser.delete_first_token()
 
     return BirdNode(name, attrs, nodelist)
 
 
 class BirdNode(template.Node):
-    def __init__(self, name: str, attrs: list[str], nodelist: NodeList) -> None:
+    def __init__(self, name: str, attrs: list[str], nodelist: NodeList | None) -> None:
         self.name = name
         self.attrs = attrs
         self.nodelist = nodelist
@@ -61,6 +64,9 @@ class BirdNode(template.Node):
         return render_to_string(f"bird/{self.name}.html", component_context)
 
     def render_slots(self, context: Context) -> dict[str, str]:
+        if self.nodelist is None:
+            return {}
+
         contents: dict[str, list[str]] = {self.default_slot: []}
         active_slot = self.default_slot
 

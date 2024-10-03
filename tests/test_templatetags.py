@@ -118,6 +118,12 @@ class TestBirdTemplateTag:
         rendered = t.render(context=Context(context))
         assert normalize_whitespace(rendered) == expected
 
+    def test_self_closing_tag(self, create_bird_template):
+        create_bird_template(name="image", content="<img src='image' />")
+        template = Template("{% bird image src='image' / %}")
+        rendered = template.render(context=Context({}))
+        assert rendered == "<img src='image' />"
+
 
 @pytest.mark.xfail(reason="Feature not implemented yet")
 class TestBirdTemplateTagFutureFeatures:
