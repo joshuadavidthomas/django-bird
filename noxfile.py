@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -112,3 +113,21 @@ def lint(session):
 def mypy(session):
     session.install("django-bird[types] @ .")
     session.run("uv", "run", "mypy", ".")
+
+
+@nox.session
+def matrix(session):
+    sessions_json = session.run("nox", "-l", "--json", silent=True)
+    sessions = json.loads(sessions_json)
+    matrix = {
+        "include": [
+            {
+                "python-version": session["python"],
+                "django-version": session["call_spec"]["django"],
+            }
+            for session in sessions
+            if session["name"] == "tests"
+        ]
+    }
+    with Path(os.environ["GITHUB_OUTPUT"]).open("a") as fh:
+        print(f"matrix={matrix}", file=fh)
