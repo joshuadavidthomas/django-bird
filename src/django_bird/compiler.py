@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import re
+
+BIRD_PATTERN = re.compile(
+    r"<bird:(\w+)([^>]*)(?:/>|>(.*?)</bird:\1>)", re.DOTALL | re.MULTILINE
+)
+
 
 class Compiler:
+    # placeholder for now, implementation to come
     def compile(self, input_string: str) -> str:
         tokens = self.tokenize(input_string)
-        parsed = self.parse(tokens)
-        return self.transform(parsed)
+        ast = self.parse(tokens)
+        return self.transform(ast)
 
     def tokenize(self, input_string: str) -> str:
         return input_string
@@ -13,5 +20,5 @@ class Compiler:
     def parse(self, tokens: str) -> str:
         return tokens
 
-    def transform(self, parsed_content: str) -> str:
-        return parsed_content
+    def transform(self, ast: str) -> str:
+        return ast
