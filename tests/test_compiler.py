@@ -25,11 +25,11 @@ def test_compiler():
     compiler = Compiler()
 
     tokens = compiler.tokenize(component_template)
-    parsed = compiler.parse(tokens)
-    transformed = compiler.transform(parsed)
+    ast = compiler.parse(tokens)
+    transformed = compiler.transform(ast)
     compiled = compiler.compile(component_template)
 
     assert tokens
-    assert parsed
+    assert ast
     assert transformed
     assert compiled
