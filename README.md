@@ -43,7 +43,7 @@ High-flying components for perfectionists with deadlines.
     ]
     ```
 
-3. django-bird will automatically configure the necessary settings in your project. No further action is required for most use cases.
+3. django-bird will automatically configure the necessary settings in your project.
 
     If you need to customize the configuration or prefer to set up django-bird manually, you can set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False` in your settings.
 
