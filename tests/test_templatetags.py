@@ -8,6 +8,7 @@ from django.template.base import Token
 from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 
+from django_bird.templatetags.django_bird import BirdNode
 from django_bird.templatetags.django_bird import do_bird
 from django_bird.templatetags.django_bird import parse_slot_name
 
@@ -19,6 +20,7 @@ class TestBirdTemplateTag:
             ("button", "button"),
             ("'button'", "button"),
             ('"button"', "button"),
+            ("button.label", "button.label"),
         ],
     )
     def test_node_name(self, name_arg, expected):
@@ -134,6 +136,58 @@ class TestBirdTemplateTagFutureFeatures:
         template = Template("{% bird button class=btn_class %}Click me{% endbird %}")
         rendered = template.render(context=Context({"btn_class": "primary"}))
         assert rendered == "<button class='primary'>Click me</button>"
+
+
+class TestBirdNode:
+    @pytest.mark.parametrize(
+        "subdir,filename,component,nodename,expected",
+        [
+            (
+                None,
+                "button",
+                "<button>Click me</button>",
+                "button",
+                "bird/button.html",
+            ),
+            (
+                "button",
+                "index",
+                "<button>Click me</button>",
+                "button",
+                "bird/button/index.html",
+            ),
+            (
+                "button",
+                "button",
+                "<button>Click me</button>",
+                "button",
+                "bird/button/button.html",
+            ),
+            (
+                None,
+                "button.label",
+                "<button>Click me</button>",
+                "button.label",
+                "bird/button.label.html",
+            ),
+            (
+                None,
+                "button.label",
+                "<button>Click me</button>",
+                "button.label",
+                "bird/button/label.html",
+            ),
+        ],
+    )
+    def test_get_template_names(
+        self, subdir, filename, component, nodename, expected, create_bird_template
+    ):
+        create_bird_template(name=filename, content=component, subdir=subdir)
+        node = BirdNode(name=nodename, attrs=[], nodelist=None)
+
+        template_names = node.get_template_names()
+
+        assert any(expected in template_name for template_name in template_names)
 
 
 class TestSlotsTemplateTag:
