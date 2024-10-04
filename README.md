@@ -1,3 +1,4 @@
+<!-- docs-intro-begin -->
 # django-bird
 
 [![PyPI](https://img.shields.io/pypi/v/django-bird)](https://pypi.org/project/django-bird/)
@@ -9,9 +10,11 @@
 
 High-flying components for perfectionists with deadlines.
 
+<!-- docs-intro-end -->
 > [!CAUTION]
-> This is an experimental, pre-alpha attempt at a different approach to defining components in Django templates. It is not suitable for production use yet.
+> This is an experimental, alpha attempt at a different approach to defining components in Django templates. It is not suitable for production use yet.
 
+<!-- docs-content-begin -->
 ## Requirements
 
 - Python 3.10, 3.11, 3.12, 3.13
@@ -40,42 +43,11 @@ High-flying components for perfectionists with deadlines.
     ]
     ```
 
-3. django-bird requires two settings in your `settings.TEMPLATES` to be configured to work properly:
+3. django-bird will automatically configure the necessary settings in your project. No further action is required for most use cases.
 
-    - `django_bird.templatetags.django_bird` in the `builtins`
-    - `django_bird.loader.BirdLoader` in the innermost list of `loaders`, before `django.template.loaders.filesystem.Loader` and `django.template.loaders.app_directories.Loader`
+    If you need to customize the configuration or prefer to set up django-bird manually, you can set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False` in your settings.
 
-    By default, these should be configured for you automatically. If you would like to disable this behavior and set this up yourself, you will need to set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False`.
-
-    ```python
-    # settings.py
-    DJANGO_BIRD = {
-        "ENABLE_AUTO_CONFIG": False,
-    }
-
-    TEMPLATES = [
-        {
-            "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": [...],
-            "OPTIONS": {
-                "builtins": [
-                    "django_bird.templatetags.django_bird",
-                ],
-                "loaders": [
-                    (
-                        "django.template.loaders.cached.Loader",
-                        [
-                            "django_bird.loader.BirdLoader",
-                            "django.template.loaders.filesystem.Loader",
-                            "django.template.loaders.app_directories.Loader",
-                        ],
-                    ),
-                ],
-            },
-        }
-    ]
-
-    ```
+    For detailed instructions, please refer to the [Manual Setup](https://django-bird.readthedocs.io/configuration.html#manual-setup) section within the Configuration documentation.
 
 ## Getting Started
 
@@ -121,7 +93,8 @@ django-bird automatically recognizes components in the bird directory, so no man
 </button>
 ```
 
-You now a button component that can be easily reused across your Django project.
+You now have a button component that can be easily reused across your Django project.
+<!-- docs-content-end -->
 
 ## Documentation
 
@@ -131,15 +104,19 @@ django-bird includes features for creating flexible components, including:
 - Named slots for organizing content within components
 - Subcomponents for building complex component structures
 
-For a full overview of the features and configuration options, please refer to the [documentation](https://bird.readthedocs.io/).
+For a full overview of the features and configuration options, please refer to the [documentation](https://bird.readthedocs.io).
 
-## Roadmap
+## Motivation and Roadmap
 
-### Custom HTML Tag
+### Roadmap
 
-### Component Islands
+#### Static Asset Collection
 
-### Scoped CSS Styles
+#### Component Islands
+
+#### Custom HTML Tag
+
+#### Scoped CSS Styles
 
 ## License
 

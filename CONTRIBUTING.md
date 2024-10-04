@@ -10,7 +10,7 @@ We adhere to Django's Code of Conduct in all interactions and expect all contrib
 
 ## Setup
 
-The following setup steps assume you are using a Unix-like operating system, such as Linux or macOS, and that you have a [supported](README.md#requirements) version of Python installed. If you are using Windows, you will need to adjust the commands accordingly. If you do not have Python installed, you can visit [python.org](https://www.python.org/) for instructions on how to install it for your operating system.
+The following setup steps assume you are using a Unix-like operating system, such as Linux or macOS, and that you have a [supported](https://django-bird.readthedocs.io/#requirements) version of Python installed. If you are using Windows, you will need to adjust the commands accordingly. If you do not have Python installed, you can visit [python.org](https://www.python.org/) for instructions on how to install it for your operating system.
 
 1. Fork the repository and clone it locally.
 2. Create a virtual environment and activate it. You can use whatever tool you prefer for this. Below is an example using the Python standard library's `venv` module:
