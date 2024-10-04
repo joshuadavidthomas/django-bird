@@ -42,7 +42,7 @@ class TemplateConfigurator:
     def autoconfigure(self) -> None:
         for template_config in settings.TEMPLATES:
             engine_name = (
-                template_config.get("NAME") or template_config["BACKEND"].split(".")[-2]  # type: ignore[attr-defined]
+                template_config.get("NAME") or template_config["BACKEND"].split(".")[-2]
             )
             if engine_name != self.engine_name:
                 return
@@ -55,12 +55,12 @@ class TemplateConfigurator:
         # Force re-evaluation of settings.TEMPLATES because EngineHandler caches it.
         with suppress(AttributeError):
             del django.template.engines.templates
-            django.template.engines._engines = {}
+            django.template.engines._engines = {}  # type: ignore[attr-defined]
 
         self._configured = True
 
     def configure_loaders(self, options: dict[str, Any]) -> None:
-        loaders = options.setdefault("loaders", [])  # type: ignore[attr-defined]
+        loaders = options.setdefault("loaders", [])
 
         # find the inner-most loaders, which is an iterable of only strings
         while not all(isinstance(loader, str) for loader in loaders):
@@ -79,7 +79,7 @@ class TemplateConfigurator:
             loaders.insert(0, "django_bird.loader.BirdLoader")
 
     def configure_builtins(self, options: dict[str, Any]) -> None:
-        builtins = options.setdefault("builtins", [])  # type: ignore[attr-defined]
+        builtins = options.setdefault("builtins", [])
 
         builtins_already_configured = "django_bird.templatetags.django_bird" in builtins
 
