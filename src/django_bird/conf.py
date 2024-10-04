@@ -15,6 +15,7 @@ DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 
 @dataclass
 class AppSettings:
+    COMPONENT_DIRS: list[str] = field(default_factory=lambda: ["bird"])
     ENABLE_AUTO_CONFIG: bool = True
     _template_configurator: TemplateConfigurator = field(init=False)
 
