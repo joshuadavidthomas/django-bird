@@ -51,7 +51,7 @@ High-flying components for perfectionists with deadlines.
 
 ## Getting Started
 
-django-bird is a library for creating reusable components in Django. Here's how to create a simple `button` component.
+django-bird is a library for creating reusable components in Django. Let's create a simple button component to show the basics of how to use the library.
 
 Create a new directory named `bird` in your project's main templates directory. This will be the primary location for your components.
 
@@ -98,7 +98,7 @@ You now have a button component that can be easily reused across your Django pro
 
 ## Documentation
 
-django-bird includes features for creating flexible components, including:
+django-bird offers features for creating flexible components, such as:
 
 - Passing attributes to components
 - Named slots for organizing content within components
@@ -140,7 +140,7 @@ I love how Svelte and other JS frameworks let you use a simple `<style>` tag wit
 
 ### Integration with Tailwind CSS
 
-Here's a hot take: ditch most of Tailwind's atomic classes and write your styles in a CSS file (shocking, I know!), but process it with Tailwind. This gives you modern CSS power without the atomic class juggling, plus you still get to use Tailwind's awesome design system -- which in my mind is _the_ reason to use Tailwind CSS. I could take or leave the atomic styles, but that design system I cannot develop without.
+Hot 🔥 take: ditch most of Tailwind's atomic classes and write your styles in a CSS file (shocking, I know!), but process it with Tailwind. This gives you modern CSS power without the atomic class juggling, plus you still get to use Tailwind's awesome design system -- which in my mind is _the_ reason to use Tailwind CSS. I could take or leave the atomic styles, but that design system I cannot develop without.
 
 I'd love for django-bird components to support this workflow, letting you write clean, Tailwind-processed styles right in your components.
 
