@@ -21,22 +21,66 @@ High-flying components for perfectionists with deadlines.
 
 1. Install the package from PyPI:
 
-```bash
-python -m pip install django-bird
-# or
-uv add django-bird
-uv sync
-```
+    ```bash
+    python -m pip install django-bird
+
+    # or if you like the new hotness
+
+    uv add django-bird
+    uv sync
+    ```
 
 2. Add the app to your Django project's `INSTALLED_APPS`:
 
-```python
-INSTALLED_APPS = [
-    ...,
-    "django_bird",
-    ...,
-]
-```
+    ```python
+    INSTALLED_APPS = [
+        ...,
+        "django_bird",
+        ...,
+    ]
+    ```
+
+3. django-bird requires two settings in your `settings.TEMPLATES` to be configured to work properly:
+
+    - `django_bird.templatetags.django_bird` in the `builtins`
+    - `django_bird.loader.BirdLoader` in the innermost list of `loaders`, before `django.template.loaders.filesystem.Loader` and `django.template.loaders.app_directories.Loader`
+
+    By default, these should be configured for you automatically. If you would like to disable this behavior and set this up yourself, you will need to set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False`.
+
+    ```python
+    # settings.py
+    from pathlib import Path
+
+
+    DJANGO_BIRD = {
+        "ENABLE_AUTO_CONFIG": False,
+    }
+
+    TEMPLATES = [
+        {
+            "BACKEND": "django.template.backends.django.DjangoTemplates",
+            "DIRS": [
+                Path(__file__).parent / "templates",
+            ],
+            "OPTIONS": {
+                "builtins": [
+                    "django_bird.templatetags.django_bird",
+                ],
+                "loaders": [
+                    (
+                        "django.template.loaders.cached.Loader",
+                        [
+                            "django_bird.loader.BirdLoader",
+                            "django.template.loaders.filesystem.Loader",
+                            "django.template.loaders.app_directories.Loader",
+                        ],
+                    ),
+                ],
+            },
+        }
+    ]
+
+    ```
 
 ## Getting Started
 
