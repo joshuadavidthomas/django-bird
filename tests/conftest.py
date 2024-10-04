@@ -75,8 +75,14 @@ def override_templates_settings(template_dirs):
 
 @pytest.fixture
 def create_bird_template(template_dirs):
-    def func(name, content):
-        template = template_dirs["bird"] / f"{name}.html"
+    def func(name, content, subdir=None):
+        bird_dir = template_dirs["bird"]
+        if subdir is not None:
+            dir = bird_dir / subdir
+            dir.mkdir()
+        else:
+            dir = bird_dir
+        template = dir / f"{name}.html"
         template.write_text(content)
         return template
 
