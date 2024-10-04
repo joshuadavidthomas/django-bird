@@ -79,11 +79,67 @@ High-flying components for perfectionists with deadlines.
 
 ## Getting Started
 
-Coming soon...
+django-bird is a library for creating reusable components in Django. Here's how to create a simple `button` component.
+
+Create a new directory named `bird` in your project's main templates directory. This will be the primary location for your components.
+
+```bash
+templates/
+└── bird/
+```
+
+Inside the bird directory, create a new file named `button.html`. The filename determines the component's name.
+
+```bash
+templates/
+└── bird/
+    └── button.html
+```
+
+In `button.html`, create a simple HTML button. Use `{{ slot }}` to indicate where the main content will go.
+
+```htmldjango
+{# templates/bird/button.html #}
+<button>
+    {{ slot }}
+</button>
+```
+
+To use your component in a Django template, use the `{% bird %}` templatetag. The content between `{% bird %}` and `{% endbird %}` becomes the `{{ slot }}` content.
+
+```htmldjango
+{% bird button %}
+    Click me!
+{% endbird %}
+```
+
+django-bird automatically recognizes components in the bird directory, so no manual registration is needed. When Django processes the template, django-bird replaces the `{% bird %}` tag with the component's HTML, inserting the provided content into the slot, resulting in:
+
+```html
+<button>
+    Click me!
+</button>
+```
+
+You now a button component that can be easily reused across your Django project.
 
 ## Documentation
 
-Please refer to the [documentation](https://bird.readthedocs.io/) for more information.
+django-bird includes features for creating flexible components, including:
+
+- Passing attributes to components
+- Named slots for organizing content within components
+- Subcomponents for building complex component structures
+
+For a full overview of the features and configuration options, please refer to the [documentation](https://bird.readthedocs.io/).
+
+## Roadmap
+
+### Custom HTML Tag
+
+### Component Islands
+
+### Scoped CSS Styles
 
 ## License
 
