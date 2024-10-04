@@ -46,26 +46,21 @@ TEST_SETTINGS = {
 
 
 @pytest.fixture
-def template_dirs(tmp_path):
+def base_dir(tmp_path):
     base_dir = tmp_path / "templates"
     base_dir.mkdir()
-    bird_template_dir = base_dir / "bird"
-    bird_template_dir.mkdir()
-    return {
-        "base": base_dir,
-        "bird": bird_template_dir,
-    }
+    return base_dir
 
 
 @pytest.fixture(autouse=True)
-def override_templates_settings(template_dirs):
+def override_templates_settings(base_dir):
     with override_settings(
         TEMPLATES=[
             settings.TEMPLATES[0]
             | {
                 "DIRS": [
                     *settings.TEMPLATES[0]["DIRS"],
-                    template_dirs["base"],
+                    base_dir,
                 ]
             }
         ]
@@ -74,11 +69,21 @@ def override_templates_settings(template_dirs):
 
 
 @pytest.fixture
-def create_bird_template(template_dirs):
-    def func(name, content, subdir=None):
-        bird_dir = template_dirs["bird"]
-        if subdir is not None:
-            dir = bird_dir / subdir
+def create_bird_dir(base_dir):
+    def func(name):
+        bird_template_dir = base_dir / name
+        bird_template_dir.mkdir()
+        return bird_template_dir
+
+    return func
+
+
+@pytest.fixture
+def create_bird_template(create_bird_dir):
+    def func(name, content, sub_dir=None, bird_dir_name="bird"):
+        bird_dir = create_bird_dir(bird_dir_name)
+        if sub_dir is not None:
+            dir = bird_dir / sub_dir
             dir.mkdir()
         else:
             dir = bird_dir

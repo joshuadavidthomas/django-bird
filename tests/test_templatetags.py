@@ -7,6 +7,7 @@ from django.template.base import Parser
 from django.template.base import Token
 from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
+from django.test import override_settings
 
 from django_bird.templatetags.django_bird import BirdNode
 from django_bird.templatetags.django_bird import do_bird
@@ -140,7 +141,7 @@ class TestBirdTemplateTagFutureFeatures:
 
 class TestBirdNode:
     @pytest.mark.parametrize(
-        "subdir,filename,component,nodename,expected",
+        "sub_dir,filename,component,nodename,expected",
         [
             (
                 None,
@@ -180,14 +181,30 @@ class TestBirdNode:
         ],
     )
     def test_get_template_names(
-        self, subdir, filename, component, nodename, expected, create_bird_template
+        self, sub_dir, filename, component, nodename, expected, create_bird_template
     ):
-        create_bird_template(name=filename, content=component, subdir=subdir)
+        create_bird_template(name=filename, content=component, sub_dir=sub_dir)
         node = BirdNode(name=nodename, attrs=[], nodelist=None)
 
         template_names = node.get_template_names()
 
         assert any(expected in template_name for template_name in template_names)
+
+    @override_settings(DJANGO_BIRD={"COMPONENT_DIRS": ["not_default"]})
+    def test_get_template_names_path_component_dirs(self, create_bird_template):
+        create_bird_template(
+            name="button",
+            content="<button class=btn_class>Click me</button>",
+            bird_dir_name="not_default",
+        )
+
+        node = BirdNode(name="button", attrs=[], nodelist=None)
+
+        template_names = node.get_template_names()
+
+        print(f"{template_names=}")
+        assert all("not_default" in template_name for template_name in template_names)
+        assert not all("bird" in template_name for template_name in template_names)
 
 
 class TestSlotsTemplateTag:
