@@ -3,12 +3,15 @@ from __future__ import annotations
 import pytest
 from django.template import Context
 from django.template import Template
+from django.template.base import NodeList
 from django.template.base import Parser
+from django.template.base import TextNode
 from django.template.base import Token
 from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 
 from django_bird.templatetags.django_bird import BirdNode
+from django_bird.templatetags.django_bird import SlotNode
 from django_bird.templatetags.django_bird import do_bird
 from django_bird.templatetags.django_bird import parse_slot_name
 
@@ -139,6 +142,35 @@ class TestBirdTemplateTagFutureFeatures:
 
 
 class TestBirdNode:
+    def test_get_component_context_data(self, create_bird_template):
+        create_bird_template(
+            name="button",
+            content="<button>{% slot %}{% endslot %}{% slot not-default %}{% endslot %}</button>",
+        )
+        node = BirdNode(
+            name="button",
+            attrs=[],
+            nodelist=NodeList(
+                [
+                    SlotNode(name="default", nodelist=NodeList([TextNode("default")])),
+                    SlotNode(
+                        name="not-default", nodelist=NodeList([TextNode("not default")])
+                    ),
+                ]
+            ),
+        )
+
+        component_context = node.get_component_context_data(Context({}))
+
+        assert all(
+            key in component_context.keys() for key in ["attrs", "slot", "slots"]
+        )
+        assert component_context["slot"] == "default"
+        assert component_context["slots"]["default"] == "default"
+        assert component_context["slots"]["not-default"] == "not default"
+        assert component_context["default"] == "default"
+        assert component_context["not-default"] == "not default"
+
     @pytest.mark.parametrize(
         "subdir,filename,component,nodename,expected",
         [

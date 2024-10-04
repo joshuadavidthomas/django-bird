@@ -62,12 +62,12 @@ class BirdNode(template.Node):
         rendered_slots = self.render_slots(context)
         flat_attrs = self.flatten_attrs(context)
         default_slot = rendered_slots.get(self.default_slot) or context.get("slot")
+        slots = {name: mark_safe(content) for name, content in rendered_slots.items()}
         return {
             "attrs": mark_safe(flat_attrs),
             "slot": mark_safe(default_slot),
-            "slots": {
-                name: mark_safe(content) for name, content in rendered_slots.items()
-            },
+            "slots": slots,
+            **slots,
         }
 
     def render_slots(self, context: Context) -> dict[str, str]:
