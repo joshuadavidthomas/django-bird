@@ -45,13 +45,41 @@ High-flying components for perfectionists with deadlines.
     - `django_bird.templatetags.django_bird` in the `builtins`
     - `django_bird.loader.BirdLoader` in the innermost list of `loaders`, before `django.template.loaders.filesystem.Loader` and `django.template.loaders.app_directories.Loader`
 
-    By default, these should be configured for you automatically. If you would like to disable this behavior, you will need to set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False`.
+    By default, these should be configured for you automatically. If you would like to disable this behavior and set this up yourself, you will need to set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False`.
 
     ```python
     # settings.py
+    from pathlib import Path
+
+
     DJANGO_BIRD = {
         "ENABLE_AUTO_CONFIG": False,
     }
+
+    TEMPLATES = [
+        {
+            "BACKEND": "django.template.backends.django.DjangoTemplates",
+            "DIRS": [
+                Path(__file__).parent / "templates",
+            ],
+            "OPTIONS": {
+                "builtins": [
+                    "django_bird.templatetags.django_bird",
+                ],
+                "loaders": [
+                    (
+                        "django.template.loaders.cached.Loader",
+                        [
+                            "django_bird.loader.BirdLoader",
+                            "django.template.loaders.filesystem.Loader",
+                            "django.template.loaders.app_directories.Loader",
+                        ],
+                    ),
+                ],
+            },
+        }
+    ]
+
     ```
 
 ## Getting Started
