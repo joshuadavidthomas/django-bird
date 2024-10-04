@@ -21,22 +21,24 @@ High-flying components for perfectionists with deadlines.
 
 1. Install the package from PyPI:
 
-```bash
-python -m pip install django-bird
-# or
-uv add django-bird
-uv sync
-```
+    ```bash
+    python -m pip install django-bird
+
+    # or if you like the new hotness
+
+    uv add django-bird
+    uv sync
+    ```
 
 2. Add the app to your Django project's `INSTALLED_APPS`:
 
-```python
-INSTALLED_APPS = [
-    ...,
-    "django_bird",
-    ...,
-]
-```
+    ```python
+    INSTALLED_APPS = [
+        ...,
+        "django_bird",
+        ...,
+    ]
+    ```
 
 3. django-bird requires two settings in your `settings.TEMPLATES` to be configured to work properly:
 
