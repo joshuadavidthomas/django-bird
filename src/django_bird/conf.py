@@ -27,6 +27,9 @@ class AppSettings:
         return user_settings.get(__name, super().__getattribute__(__name))  # pyright: ignore[reportAny]
 
     def autoconfigure(self) -> None:
+        if not self.ENABLE_AUTO_CONFIG:
+            return
+
         self._template_configurator.autoconfigure()
 
 
@@ -37,9 +40,6 @@ class TemplateConfigurator:
         self._configured = False
 
     def autoconfigure(self) -> None:
-        if not self.app_settings.ENABLE_AUTO_CONFIG:
-            return
-
         for template_config in settings.TEMPLATES:
             engine_name = (
                 template_config.get("NAME") or template_config["BACKEND"].split(".")[-2]  # type: ignore[attr-defined]
