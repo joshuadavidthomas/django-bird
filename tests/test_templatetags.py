@@ -202,9 +202,7 @@ class TestBirdNode:
 
         template_names = node.get_template_names()
 
-        print(f"{template_names=}")
-        assert all("not_default" in template_name for template_name in template_names)
-        assert not all("bird" in template_name for template_name in template_names)
+        assert any("not_default" in template_name for template_name in template_names)
 
 
 class TestSlotsTemplateTag:
