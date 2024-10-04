@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import suppress
 from dataclasses import dataclass
 from dataclasses import field
+from pathlib import Path
 from typing import Any
 
 import django.template
@@ -15,7 +16,7 @@ DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 
 @dataclass
 class AppSettings:
-    COMPONENT_DIRS: list[str] = field(default_factory=lambda: ["bird"])
+    COMPONENT_DIRS: list[Path | str] = field(default_factory=lambda: ["bird"])
     ENABLE_AUTO_CONFIG: bool = True
     _template_configurator: TemplateConfigurator = field(init=False)
 
