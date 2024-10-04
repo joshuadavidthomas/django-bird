@@ -1,7 +1,7 @@
 # django-bird
 
-[![PyPI](https://img.shields.io/pypi/v/bird)](https://pypi.org/project/bird/)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bird)
+[![PyPI](https://img.shields.io/pypi/v/django-bird)](https://pypi.org/project/django-bird/)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django-bird)
 ![Django Version](https://img.shields.io/badge/django-4.2%20%7C%205.0%20%7C%205.1-%2344B78B?labelColor=%23092E20)
 <!-- https://shields.io/badges -->
 <!-- django-4.2 | 5.0 | 5.1-#44B78B -->
