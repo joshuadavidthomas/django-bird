@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pytest
 from django.conf import settings
-from django.test import SimpleTestCase
 from django.test import override_settings
 
 from django_bird.conf import AppSettings
@@ -19,9 +18,13 @@ def test_app_settings():
         "ENABLE_AUTO_CONFIG": False,
     }
 )
-class TestAutoConfigure(SimpleTestCase):
-    def test_app_settings(self):
-        assert app_settings.ENABLE_AUTO_CONFIG is False
+def test_autoconfigure_disabled():
+    app_settings = AppSettings()
+    template_options = settings.TEMPLATES[0]["OPTIONS"]
+
+    assert app_settings.ENABLE_AUTO_CONFIG is False
+    assert "django_bird.templatetags.django_bird" not in template_options["loaders"]
+    assert "django_bird.loader.BirdLoader" not in template_options["builtins"]
 
 
 class TestTemplateConfigurator:
@@ -32,12 +35,10 @@ class TestTemplateConfigurator:
     def configurator(self):
         return TemplateConfigurator(app_settings)
 
-    @pytest.fixture
-    def template_options(self):
-        return settings.TEMPLATES[0]["OPTIONS"]
-
     @pytest.fixture(autouse=True)
-    def reset_settings(self, template_options):
+    def reset_settings(self):
+        template_options = settings.TEMPLATES[0]["OPTIONS"]
+
         assert self.DJANGO_BIRD_LOADER in template_options["loaders"]
         assert self.DJANGO_BIRD_BUILTINS in template_options["builtins"]
 
@@ -68,18 +69,24 @@ class TestTemplateConfigurator:
 
             yield
 
-    def test_autoconfigure(self, configurator, template_options):
+    def test_autoconfigure(self, configurator):
+        template_options = settings.TEMPLATES[0]["OPTIONS"]
+
         configurator.autoconfigure()
 
         assert self.DJANGO_BIRD_LOADER in template_options["loaders"]
         assert self.DJANGO_BIRD_BUILTINS in template_options["builtins"]
 
-    def test_configure_loaders(self, configurator, template_options):
+    def test_configure_loaders(self, configurator):
+        template_options = settings.TEMPLATES[0]["OPTIONS"]
+
         configurator.configure_loaders(template_options)
 
         assert self.DJANGO_BIRD_LOADER in template_options["loaders"]
 
-    def test_configure_builtins(self, configurator, template_options):
+    def test_configure_builtins(self, configurator):
+        template_options = settings.TEMPLATES[0]["OPTIONS"]
+
         configurator.configure_builtins(template_options)
 
         assert self.DJANGO_BIRD_BUILTINS in template_options["builtins"]
@@ -91,12 +98,123 @@ class TestTemplateConfigurator:
 
         assert configurator._configured is True
 
-    def test_app_settings(self, configurator):
-        app_settings = AppSettings()
-        app_settings._template_configurator = configurator
+    @pytest.mark.parametrize(
+        "init_options,expected",
+        [
+            (
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                    ],
+                    "loaders": [
+                        "django.template.loaders.filesystem.Loader",
+                        "django.template.loaders.app_directories.Loader",
+                    ],
+                },
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                        "django_bird.templatetags.django_bird",
+                    ],
+                    "loaders": [
+                        "django_bird.loader.BirdLoader",
+                        "django.template.loaders.filesystem.Loader",
+                        "django.template.loaders.app_directories.Loader",
+                    ],
+                },
+            ),
+            (
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                    ],
+                    "loaders": [
+                        (
+                            "django.template.loaders.cached.Loader",
+                            [
+                                "django.template.loaders.filesystem.Loader",
+                                "django.template.loaders.app_directories.Loader",
+                            ],
+                        ),
+                    ],
+                },
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                        "django_bird.templatetags.django_bird",
+                    ],
+                    "loaders": [
+                        (
+                            "django.template.loaders.cached.Loader",
+                            [
+                                "django_bird.loader.BirdLoader",
+                                "django.template.loaders.filesystem.Loader",
+                                "django.template.loaders.app_directories.Loader",
+                            ],
+                        ),
+                    ],
+                },
+            ),
+            (
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                    ],
+                    "loaders": [
+                        (
+                            "template_partials.loader.Loader",
+                            [
+                                (
+                                    "django.template.loaders.cached.Loader",
+                                    [
+                                        "django.template.loaders.filesystem.Loader",
+                                        "django.template.loaders.app_directories.Loader",
+                                    ],
+                                ),
+                            ],
+                        )
+                    ],
+                },
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                        "django_bird.templatetags.django_bird",
+                    ],
+                    "loaders": [
+                        (
+                            "template_partials.loader.Loader",
+                            [
+                                (
+                                    "django.template.loaders.cached.Loader",
+                                    [
+                                        "django_bird.loader.BirdLoader",
+                                        "django.template.loaders.filesystem.Loader",
+                                        "django.template.loaders.app_directories.Loader",
+                                    ],
+                                ),
+                            ],
+                        )
+                    ],
+                },
+            ),
+        ],
+    )
+    def test_template_settings(self, init_options, expected, configurator):
+        with override_settings(
+            TEMPLATES=[
+                settings.TEMPLATES[0]
+                | {
+                    **settings.TEMPLATES[0],
+                    "OPTIONS": init_options,
+                }
+            ]
+        ):
+            template_options = settings.TEMPLATES[0]["OPTIONS"]
 
-        assert app_settings._template_configurator._configured is False
+            assert template_options == init_options
+            assert self.DJANGO_BIRD_LOADER not in template_options["loaders"]
+            assert self.DJANGO_BIRD_BUILTINS not in template_options["builtins"]
 
-        configurator.autoconfigure()
+            configurator.autoconfigure()
 
-        assert app_settings._template_configurator._configured is True
+            assert template_options == expected
