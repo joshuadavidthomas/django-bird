@@ -49,9 +49,6 @@ High-flying components for perfectionists with deadlines.
 
     ```python
     # settings.py
-    from pathlib import Path
-
-
     DJANGO_BIRD = {
         "ENABLE_AUTO_CONFIG": False,
     }
@@ -59,9 +56,7 @@ High-flying components for perfectionists with deadlines.
     TEMPLATES = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": [
-                Path(__file__).parent / "templates",
-            ],
+            "DIRS": [...],
             "OPTIONS": {
                 "builtins": [
                     "django_bird.templatetags.django_bird",
