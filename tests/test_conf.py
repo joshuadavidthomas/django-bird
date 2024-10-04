@@ -197,6 +197,88 @@ class TestTemplateConfigurator:
                     ],
                 },
             ),
+            (
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                        "django_cotton.templatetags.cotton",
+                    ],
+                    "loaders": [
+                        (
+                            "django.template.loaders.cached.Loader",
+                            [
+                                "django_cotton.cotton_loader.Loader",
+                                "django.template.loaders.filesystem.Loader",
+                                "django.template.loaders.app_directories.Loader",
+                            ],
+                        ),
+                    ],
+                },
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                        "django_cotton.templatetags.cotton",
+                        "django_bird.templatetags.django_bird",
+                    ],
+                    "loaders": [
+                        (
+                            "django.template.loaders.cached.Loader",
+                            [
+                                "django_bird.loader.BirdLoader",
+                                "django_cotton.cotton_loader.Loader",
+                                "django.template.loaders.filesystem.Loader",
+                                "django.template.loaders.app_directories.Loader",
+                            ],
+                        ),
+                    ],
+                },
+            ),
+            (
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                        "django_cotton.templatetags.cotton",
+                    ],
+                    "loaders": [
+                        (
+                            "template_partials.loader.Loader",
+                            [
+                                (
+                                    "django.template.loaders.cached.Loader",
+                                    [
+                                        "django_cotton.cotton_loader.Loader",
+                                        "django.template.loaders.filesystem.Loader",
+                                        "django.template.loaders.app_directories.Loader",
+                                    ],
+                                ),
+                            ],
+                        )
+                    ],
+                },
+                {
+                    "builtins": [
+                        "django.template.defaulttags",
+                        "django_cotton.templatetags.cotton",
+                        "django_bird.templatetags.django_bird",
+                    ],
+                    "loaders": [
+                        (
+                            "template_partials.loader.Loader",
+                            [
+                                (
+                                    "django.template.loaders.cached.Loader",
+                                    [
+                                        "django_bird.loader.BirdLoader",
+                                        "django_cotton.cotton_loader.Loader",
+                                        "django.template.loaders.filesystem.Loader",
+                                        "django.template.loaders.app_directories.Loader",
+                                    ],
+                                ),
+                            ],
+                        )
+                    ],
+                },
+            ),
         ],
     )
     def test_template_settings(self, init_options, expected, configurator):
