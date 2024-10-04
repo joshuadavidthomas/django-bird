@@ -8,11 +8,12 @@ from django.template.base import NodeList
 from django.template.base import Parser
 from django.template.base import Token
 from django.template.context import Context
-from django.template.loader import render_to_string
+from django.template.loader import select_template
 from django.utils.safestring import SafeString
 from django.utils.safestring import mark_safe
 
 from django_bird._typing import override
+from django_bird.conf import app_settings
 
 register = template.Library()
 
@@ -61,7 +62,11 @@ class BirdNode(template.Node):
             },
         }
 
-        return render_to_string(f"bird/{self.name}.html", component_context)
+        template_names = [
+            f"{directory}/{self.name}.html" for directory in app_settings.COMPONENT_DIRS
+        ]
+        template = select_template(template_names)
+        return template.render(component_context)
 
     def render_slots(self, context: Context) -> dict[str, str]:
         if self.nodelist is None:
