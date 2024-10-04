@@ -38,6 +38,20 @@ INSTALLED_APPS = [
 ]
 ```
 
+3. django-bird requires two settings in your `settings.TEMPLATES` to be configured to work properly:
+
+    - `django_bird.templatetags.django_bird` in the `builtins`
+    - `django_bird.loader.BirdLoader` in the innermost list of `loaders`, before `django.template.loaders.filesystem.Loader` and `django.template.loaders.app_directories.Loader`
+
+    By default, these should be configured for you automatically. If you would like to disable this behavior, you will need to set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False`.
+
+    ```python
+    # settings.py
+    DJANGO_BIRD = {
+        "ENABLE_AUTO_CONFIG": False,
+    }
+    ```
+
 ## Getting Started
 
 Coming soon...
