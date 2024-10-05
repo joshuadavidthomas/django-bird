@@ -110,13 +110,45 @@ For a full overview of the features and configuration options, please refer to t
 
 ## Roadmap
 
-Here's a roadmap of features I'm considering for django-bird:
+Below are a bunch of features I'd like to bring to django-bird. I have included code snippets where applicable, but they are back-of-the-napkin sketches of potential APIs -- subject to change if and when the feature is actually introduced.
 
 ### Static Asset Collection
 
 This is table stakes for a modern Django template component library. You should be able to define CSS and JS for a component and have it loaded automatically when you use that component.
 
 Unlike django-components, which uses the Django forms library pattern with a `class Media` declaration, I want to allow defining styles and scripts within a single component file. django-bird will then collect and compile these assets, streamlining the whole process.
+
+```htmldjango
+{# templates/bird/button.html #}
+<button>
+  {{ slot }}
+</button>
+<style>
+  button {
+    background-color: red;
+  }
+</style>
+<script>
+  
+</script>
+```
+
+```htmldjango
+<html>
+  <head>
+    {% django_bird_css %}
+  </head>
+  <body>
+    <main>
+      {% bird button %}
+        Click me
+      {% endbird %}
+    </main>
+    {% django_bird_js %}
+  </body>
+</html>
+
+```
 
 ### Component Islands
 
@@ -126,23 +158,103 @@ If you're new to component islands, think of it as fancy lazy-loading. You can s
 
 There's a neat library from the 11ty team called is-land that could work well here. I'll probably start by integrating it directly, but after looking at their source code, I might end up bringing it in and customizing it for django-bird's specific needs.
 
+```htmldjango
+{% bird button on="load" %}
+  This button loads... on load
+{% endbird %}
+
+{% bird button on="idle" %}
+  This button loads after page load
+{% endbird %}
+
+{% bird button on="visible" %}
+  This button loads when scrolled into view
+{% endbird %}
+```
+
 ### Custom HTML Tag
 
 I'm a huge fan of the approaches taken by libraries like [django-cotton](https://github.com/wrabit/django-cotton), [dj-angles](https://github.com/adamghill/dj-angles), and Laravel's [Flux](https://fluxui.dev). They let you use custom HTML-like elements that compile down to native templatetags during loading.
 
 This gives you the full power of Django's template language, but in a much nicer package. Compare [this django-allauth template](https://github.com/pennersr/django-allauth/blob/f03ff4dd48e5b1680a57dca56617bf94c928f2cf/allauth/templates/account/email.html) with [these django-cotton examples](https://github.com/wrabit/django-cotton#walkthrough). The allauth template, while powerful, is a mess of tags that barely resembles HTML. The cotton templates, on the other hand, look like clean, custom web elements.
 
-After working with devs from the JavaScript world and using a handful of JavaScript frameworks myself, Django templates can feel ancient compared to JSX. A custom HTML tag approach won't solve all these issues, but it's a step in the right direction.
+After working with devs from the JavaScript world and using a handful of JavaScript frameworks myself, Django templates can feel ancient compared to JSX. A custom HTML tag approach won't solve all these issues, but it's ...
+
+```htmldjango
+{% bird button %}
+  Click me
+{% endbird %}
+
+<bird:button>
+  Click me
+</bird:button>
+```
 
 ### Scoped CSS Styles
 
 I love how Svelte and other JS frameworks let you use a simple `<style>` tag with broad selectors (`p` instead of `.card-body`, `button` instead of `.submit-btn`), then scope those styles to just that component. While I'm a Tailwind CSS fan, having this escape hatch for quick style tweaks would be fantastic.
 
+```htmldjango
+{# templates/bird/button.html #}
+<button>
+  {{ slot }}
+</button>
+<style>
+  button {
+    background-color: red;
+  }
+</style>
+```
+
+```htmldjango
+<html>
+  <head>
+    {% django_bird_css %}
+  </head>
+  <body>
+    {% bird button %}
+      Click me
+    {% endbird %}
+  </body>
+</html>
+```
+
+```htmldjango
+<html>
+  <head>
+    <style>
+      #bird-12fdsa33 {
+        button {
+          background-color: red;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button id="bird-12fdsa33">
+      Click me
+    </button>
+  </body>
+</html>
+```
+
 ### Integration with Tailwind CSS
 
-Hot 🔥 take: ditch most of Tailwind's atomic classes and write your styles in a CSS file (shocking, I know!), but process it with Tailwind. This gives you modern CSS power without the atomic class juggling, plus you still get to use Tailwind's awesome design system -- which in my mind is _the_ reason to use Tailwind CSS. I could take or leave the atomic styles, but that design system I cannot develop without.
+Hot 🔥 take: if you're using Tailwind, you should ditch most of Tailwind's atomic classes and write your styles in a CSS file (shocking, I know!), but process it with Tailwind. This gives you modern CSS power without the atomic class juggling, plus you still get to use Tailwind's awesome design system -- which in my mind is _the_ reason to use Tailwind CSS. I could take or leave the atomic styles, but that design system I cannot develop without.
 
 I'd love for django-bird components to support this workflow, letting you write clean, Tailwind-processed styles right in your components.
+
+```htmldjango
+{# templates/bird/button.html #}
+<button>
+  {{ slot }}
+</button>
+<style>
+  button {
+    background-color: theme("colors.red.500");
+  }
+</style>
+```
 
 ## License
 
