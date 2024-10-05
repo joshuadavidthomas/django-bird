@@ -114,9 +114,11 @@ Below are a bunch of features I'd like to bring to django-bird. I have included 
 
 ### Static Asset Collection
 
-This is table stakes for a modern Django template component library. You should be able to define CSS and JS for a component and have it loaded automatically when you use that component.
+This is table stakes for a modern Django template component library. The goal is to allow you to define CSS and JS for a component and have it loaded automatically when you use that component.
 
-Unlike django-components, which uses the Django forms library pattern with a `class Media` declaration, I want to allow defining styles and scripts within a single component file, or adjacent to a component. django-bird will then collect and compile these assets, streamlining the whole process.
+Unlike django-components, which uses the Django forms library pattern with a `class Media` declaration, the idea is to allow defining styles and scripts within a single component file, or adjacent to a component. django-bird would then collect and compile these assets, streamlining the whole process.
+
+Here's a potential example of how you might define a button component with inline styles and scripts:
 
 ```htmldjango
 {# templates/bird/button.html #}
@@ -126,12 +128,22 @@ Unlike django-components, which uses the Django forms library pattern with a `cl
 <style>
   button {
     background-color: red;
+    padding: 10px 20px;
+    color: white;
+    border: none;
+    cursor: pointer;
   }
 </style>
 <script>
-  
+  $bird.addEventListener('click', () => {
+    alert('This specific button was clicked!');
+  });
 </script>
 ```
+
+The `$bird` variable in the JavaScript is a potential special identifier that could be used to scope the script to the specific component instance.
+
+Alternatively, you could potentially separate the styles and scripts into their own files:
 
 ```htmldjango
 {# templates/bird/button.html #}
@@ -144,13 +156,21 @@ Unlike django-components, which uses the Django forms library pattern with a `cl
 /* templates/bird/button.css */
 button {
   background-color: red;
+  padding: 10px 20px;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 ```
 
 ```javascript
 // templates/bird/button.js
-
+$bird.addEventListener('click', () => {
+  alert('This specific button was clicked!');
+});
 ```
+
+To use this component and include its assets in your template, the API might look something like this:
 
 ```htmldjango
 <html>
@@ -165,7 +185,40 @@ button {
     {% django_bird_js %}
   </body>
 </html>
+```
 
+In this conceptual setup, `{% django_bird_css %}` and `{% django_bird_js %}` would automatically include the collected and compiled CSS and JavaScript for all components used in the template.
+
+To give you an idea of what the final compiled output might look like, here's a hypothetical example of the HTML that could be generated:
+
+```htmldjango
+<html>
+  <head>
+    <style>
+      [data-bird-id="button-1"] {
+        background-color: red;
+        padding: 10px 20px;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <button data-bird-id="button-1">
+      Click me
+    </button>
+
+    <script>
+      (function() {
+        const $bird = document.querySelector('[data-bird-id="button-1"]');
+        $bird.addEventListener('click', () => {
+          alert('This specific button was clicked!');
+        });
+      })();
+    </script>
+  </body>
+</html>
 ```
 
 ### Component Islands
@@ -175,6 +228,8 @@ Ever since I tried Astro and discovered their concept of "Islands" (which they p
 If you're new to component islands, think of it as fancy lazy-loading. You can set different triggers for when a component's JS assets load (on page load, on idle, on scroll into view). When that event fires, only the necessary assets are loaded.
 
 There's a neat library from the 11ty team called is-land that could work well here. I'll probably start by integrating it directly, but after looking at their source code, I might end up bringing it in and customizing it for django-bird's specific needs.
+
+Here's how the API for component islands might look in django-bird:
 
 ```htmldjango
 {% bird button on="load" %}
@@ -190,13 +245,17 @@ There's a neat library from the 11ty team called is-land that could work well he
 {% endbird %}
 ```
 
+In this example, we're using an `on` attribute to specify when each button's JavaScript should be loaded and executed. This approach could significantly improve page load times and performance, especially for pages with many interactive components.
+
 ### Custom HTML Tag
 
 I'm a huge fan of the approaches taken by libraries like [django-cotton](https://github.com/wrabit/django-cotton), [dj-angles](https://github.com/adamghill/dj-angles), and Laravel's [Flux](https://fluxui.dev). They let you use custom HTML-like elements that compile down to native templatetags during loading.
 
 This gives you the full power of Django's template language, but in a much nicer package. Compare [this django-allauth template](https://github.com/pennersr/django-allauth/blob/f03ff4dd48e5b1680a57dca56617bf94c928f2cf/allauth/templates/account/email.html) with [these django-cotton examples](https://github.com/wrabit/django-cotton#walkthrough). The allauth template, while powerful, is a mess of tags that barely resembles HTML. The cotton templates, on the other hand, look like clean, custom web elements.
 
-After working with devs from the JavaScript world and using a handful of JavaScript frameworks myself, Django templates can feel ancient compared to JSX. A custom HTML tag approach won't solve all these issues, but it's ...
+After working with devs from the JavaScript world and using a handful of JavaScript frameworks myself, Django templates can feel ancient compared to JSX. A custom HTML tag approach could offer a more familiar and readable syntax for component-based development in Django, bridging the gap between traditional Django templates and modern frontend practices.
+
+Here's a comparison of how a button component might be used with the current django-bird syntax and a potential custom HTML tag syntax:
 
 ```htmldjango
 {% bird button %}
@@ -212,6 +271,8 @@ After working with devs from the JavaScript world and using a handful of JavaScr
 
 I love how Svelte and other JS frameworks let you use a simple `<style>` tag with broad selectors (`p` instead of `.card-body`, `button` instead of `.submit-btn`), then scope those styles to just that component. While I'm a Tailwind CSS fan, having this escape hatch for quick style tweaks would be fantastic.
 
+Here's how a component with scoped styles might look in django-bird:
+
 ```htmldjango
 {# templates/bird/button.html #}
 <button>
@@ -223,6 +284,8 @@ I love how Svelte and other JS frameworks let you use a simple `<style>` tag wit
   }
 </style>
 ```
+
+You would use this component in your template like this:
 
 ```htmldjango
 <html>
@@ -236,6 +299,8 @@ I love how Svelte and other JS frameworks let you use a simple `<style>` tag wit
   </body>
 </html>
 ```
+
+And here's a potential example of how django-bird might compile this to ensure the styles are scoped to just this component:
 
 ```htmldjango
 <html>
@@ -261,6 +326,8 @@ I love how Svelte and other JS frameworks let you use a simple `<style>` tag wit
 Hot 🔥 take: if you're using Tailwind, you should ditch most of Tailwind's atomic classes and write your styles in a CSS file (shocking, I know!), but process it with Tailwind. This gives you modern CSS power without the atomic class juggling, plus you still get to use Tailwind's awesome design system -- which in my mind is _the_ reason to use Tailwind CSS. I could take or leave the atomic styles, but that design system I cannot develop without.
 
 I'd love for django-bird components to support this workflow, letting you write clean, Tailwind-processed styles right in your components.
+
+Here's how a button component using Tailwind's design system might look in django-bird:
 
 ```htmldjango
 {# templates/bird/button.html #}
