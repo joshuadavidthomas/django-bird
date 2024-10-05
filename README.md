@@ -110,7 +110,9 @@ For a full overview of the features and configuration options, please refer to t
 
 ## Roadmap
 
-Below are a bunch of features I'd like to bring to django-bird. I have included code snippets where applicable, but they are back-of-the-napkin sketches of potential APIs -- subject to change if and when the feature is actually introduced.
+Below are a bunch of features I'd like to bring to django-bird.
+
+I have included code snippets where applicable, but they are back-of-the-napkin sketches of potential APIs -- subject to change if and when the feature is actually introduced.
 
 ### Static Asset Collection
 
