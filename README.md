@@ -73,7 +73,7 @@ In `button.html`, create a simple HTML button. Use `{{ slot }}` to indicate wher
 ```htmldjango
 {# templates/bird/button.html #}
 <button>
-    {{ slot }}
+  {{ slot }}
 </button>
 ```
 
@@ -81,7 +81,7 @@ To use your component in a Django template, use the `{% bird %}` templatetag. Th
 
 ```htmldjango
 {% bird button %}
-    Click me!
+  Click me!
 {% endbird %}
 ```
 
@@ -89,7 +89,7 @@ django-bird automatically recognizes components in the bird directory, so no man
 
 ```html
 <button>
-    Click me!
+  Click me!
 </button>
 ```
 
@@ -149,6 +149,7 @@ button {
 
 ```javascript
 // templates/bird/button.js
+
 ```
 
 ```htmldjango
