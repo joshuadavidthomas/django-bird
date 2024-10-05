@@ -116,7 +116,7 @@ Below are a bunch of features I'd like to bring to django-bird. I have included 
 
 This is table stakes for a modern Django template component library. You should be able to define CSS and JS for a component and have it loaded automatically when you use that component.
 
-Unlike django-components, which uses the Django forms library pattern with a `class Media` declaration, I want to allow defining styles and scripts within a single component file. django-bird will then collect and compile these assets, streamlining the whole process.
+Unlike django-components, which uses the Django forms library pattern with a `class Media` declaration, I want to allow defining styles and scripts within a single component file, or adjacent to a component. django-bird will then collect and compile these assets, streamlining the whole process.
 
 ```htmldjango
 {# templates/bird/button.html #}
@@ -134,16 +134,33 @@ Unlike django-components, which uses the Django forms library pattern with a `cl
 ```
 
 ```htmldjango
+{# templates/bird/button.html #}
+<button>
+  {{ slot }}
+</button>
+```
+
+```css
+/* templates/bird/button.css */
+button {
+  background-color: red;
+}
+```
+
+```javascript
+// templates/bird/button.js
+```
+
+```htmldjango
 <html>
   <head>
     {% django_bird_css %}
   </head>
   <body>
-    <main>
-      {% bird button %}
-        Click me
-      {% endbird %}
-    </main>
+    {% bird button %}
+      Click me
+    {% endbird %}
+
     {% django_bird_js %}
   </body>
 </html>
