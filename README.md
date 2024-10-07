@@ -108,9 +108,7 @@ For a full overview of the features and configuration options, please refer to t
 
 ## Motivation
 
-Why another Django component library?
-
-There are already several excellent libraries for creating components in Django:
+There are several excellent libraries for creating components in Django:
 
 - [django-components](https://github.com/EmilStenstrom/django-components)
 - [django-cotton](https://github.com/wrabit/django-cotton)
@@ -123,6 +121,8 @@ In particular, django-components is full-featured and will take you far, while d
 
 > [!NOTE]
 > Also worth mentioning is [django-template-partials](https://github.com/carltongibson/django-template-partials) from Carlton Gibson. While not a full component library, it allows you to define reusable template chunks in a Django template, providing a lightweight approach to template reusability.
+
+So, why another Django component library?
 
 These existing libraries offer valuable features, but many focus on Python-side component encapsulation. I saw an opportunity to explore a different approach of achieving encapsulation, from directly within Django templates.
 
