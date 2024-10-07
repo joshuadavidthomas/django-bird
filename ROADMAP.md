@@ -15,21 +15,21 @@ Here's a potential example of how you might define a button component with inlin
 ```htmldjango
 {# templates/bird/button.html #}
 <button>
-  {{ slot }}
+    {{ slot }}
 </button>
 <style>
-  button {
-    background-color: red;
-    padding: 10px 20px;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
+    button {
+        background-color: red;
+        padding: 10px 20px;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
 </style>
 <script>
-  $bird.addEventListener('click', () => {
-    alert('This specific button was clicked!');
-  });
+    $bird.addEventListener('click', () => {
+        alert('This specific button was clicked!');
+    });
 </script>
 ```
 
@@ -40,7 +40,7 @@ Alternatively, you could potentially separate the styles and scripts into their 
 ```htmldjango
 {# templates/bird/button.html #}
 <button>
-  {{ slot }}
+    {{ slot }}
 </button>
 ```
 
@@ -66,16 +66,16 @@ To use this component and include its assets in your template, the API might loo
 
 ```htmldjango
 <html>
-  <head>
-    {% django_bird_css %}
-  </head>
-  <body>
-    {% bird button %}
-      Click me
-    {% endbird %}
+    <head>
+        {% django_bird_css %}
+    </head>
+    <body>
+        {% bird button %}
+        Click me
+        {% endbird %}
 
-    {% django_bird_js %}
-  </body>
+        {% django_bird_js %}
+    </body>
 </html>
 ```
 
@@ -85,31 +85,31 @@ To give you an idea of what the final compiled output might look like, here's a 
 
 ```htmldjango
 <html>
-  <head>
-    <style>
-      [data-bird-id="button-1"] {
-        background-color: red;
-        padding: 10px 20px;
-        color: white;
-        border: none;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <button data-bird-id="button-1">
-      Click me
-    </button>
+    <head>
+        <style>
+            [data-bird-id="button-1"] {
+                background-color: red;
+                padding: 10px 20px;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <button data-bird-id="button-1">
+            Click me
+        </button>
 
-    <script>
-      (function() {
-        const $bird = document.querySelector('[data-bird-id="button-1"]');
-        $bird.addEventListener('click', () => {
-          alert('This specific button was clicked!');
-        });
-      })();
-    </script>
-  </body>
+        <script>
+            (function() {
+                const $bird = document.querySelector('[data-bird-id="button-1"]');
+                $bird.addEventListener('click', () => {
+                    alert('This specific button was clicked!');
+                });
+            })();
+        </script>
+    </body>
 </html>
 ```
 
@@ -199,15 +199,15 @@ Here's how the API for component islands might look in django-bird:
 
 ```htmldjango
 {% bird button on="load" %}
-  This button loads... on load
+    This button loads... on load
 {% endbird %}
 
 {% bird button on="idle" %}
-  This button loads after page load
+    This button loads after page load
 {% endbird %}
 
 {% bird button on="visible" %}
-  This button loads when scrolled into view
+    This button loads when scrolled into view
 {% endbird %}
 ```
 
@@ -225,11 +225,11 @@ Here's a comparison of how a button component might be used with the current dja
 
 ```htmldjango
 {% bird button %}
-  Click me
+    Click me
 {% endbird %}
 
 <bird:button>
-  Click me
+    Click me
 </bird:button>
 ```
 
@@ -242,12 +242,12 @@ Here's how a component with scoped styles might look in django-bird:
 ```htmldjango
 {# templates/bird/button.html #}
 <button>
-  {{ slot }}
+    {{ slot }}
 </button>
 <style>
-  button {
-    background-color: red;
-  }
+    button {
+        background-color: red;
+    }
 </style>
 ```
 
@@ -255,14 +255,14 @@ You would use this component in your template like this:
 
 ```htmldjango
 <html>
-  <head>
-    {% django_bird_css %}
-  </head>
-  <body>
-    {% bird button %}
-      Click me
-    {% endbird %}
-  </body>
+    <head>
+        {% django_bird_css %}
+    </head>
+    <body>
+        {% bird button %}
+            Click me
+        {% endbird %}
+    </body>
 </html>
 ```
 
@@ -270,20 +270,20 @@ And here's a potential example of how django-bird might compile this to ensure t
 
 ```htmldjango
 <html>
-  <head>
-    <style>
-      #bird-12fdsa33 {
-        button {
-          background-color: red;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <button id="bird-12fdsa33">
-      Click me
-    </button>
-  </body>
+    <head>
+        <style>
+            #bird-12fdsa33 {
+                button {
+                    background-color: red;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <button id="bird-12fdsa33">
+            Click me
+        </button>
+    </body>
 </html>
 ```
 
@@ -298,11 +298,11 @@ Here's how a button component using Tailwind's design system might look in djang
 ```htmldjango
 {# templates/bird/button.html #}
 <button>
-  {{ slot }}
+    {{ slot }}
 </button>
 <style>
-  button {
-    background-color: theme("colors.red.500");
-  }
+    button {
+        background-color: theme("colors.red.500");
+    }
 </style>
 ```
