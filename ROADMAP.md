@@ -71,7 +71,7 @@ To use this component and include its assets in your template, the API might loo
     </head>
     <body>
         {% bird button %}
-        Click me
+            Click me
         {% endbird %}
 
         {% django_bird_js %}
