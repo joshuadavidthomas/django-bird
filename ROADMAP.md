@@ -291,7 +291,7 @@ And here's a potential example of how django-bird might compile this to ensure t
 
 Hot 🔥 take: if you're using Tailwind, you should ditch most of Tailwind's atomic classes and write your styles in a CSS file (shocking, I know!), but process it with Tailwind. This gives you modern CSS power without the atomic class juggling, plus you still get to use Tailwind's awesome design system -- which in my mind is _the_ reason to use Tailwind CSS. I could take or leave the atomic styles, but that design system I cannot develop without.
 
-I'd love for django-bird components to support this workflow, letting you write clean, Tailwind-processed styles right in your components.
+I'd love for bird components to support this workflow, letting you write clean, Tailwind-processed styles right in your components.
 
 Here's how a button component using Tailwind's design system might look in django-bird:
 
