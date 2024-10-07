@@ -11,6 +11,9 @@
 ```{toctree}
 :hidden:
 :maxdepth: 3
+attrs
+slots
+Organization <organization>
 configuration
 ```
 
@@ -27,6 +30,7 @@ apidocs/django_bird/django_bird.rst
 :maxdepth: 2
 :caption: Development
 
+development/roadmap.md
 development/contributing.md
 development/just.md
 Releasing <development/releasing.md>
