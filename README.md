@@ -117,18 +117,18 @@ Why another Django component library? There are already several excellent librar
 - [django-web-components](https://github.com/Xzya/django-web-components)
 - [slippers](https://github.com/mixxorz/slippers)
 
-In particular, django-components is full-featured and will take you far, while django-unicorn offers a novel approach to adding interactivity to Django projects without relying on a full Javascript framework.
+In particular, django-components is full-featured and will take you far, while django-unicorn offers a novel approach to adding interactivity to Django projects without relying on a full JavaScript framework.
 
 > [!NOTE]
-> I also want to mention [django-template-partials](https://github.com/carltongibson/django-template-partials) by Carlton Gibson. While it is not a full component library, it allows you to define reusable inline template chunks, providing a lightweight approach to template reusability in Django.
+> It's also worth mentioning [django-template-partials](https://github.com/carltongibson/django-template-partials) by Carlton Gibson. While not a full component library, it allows you to define reusable chunks of templates in-file and/or inline, providing a lightweight approach to template reusability in Django.
 
 Since I learned about Locality of Behavior in [this essay](https://htmx.org/essays/locality-of-behaviour/) written by the primary developer of HTMX, I've been drawn to it. This principle suggests all code needed to understand a behavior should be in one place. I'm inspired by Svelte's approach to components, where everything needed for the component - styles, scripts, and the main DOM - is in a single file.
 
-Existing libraries offer valuable features, but many focus on Python-side component encapsulation. There is room for exploration in achieving a higher level of encapsulation directly within Django templates. I envisioned a component library where the template could contain all necessary elements - structure, styles, and behavior - in a single file.
+Existing libraries offer valuable features, but many focus on Python-side component encapsulation. I saw an opportunity to explore achieving a higher level of encapsulation directly within Django templates. Imagine a component library where a single template file could contain all necessary elements - structure, styles, and behavior - similar to frameworks like Svelte.
 
-As a developer with strong opinions (sometimes loosely held 😄) about API design, I imagined a component library with a template-centric interface that felt more intuitive to me.
+As a developer with strong opinions (sometimes loosely held 😄) about API design, I found myself at odds with the interfaces of existing libraries. None of them quite matched the template-centric, intuitive API I was looking for in a Django component library.
 
-While I considered contributing to these libraries to incorporate the features and API design I envisioned, or wrapping one to add functionality, I ultimately decided against these approaches for several reasons:
+I initially considered contributing to existing libraries to incorporate these ideas, or even wrapping one to add the functionality I envisioned. However, I ultimately decided to create a new library for several reasons:
 
 1. I didn't want to impose my opinion on anyone else's library or burden them with maintaining features they might not align with.
 2. While existing libraries' licenses might allow for forking or wrapping, I believe it's important to respect the original creators' work, especially for projects maintained by small teams or individual volunteers. Creating a new library avoids potential conflicts or misalignments with the original project's goals.
