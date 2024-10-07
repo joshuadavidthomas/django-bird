@@ -107,6 +107,7 @@ django-bird offers features for creating flexible components, such as:
 For a full overview of the features and configuration options, please refer to the [documentation](https://bird.readthedocs.io).
 
 ## Motivation
+<!-- docs-motivation-begin -->
 
 There are several excellent libraries for creating components in Django:
 
@@ -140,6 +141,7 @@ Initially, I considered contributing to existing libraries or wrapping one to ad
 
 I'm excited and optimistic about django-bird's potential to offer a fresh perspective on component-based development in Django. It can complement the existing ecosystem of libraries, offering developers another option for their project needs.
 
+<!-- docs-motivation-end -->
 See the [ROADMAP](ROADMAP.md) for planned features and future direction of django-bird.
 
 ## License

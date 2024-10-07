@@ -19,6 +19,16 @@ configuration
 
 ```{toctree}
 :hidden:
+:maxdepth: 2
+:caption: Project
+
+project/changelog.md
+project/motivation.md
+project/roadmap.md
+```
+
+```{toctree}
+:hidden:
 :maxdepth: 3
 :caption: API Reference
 
@@ -30,7 +40,6 @@ apidocs/django_bird/django_bird.rst
 :maxdepth: 2
 :caption: Development
 
-development/roadmap.md
 development/contributing.md
 development/just.md
 Releasing <development/releasing.md>
