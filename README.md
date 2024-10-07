@@ -73,7 +73,7 @@ In `button.html`, create a simple HTML button. Use `{{ slot }}` to indicate wher
 ```htmldjango
 {# templates/bird/button.html #}
 <button>
-  {{ slot }}
+    {{ slot }}
 </button>
 ```
 
@@ -81,7 +81,7 @@ To use your component in a Django template, use the `{% bird %}` templatetag. Th
 
 ```htmldjango
 {% bird button %}
-  Click me!
+    Click me!
 {% endbird %}
 ```
 
@@ -89,7 +89,7 @@ django-bird automatically recognizes components in the bird directory, so no man
 
 ```html
 <button>
-  Click me!
+    Click me!
 </button>
 ```
 
@@ -117,7 +117,7 @@ Why another Django component library? There are already several excellent librar
 - [django-web-components](https://github.com/Xzya/django-web-components)
 - [slippers](https://github.com/mixxorz/slippers)
 
-In particular, django-components is full-featured and will take you far and django-unicorn offers a novel approach to adding interactivity to Django projects without relyihng on a full Javascript framework.
+In particular, django-components is full-featured and will take you far, while django-unicorn offers a novel approach to adding interactivity to Django projects without relying on a full Javascript framework.
 
 > [!NOTE]
 > I also want to mention [django-template-partials](https://github.com/carltongibson/django-template-partials) by Carlton Gibson. While it is not a full component library, it allows you to define reusable inline template chunks, providing a lightweight approach to template reusability in Django.
