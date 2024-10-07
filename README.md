@@ -122,7 +122,7 @@ In particular, django-components is full-featured and will take you far, while d
 > [!NOTE]
 > It's also worth mentioning [django-template-partials](https://github.com/carltongibson/django-template-partials) by Carlton Gibson. While not a full component library, it allows you to define reusable chunks of templates in-file and/or inline, providing a lightweight approach to template reusability in Django.
 
-Since I learned about Locality of Behavior from [this essay](https://htmx.org/essays/locality-of-behaviour/) written by the primary developer of HTMX, I've been drawn to it. This principle suggests all code needed to understand a behavior should be in one place. I'm inspired by Svelte's approach to components, where everything needed for the component - styles, scripts, and the main DOM - is in a single file.
+Since I learned about Locality of Behavior from [this essay](https://htmx.org/essays/locality-of-behaviour/) written by the primary developer of HTMX, I've been drawn to it. This principle suggests all code needed to understand a behavior should be in one place.
 
 Existing libraries offer valuable features, but many focus on Python-side component encapsulation. I saw an opportunity to explore achieving a higher level of encapsulation directly within Django templates. Imagine a component library where a single template file could contain all necessary elements - structure, styles, and behavior - similar to frameworks like Svelte.
 
