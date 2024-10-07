@@ -122,7 +122,7 @@ There are already several excellent libraries for creating components in Django:
 In particular, django-components is full-featured and will take you far, while django-unicorn offers a novel approach to adding interactivity to Django projects without a full JavaScript framework.
 
 > [!NOTE]
-> Also worth mentioning is [django-template-partials](https://github.com/carltongibson/django-template-partials) from Carlton Gibson. While not a full component library, it allows you to define reusable template chunks in-file and inline, providing a lightweight approach to template reusability in Django.
+> Also worth mentioning is [django-template-partials](https://github.com/carltongibson/django-template-partials) from Carlton Gibson. While not a full component library, it allows you to define reusable template chunks in a Django template, providing a lightweight approach to template reusability.
 
 These existing libraries offer valuable features, but many focus on Python-side component encapsulation. I saw an opportunity to explore achieving a higher level of encapsulation directly within Django templates.
 
