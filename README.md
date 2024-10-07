@@ -108,7 +108,9 @@ For a full overview of the features and configuration options, please refer to t
 
 ## Motivation
 
-Why another Django component library? There are already several excellent libraries for creating components in Django:
+Why another Django component library?
+
+There are already several excellent libraries for creating components in Django:
 
 - [django-components](https://github.com/EmilStenstrom/django-components)
 - [django-cotton](https://github.com/wrabit/django-cotton)
