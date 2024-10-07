@@ -125,7 +125,7 @@ In particular, django-components is full-featured and will take you far, while d
 
 **So, why another Django component library?**
 
-These existing libraries offer valuable features, but most focus on defining components mostly on the Python-side. I saw an opportunity to explore a different approach to component creation, from directly within Django templates.
+These existing libraries offer valuable features, but most focus on defining components primarily on the Python-side. I saw an opportunity to explore a different approach to component creation, from directly within Django templates.
 
 Since I learned about the Locality of Behavior principle from [this essay](https://htmx.org/essays/locality-of-behaviour/) by HTMX's primary developer, I've been drawn to it. The principle suggests all code needed to understand a behavior should be in one place. Imagine a component library where a single template file could contain all necessary elements - structure, styles, and behavior - for a reusable component, similar to how [Svelte components](https://svelte.dev/docs/svelte-components) are defined, but for Django.
 
