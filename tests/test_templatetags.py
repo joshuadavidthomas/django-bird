@@ -57,31 +57,46 @@ class TestBirdTemplateTag:
         assert node.attrs == expected_attrs
 
     @pytest.mark.parametrize(
-        "component,template,expected",
+        "component,template,context,expected",
         [
             (
                 "<button>Click me</button>",
                 "{% bird button %}Click me{% endbird %}",
+                {},
                 "<button>Click me</button>",
             ),
             (
                 "<button>Click me</button>",
                 "{% bird 'button' %}Click me{% endbird %}",
+                {},
                 "<button>Click me</button>",
             ),
             (
                 "<button>Click me</button>",
                 '{% bird "button" %}Click me{% endbird %}',
+                {},
+                "<button>Click me</button>",
+            ),
+            (
+                "<button>Click me</button>",
+                "{% bird dynamic-name %}Click me{% endbird %}",
+                {"dynamic-name": "button"},
                 "<button>Click me</button>",
             ),
         ],
     )
     def test_rendered_name(
-        self, component, template, expected, create_bird_template, normalize_whitespace
+        self,
+        component,
+        template,
+        context,
+        expected,
+        create_bird_template,
+        normalize_whitespace,
     ):
         create_bird_template("button", component)
         t = Template(template)
-        rendered = t.render(context=Context({}))
+        rendered = t.render(context=Context(context))
         assert normalize_whitespace(rendered) == expected
 
     @pytest.mark.parametrize(
@@ -184,6 +199,29 @@ class TestBirdTemplateTagFutureFeatures:
 
 class TestBirdNode:
     @pytest.mark.parametrize(
+        "name,context,expected",
+        [
+            (
+                "button",
+                {},
+                "button",
+            ),
+            (
+                "dynamic-name",
+                {"dynamic-name": "button"},
+                "button",
+            ),
+        ],
+    )
+    def test_get_component_name(self, name, context, expected, create_bird_template):
+        create_bird_template(name=name, content="<button>Click me</button>")
+        node = BirdNode(name=name, attrs=[], nodelist=None)
+
+        component_name = node.get_component_name(context=Context(context))
+
+        assert component_name == expected
+
+    @pytest.mark.parametrize(
         "sub_dir,filename,component,nodename,expected",
         [
             (
@@ -229,7 +267,7 @@ class TestBirdNode:
         create_bird_template(name=filename, content=component, sub_dir=sub_dir)
         node = BirdNode(name=nodename, attrs=[], nodelist=None)
 
-        template_names = node.get_template_names()
+        template_names = node.get_template_names(node.name)
 
         assert any(expected in template_name for template_name in template_names)
 
@@ -243,7 +281,7 @@ class TestBirdNode:
 
         node = BirdNode(name="button", attrs=[], nodelist=None)
 
-        template_names = node.get_template_names()
+        template_names = node.get_template_names(node.name)
 
         assert any("not_default" in template_name for template_name in template_names)
 

@@ -53,10 +53,18 @@ class BirdNode(template.Node):
 
     @override
     def render(self, context: Context) -> SafeString:
+        component_name = self.get_component_name(context)
         component_context = self.get_component_context_data(context)
-        template_names = self.get_template_names()
+        template_names = self.get_template_names(component_name)
         template = select_template(template_names)
         return template.render(component_context)
+
+    def get_component_name(self, context: Context) -> str:
+        try:
+            name = template.Variable(self.name).resolve(context)
+        except template.VariableDoesNotExist:
+            name = self.name
+        return name
 
     def get_component_context_data(self, context: Context) -> dict[str, Any]:
         rendered_slots = self.render_slots(context)
@@ -114,7 +122,7 @@ class BirdNode(template.Node):
             if not value
         )
 
-    def get_template_names(self):
+    def get_template_names(self, name: str) -> list[str]:
         """
         Generate a list of potential template names for a component.
 
@@ -153,10 +161,10 @@ class BirdNode(template.Node):
         template_names: list[str] = []
 
         for component_dir in app_settings.COMPONENT_DIRS + ["bird"]:
-            name_parts = self.name.split(".")
+            name_parts = name.split(".")
             path_name = "/".join(name_parts)
             potential_names = [
-                f"{component_dir}/{self.name}.html",
+                f"{component_dir}/{name}.html",
                 f"{component_dir}/{path_name}.html",
                 f"{component_dir}/{path_name}/{name_parts[-1]}.html",
                 f"{component_dir}/{path_name}/index.html",
