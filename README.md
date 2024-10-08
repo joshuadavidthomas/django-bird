@@ -122,6 +122,7 @@ Several excellent libraries for creating components in Django exist:
 > Also worth mentioning is [django-template-partials](https://github.com/carltongibson/django-template-partials) from Carlton Gibson. While not a full component library, it allows defining reusable chunks in a Django template, providing a lightweight approach to reusability.
 
 These libraries are excellent in their own right, each solving specific problems in innovative ways: django-components is full-featured and will take most people far with custom components, django-unicorn offers a novel approach to adding interactivity without a full JavaScript framework, and django-cotton has a new way of defining custom components that has me very excited.
+
 **So, why another Django component library?**
 
 Most of the ones above focus on defining components on the Python side, which works for many use cases. For those focusing on the HTML and Django template side, they have made significant strides in improving the developer experience. However, as a developer with strong opinions (sometimes loosely held 😄) about API design, I wanted a different approach.
