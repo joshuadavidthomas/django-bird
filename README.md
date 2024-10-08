@@ -73,7 +73,7 @@ In `button.html`, create a simple HTML button. Use `{{ slot }}` to indicate wher
 ```htmldjango
 {# templates/bird/button.html #}
 <button>
-  {{ slot }}
+    {{ slot }}
 </button>
 ```
 
@@ -81,7 +81,7 @@ To use your component in a Django template, use the `{% bird %}` templatetag. Th
 
 ```htmldjango
 {% bird button %}
-  Click me!
+    Click me!
 {% endbird %}
 ```
 
@@ -89,7 +89,7 @@ django-bird automatically recognizes components in the bird directory, so no man
 
 ```html
 <button>
-  Click me!
+    Click me!
 </button>
 ```
 
@@ -108,240 +108,37 @@ For a full overview of the features and configuration options, please refer to t
 
 ## Motivation
 
-## Roadmap
+<!-- docs-motivation-begin -->
+Several excellent libraries for creating components in Django exist:
 
-Below are a bunch of features I'd like to bring to django-bird.
+- [django-components](https://github.com/EmilStenstrom/django-components)
+- [django-cotton](https://github.com/wrabit/django-cotton)
+- [django-unicorn](https://github.com/adamghill/django-unicorn)
+- [django-viewcomponent](https://github.com/rails-inspire-django/django-viewcomponent)
+- [django-web-components](https://github.com/Xzya/django-web-components)
+- [slippers](https://github.com/mixxorz/slippers)
 
-I have included code snippets where applicable, but they are back-of-the-napkin sketches of potential APIs -- subject to change if and when the feature is actually introduced.
+In particular, django-components is full-featured and will take you far, while django-unicorn offers a novel approach to adding interactivity to Django projects without a full JavaScript framework.
 
-### Static Asset Collection
+> [!NOTE]
+> Also worth mentioning is [django-template-partials](https://github.com/carltongibson/django-template-partials) from Carlton Gibson. While not a full component library, it allows defining reusable chunks in a Django template, providing a lightweight approach to reusability.
 
-This is table stakes for a modern Django template component library. The goal is to allow you to define CSS and JS for a component and have it loaded automatically when you use that component.
+**So, why another Django component library?**
 
-Unlike django-components, which uses the Django forms library pattern with a `class Media` declaration, the idea is to allow defining styles and scripts within a single component file, or adjacent to a component. django-bird would then collect and compile these assets, streamlining the whole process.
+The libraries mentioned above are excellent in their own right, each solving specific problems in innovative ways. Most focus on defining components on the Python side, which works for many use cases. For those focusing on the HTML and Django template side, they have made significant strides in improving the developer experience. However, as a developer with strong opinions (sometimes loosely held 😄) about API design, I wanted a different approach.
 
-Here's a potential example of how you might define a button component with inline styles and scripts:
+After watching Caleb Porzio's [2024 Laracon US talk](https://www.youtube.com/watch?v=31pBMi0UdYE) introducing [Flux](https://fluxui.dev), I could not shake the desire to bring something similar to Django. While there are plenty of libraries such as Shoelace or UI kits designed for use in any web application, and tools like SaaS Pegasus for whole Django project generation, I couldn't find a well-polished component library solely dedicated to Django templates with the level of polish that Flux has for Laravel.
 
-```htmldjango
-{# templates/bird/button.html #}
-<button>
-  {{ slot }}
-</button>
-<style>
-  button {
-    background-color: red;
-    padding: 10px 20px;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-</style>
-<script>
-  $bird.addEventListener('click', () => {
-    alert('This specific button was clicked!');
-  });
-</script>
-```
+Initially, I considered contributing to existing libraries or wrapping one to add the functionality I wanted. However, I decided to create a new library for several reasons:
 
-The `$bird` variable in the JavaScript is a potential special identifier that could be used to scope the script to the specific component instance.
+1. I wanted to respect the hard work of existing maintainers and avoid burdening them with features that may not align with their project's goals.
+2. While wrapping an existing library might have been technically feasible and okay license-wise, it didn't feel right to build an entire component system on top of someone else's work, especially for a project I might want to develop independently in the future.
+3. Building something new gives me the freedom to fully control the direction and architecture, without being constrained by design choices made in other libraries.
+4. Healthy competition among libraries helps drive innovation, and I see this as an opportunity to contribute to the broader Django ecosystem.
+5. Recent libraries like [django-cotton](https://github.com/wrabit/django-cotton) and [dj-angles](https://github.com/adamghill/dj-angles) are pushing Django templates in new and exciting directions and I wanted to join in on the fun. 😄
+<!-- docs-motivation-end -->
 
-Alternatively, you could potentially separate the styles and scripts into their own files:
-
-```htmldjango
-{# templates/bird/button.html #}
-<button>
-  {{ slot }}
-</button>
-```
-
-```css
-/* templates/bird/button.css */
-button {
-  background-color: red;
-  padding: 10px 20px;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-```
-
-```javascript
-// templates/bird/button.js
-$bird.addEventListener('click', () => {
-  alert('This specific button was clicked!');
-});
-```
-
-To use this component and include its assets in your template, the API might look something like this:
-
-```htmldjango
-<html>
-  <head>
-    {% django_bird_css %}
-  </head>
-  <body>
-    {% bird button %}
-      Click me
-    {% endbird %}
-
-    {% django_bird_js %}
-  </body>
-</html>
-```
-
-In this conceptual setup, `{% django_bird_css %}` and `{% django_bird_js %}` would automatically include the collected and compiled CSS and JavaScript for all components used in the template.
-
-To give you an idea of what the final compiled output might look like, here's a hypothetical example of the HTML that could be generated:
-
-```htmldjango
-<html>
-  <head>
-    <style>
-      [data-bird-id="button-1"] {
-        background-color: red;
-        padding: 10px 20px;
-        color: white;
-        border: none;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <button data-bird-id="button-1">
-      Click me
-    </button>
-
-    <script>
-      (function() {
-        const $bird = document.querySelector('[data-bird-id="button-1"]');
-        $bird.addEventListener('click', () => {
-          alert('This specific button was clicked!');
-        });
-      })();
-    </script>
-  </body>
-</html>
-```
-
-### Component Islands
-
-Ever since I tried Astro and discovered their concept of "Islands" (which they popularized but didn't invent), I've wanted to bring this to Django.
-
-If you're new to component islands, think of it as fancy lazy-loading. You can set different triggers for when a component's JS assets load (on page load, on idle, on scroll into view). When that event fires, only the necessary assets are loaded.
-
-There's a neat library from the 11ty team called is-land that could work well here. I'll probably start by integrating it directly, but after looking at their source code, I might end up bringing it in and customizing it for django-bird's specific needs.
-
-Here's how the API for component islands might look in django-bird:
-
-```htmldjango
-{% bird button on="load" %}
-  This button loads... on load
-{% endbird %}
-
-{% bird button on="idle" %}
-  This button loads after page load
-{% endbird %}
-
-{% bird button on="visible" %}
-  This button loads when scrolled into view
-{% endbird %}
-```
-
-In this example, we're using an `on` attribute to specify when each button's JavaScript should be loaded and executed. This approach could significantly improve page load times and performance, especially for pages with many interactive components.
-
-### Custom HTML Tag
-
-I'm a huge fan of the approaches taken by libraries like [django-cotton](https://github.com/wrabit/django-cotton), [dj-angles](https://github.com/adamghill/dj-angles), and Laravel's [Flux](https://fluxui.dev). They let you use custom HTML-like elements that compile down to native templatetags during loading.
-
-This gives you the full power of Django's template language, but in a much nicer package. Compare [this django-allauth template](https://github.com/pennersr/django-allauth/blob/f03ff4dd48e5b1680a57dca56617bf94c928f2cf/allauth/templates/account/email.html) with [these django-cotton examples](https://github.com/wrabit/django-cotton#walkthrough). The allauth template, while powerful, is a mess of tags that barely resembles HTML. The cotton templates, on the other hand, look like clean, custom web elements.
-
-After working with devs from the JavaScript world and using a handful of JavaScript frameworks myself, Django templates can feel ancient compared to JSX. A custom HTML tag approach could offer a more familiar and readable syntax for component-based development in Django, bridging the gap between traditional Django templates and modern frontend practices.
-
-Here's a comparison of how a button component might be used with the current django-bird syntax and a potential custom HTML tag syntax:
-
-```htmldjango
-{% bird button %}
-  Click me
-{% endbird %}
-
-<bird:button>
-  Click me
-</bird:button>
-```
-
-### Scoped CSS Styles
-
-I love how Svelte and other JS frameworks let you use a simple `<style>` tag with broad selectors (`p` instead of `.card-body`, `button` instead of `.submit-btn`), then scope those styles to just that component. While I'm a Tailwind CSS fan, having this escape hatch for quick style tweaks would be fantastic.
-
-Here's how a component with scoped styles might look in django-bird:
-
-```htmldjango
-{# templates/bird/button.html #}
-<button>
-  {{ slot }}
-</button>
-<style>
-  button {
-    background-color: red;
-  }
-</style>
-```
-
-You would use this component in your template like this:
-
-```htmldjango
-<html>
-  <head>
-    {% django_bird_css %}
-  </head>
-  <body>
-    {% bird button %}
-      Click me
-    {% endbird %}
-  </body>
-</html>
-```
-
-And here's a potential example of how django-bird might compile this to ensure the styles are scoped to just this component:
-
-```htmldjango
-<html>
-  <head>
-    <style>
-      #bird-12fdsa33 {
-        button {
-          background-color: red;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <button id="bird-12fdsa33">
-      Click me
-    </button>
-  </body>
-</html>
-```
-
-### Integration with Tailwind CSS
-
-Hot 🔥 take: if you're using Tailwind, you should ditch most of Tailwind's atomic classes and write your styles in a CSS file (shocking, I know!), but process it with Tailwind. This gives you modern CSS power without the atomic class juggling, plus you still get to use Tailwind's awesome design system -- which in my mind is _the_ reason to use Tailwind CSS. I could take or leave the atomic styles, but that design system I cannot develop without.
-
-I'd love for django-bird components to support this workflow, letting you write clean, Tailwind-processed styles right in your components.
-
-Here's how a button component using Tailwind's design system might look in django-bird:
-
-```htmldjango
-{# templates/bird/button.html #}
-<button>
-  {{ slot }}
-</button>
-<style>
-  button {
-    background-color: theme("colors.red.500");
-  }
-</style>
-```
+See the [ROADMAP](ROADMAP.md) for planned features and future direction of django-bird.
 
 ## License
 

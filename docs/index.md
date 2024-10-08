@@ -11,7 +11,20 @@
 ```{toctree}
 :hidden:
 :maxdepth: 3
+attrs
+slots
+Organization <organization>
 configuration
+```
+
+```{toctree}
+:hidden:
+:maxdepth: 2
+:caption: Project
+
+project/changelog.md
+project/motivation.md
+project/roadmap.md
 ```
 
 ```{toctree}
