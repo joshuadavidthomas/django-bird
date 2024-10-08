@@ -125,23 +125,17 @@ In particular, django-components is full-featured and will take you far, while d
 
 **So, why another Django component library?**
 
-Since I learned about the Locality of Behavior principle from [this essay](https://htmx.org/essays/locality-of-behaviour/) by HTMX's primary developer, I've been drawn to it. The principle suggests all code needed to understand a behavior should be in one place. Imagine a component library where a single template file could contain all necessary elements - structure, styles, and behavior - for a reusable component, like [Svelte components](https://svelte.dev/docs/svelte-components), but for Django.
+The libraries mentioned above are excellent in their own right, each solving specific problems in innovative ways. Most focus on defining components on the Python side, which works for many use cases. For those focusing on the HTML and Django template side, they have made significant strides in improving the developer experience. However, as a developer with strong opinions (sometimes loosely held 😄) about API design, I wanted a different approach.
 
-The libraries mentioned above are excellent in their own right, each solving specific problems in innovative ways. Most focus on defining components on the Python side, which works for many use cases. For those focusing on the HTML and Django template side, they have made significant strides in improving the developer experience.
-
-However, as a developer with strong opinions (sometimes loosely held 😄) about API design, I wanted a different approach. I wanted to create a component library with a template-centric interface that felt more intuitive to me - one that embraced the single-file approach and incorporated Locality of Behavior within Django templates.
+After watching Caleb Porzio's [2024 Laracon US talk](https://www.youtube.com/watch?v=31pBMi0UdYE) introducing [Flux](https://fluxui.dev), I could not shake the desire to bring something similar to Django. While there are plenty of libraries such as Shoelace or UI kits designed for use in any web application, and tools like SaaS Pegasus for whole Django project generation, I couldn't find a well-polished component library solely dedicated to Django templates with the level of polish that Flux has for Laravel.
 
 Initially, I considered contributing to existing libraries or wrapping one to add the functionality I wanted. However, I decided to create a new library for several reasons:
 
-1. I didn't want to impose my opinion on anyone else's library or burden them with maintaining unwanted features.
-2. While existing libraries' licenses allow for forking or wrapping, it's important to respect the original creators' work, especially for projects actively maintained by small teams or individual volunteers. Creating a new library avoids potential conflicts or misalignment with the original project's goals.
-3. A little healthy competition among libraries can drive innovation, benefiting the wider Django ecosystem.
-4. Recent libraries like [django-cotton](https://github.com/wrabit/django-cotton) and [dj-angles](https://github.com/adamghill/dj-angles) are pushing Django templates in new and exciting directions and I wanted to join in on the fun. 😄
-
-   I have also been inspired by developments outside Django. I have already mentioned Svelte's components, but there's also [Flux](https://fluxui.dev), a new Laravel component library by Caleb Porzio (creator of Livewire and Alpine.js). After watching [his Laracon US 2024 talk](https://www.youtube.com/watch?v=31pBMi0UdYE), I could not shake the desire to bring similar simplicity to Django templates.
-5. Building from scratch lets me design the internals flexibly, experiment with new ideas and approaches for Django components without being constrained by existing architectures, and implement and test various concepts, iterating on what works best.
-
-I'm excited about django-bird's potential to offer a different perspective on component-based development in Django. It can complement existing library options, offering developers another choice for their project's needs.
+1. I wanted to respect the hard work of existing maintainers and avoid burdening them with features that may not align with their project's goals.
+2. While wrapping an existing library might have been technically feasible and okay license-wise, it didn't feel right to build an entire component system on top of someone else's work, especially for a project I might want to develop independently in the future.
+3. Building something new gives me the freedom to fully control the direction and architecture, without being constrained by design choices made in other libraries.
+4. Healthy competition among libraries helps drive innovation, and I see this as an opportunity to contribute to the broader Django ecosystem.
+5. Recent libraries like [django-cotton](https://github.com/wrabit/django-cotton) and [dj-angles](https://github.com/adamghill/dj-angles) are pushing Django templates in new and exciting directions and I wanted to join in on the fun. 😄
 <!-- docs-motivation-end -->
 
 See the [ROADMAP](ROADMAP.md) for planned features and future direction of django-bird.
