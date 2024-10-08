@@ -193,7 +193,7 @@ Ever since I tried Astro and discovered their concept of "Islands" (which they p
 
 If you're new to component islands, think of it as fancy lazy-loading. You can set different triggers for when a component's JS assets load (on page load, on idle, on scroll into view). When that event fires, only the necessary assets are loaded.
 
-There's a neat library from the 11ty team called is-land that could work well here. I'll probably start by integrating it directly, but after looking at their source code, I might end up bringing it in and customizing it for django-bird's specific needs.
+There's a neat library from the 11ty team called [is-land](https://github.com/11ty/is-land) that could work well here. It has been a while since it has had any updates, which is not necessarily a bad thing. The 11ty team may consider it feature-complete, or perhaps priorities have shifted? Either way I'll probably start by using the library as-is, but I may explore bringing the source directly in and customizing it for django-bird's specific needs.
 
 Here's how the API for component islands might look in django-bird:
 
