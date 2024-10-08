@@ -81,7 +81,7 @@ To use this component and include its assets in your template, the API might loo
 
 In this conceptual setup, `{% django_bird_css %}` and `{% django_bird_js %}` would automatically include the collected and compiled CSS and JavaScript for all components used in the template.
 
-To give you an idea of what the final compiled output might look like, here's a hypothetical example of the HTML that could be generated:
+To give you an idea of what the final compiled output might look like, here's a hypothetical example of the HTML that could be generated, with the CSS [scoped](#scoped-css-styles) to just the button component:
 
 ```htmldjango
 <html>
@@ -272,18 +272,20 @@ And here's a potential example of how django-bird might compile this to ensure t
 <html>
     <head>
         <style>
-            #bird-12fdsa33 {
+            [data-bird-id="button-1"] {
                 background-color: red;
             }
         </style>
     </head>
     <body>
-        <button id="bird-12fdsa33">
+        <button data-bird-id="button-1">
             Click me
         </button>
     </body>
 </html>
 ```
+
+Note: this has significant overlap with [static asset collection](#static-asset-collection).
 
 ## CSS Styles Processed with Tailwind CSS
 
