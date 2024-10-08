@@ -118,14 +118,14 @@ Several excellent libraries for creating components in Django exist:
 - [django-web-components](https://github.com/Xzya/django-web-components)
 - [slippers](https://github.com/mixxorz/slippers)
 
-In particular, django-components is full-featured and will take you far, while django-unicorn offers a novel approach to adding interactivity to Django projects without a full JavaScript framework.
-
 > [!NOTE]
 > Also worth mentioning is [django-template-partials](https://github.com/carltongibson/django-template-partials) from Carlton Gibson. While not a full component library, it allows defining reusable chunks in a Django template, providing a lightweight approach to reusability.
 
 **So, why another Django component library?**
 
-The libraries mentioned above are excellent in their own right, each solving specific problems in innovative ways. Most focus on defining components on the Python side, which works for many use cases. For those focusing on the HTML and Django template side, they have made significant strides in improving the developer experience. However, as a developer with strong opinions (sometimes loosely held 😄) about API design, I wanted a different approach.
+The libraries mentioned above are excellent in their own right, each solving specific problems in innovative ways: django-components is full-featured and will take most people far with custom components, django-unicorn offers a novel approach to adding interactivity without a full JavaScript framework, and django-cotton has a new way of defining custom components that has me very excited.
+
+Most focus on defining components on the Python side, which works for many use cases. For those focusing on the HTML and Django template side, they have made significant strides in improving the developer experience. However, as a developer with strong opinions (sometimes loosely held 😄) about API design, I wanted a different approach.
 
 After watching Caleb Porzio's [2024 Laracon US talk](https://www.youtube.com/watch?v=31pBMi0UdYE) introducing [Flux](https://fluxui.dev), I could not shake the desire to bring something similar to Django. While there are plenty of libraries such as Shoelace or UI kits designed for use in any web application, and tools like SaaS Pegasus for whole Django project generation, I couldn't find a well-polished component library solely dedicated to Django templates with the level of polish that Flux has for Laravel.
 
