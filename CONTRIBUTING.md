@@ -2,7 +2,7 @@
 
 All contributions are welcome! Besides code contributions, this includes things like documentation improvements, bug reports, and feature requests.
 
-You should first check if there is a [GitHub issue](https://github.com/joshuadavidthomas/bird/issues) already open or related to what you would like to contribute. If there is, please comment on that issue to let others know you are working on it. If there is not, please open a new issue to discuss your contribution.
+You should first check if there is a [GitHub issue](https://github.com/joshuadavidthomas/django-bird/issues) already open or related to what you would like to contribute. If there is, please comment on that issue to let others know you are working on it. If there is not, please open a new issue to discuss your contribution.
 
 Not all contributions need to start with an issue, such as typo fixes in documentation or version bumps to Python or Django that require no internal code changes, but generally, it is a good idea to open an issue first.
 
@@ -20,7 +20,7 @@ python -m venv venv
 source venv/bin/activate
 ```
 
-3. Install `bird` and the `dev` dependencies in editable mode:
+3. Install `django-bird` and the `dev` dependencies in editable mode:
 
 ```shell
 python -m pip install --editable '.[dev]'
