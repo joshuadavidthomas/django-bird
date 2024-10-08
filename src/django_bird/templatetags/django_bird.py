@@ -31,6 +31,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
     # {% bird 'name' %}
     # {% bird "name" %}
     name = bits[1].strip("'\"")
+    print(f"{name=}")
     attrs = bits[2:]
 
     # self-closing tag
