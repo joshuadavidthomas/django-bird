@@ -81,6 +81,8 @@ class BirdNode(template.Node):
             if isinstance(node, SlotNode):
                 active_slot = node.name
                 contents.setdefault(active_slot, [])
+            else:
+                active_slot = self.default_slot
 
             rendered_content = node.render(context)
             contents[active_slot].append(rendered_content)

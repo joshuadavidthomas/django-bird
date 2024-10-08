@@ -127,6 +127,49 @@ class TestBirdTemplateTag:
         rendered = template.render(context=Context({}))
         assert rendered == "<img src='image' />"
 
+    @pytest.mark.parametrize(
+        "component,template,context,expected",
+        [
+            (
+                "<button>{{ slot }}</button>",
+                "{% bird button %}Click me{% endbird %}",
+                {},
+                "<button>Click me</button>",
+            ),
+            (
+                "<button>{% bird:slot %}{% endbird:slot %}</button>",
+                "{% bird button %}Click me{% endbird %}",
+                {},
+                "<button>Click me</button>",
+            ),
+            (
+                "<button>{% bird:slot default %}{% endbird:slot %}</button>",
+                "{% bird button %}Click me{% endbird %}",
+                {},
+                "<button>Click me</button>",
+            ),
+            (
+                "<button><span>{% bird:slot leading-icon %}{% endbird:slot %}</span>{{ slot }}</button>",
+                "{% bird button %}{% bird:slot leading-icon %}Icon here{% endbird:slot %}Click me{% endbird %}",
+                {},
+                "<button><span>Icon here</span>Click me</button>",
+            ),
+        ],
+    )
+    def test_with_slots(
+        self,
+        component,
+        template,
+        context,
+        expected,
+        create_bird_template,
+        normalize_whitespace,
+    ):
+        create_bird_template("button", component)
+        t = Template(template)
+        rendered = t.render(context=Context(context))
+        assert normalize_whitespace(rendered) == expected
+
 
 @pytest.mark.xfail(reason="Feature not implemented yet")
 class TestBirdTemplateTagFutureFeatures:
