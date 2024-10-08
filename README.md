@@ -109,7 +109,7 @@ For a full overview of the features and configuration options, please refer to t
 ## Motivation
 
 <!-- docs-motivation-begin -->
-There are several excellent libraries for creating components in Django:
+Several excellent libraries for creating components in Django exist:
 
 - [django-components](https://github.com/EmilStenstrom/django-components)
 - [django-cotton](https://github.com/wrabit/django-cotton)
@@ -121,25 +121,27 @@ There are several excellent libraries for creating components in Django:
 In particular, django-components is full-featured and will take you far, while django-unicorn offers a novel approach to adding interactivity to Django projects without a full JavaScript framework.
 
 > [!NOTE]
-> Also worth mentioning is [django-template-partials](https://github.com/carltongibson/django-template-partials) from Carlton Gibson. While not a full component library, it allows you to define reusable template chunks in a Django template, providing a lightweight approach to template reusability.
+> Also worth mentioning is [django-template-partials](https://github.com/carltongibson/django-template-partials) from Carlton Gibson. While not a full component library, it allows defining reusable chunks in a Django template, providing a lightweight approach to reusability.
 
 **So, why another Django component library?**
 
-These existing libraries offer valuable features, but most focus on defining components primarily on the Python-side. I saw an opportunity to explore a different approach to component creation, from directly within Django templates.
+Since I learned about the Locality of Behavior principle from [this essay](https://htmx.org/essays/locality-of-behaviour/) by HTMX's primary developer, I've been drawn to it. The principle suggests all code needed to understand a behavior should be in one place. Imagine a component library where a single template file could contain all necessary elements - structure, styles, and behavior - for a reusable component, like [Svelte components](https://svelte.dev/docs/svelte-components), but for Django.
 
-Since I learned about the Locality of Behavior principle from [this essay](https://htmx.org/essays/locality-of-behaviour/) by HTMX's primary developer, I've been drawn to it. The principle suggests all code needed to understand a behavior should be in one place. Imagine a component library where a single template file could contain all necessary elements - structure, styles, and behavior - for a reusable component, similar to how [Svelte components](https://svelte.dev/docs/svelte-components) are defined, but for Django.
+The libraries mentioned above are excellent in their own right, each solving specific problems in innovative ways. Most focus on defining components on the Python side, which works for many use cases. For those focusing on the HTML and Django template side, they have made significant strides in improving the developer experience.
 
-Initially, I thought about contributing to existing libraries or wrapping one to add the functionality I wanted. However, I decided to create a new library for several reasons:
+However, as a developer with strong opinions (sometimes loosely held 😄) about API design, I wanted a different approach. I wanted to create a component library with a template-centric interface that felt more intuitive to me - one that embraced the single-file approach and incorporated Locality of Behavior within Django templates.
+
+Initially, I considered contributing to existing libraries or wrapping one to add the functionality I wanted. However, I decided to create a new library for several reasons:
 
 1. I didn't want to impose my opinion on anyone else's library or burden them with maintaining unwanted features.
 2. While existing libraries' licenses allow for forking or wrapping, it's important to respect the original creators' work, especially for projects actively maintained by small teams or individual volunteers. Creating a new library avoids potential conflicts or misalignment with the original project's goals.
-3. A little bit of healthy competition among libraries can drive innovation, benefiting the wider Django ecosystem.
-4. Recent libraries like [django-cotton](https://github.com/wrabit/django-cotton) and [dj-angles](https://github.com/adamghill/dj-angles) are pushing Django templates in exciting directions. I've also been inspired by developments outside Django. I've already mentioned Svelte's components, but there's also [Flux](https://fluxui.dev), a new Laravel component library by Caleb Porzio (creator of Livewire and Alpine.js). After watching [his Laracon US 2024 talk](https://www.youtube.com/watch?v=31pBMi0UdYE), I could not shake the desire to bring similar simplicity to Django templates.
+3. A little healthy competition among libraries can drive innovation, benefiting the wider Django ecosystem.
+4. Recent libraries like [django-cotton](https://github.com/wrabit/django-cotton) and [dj-angles](https://github.com/adamghill/dj-angles) are pushing Django templates in new and exciting directions. I have been inspired by developments outside Django. I have already mentioned Svelte's components, but there's also [Flux](https://fluxui.dev), a new Laravel component library by Caleb Porzio (creator of Livewire and Alpine.js). After watching [his Laracon US 2024 talk](https://www.youtube.com/watch?v=31pBMi0UdYE), I could not shake the desire to bring similar simplicity to Django templates.
 5. Building from scratch lets me design the internals flexibly, experiment with new ideas and approaches for Django components without being constrained by existing architectures, and implement and test various concepts, iterating on what works best.
 
-I'm excited about django-bird's potential to offer a different perspective on component-based development in Django. It can complement the existing options for libraries, offering developers another choice for their project's needs.
-
+I'm excited about django-bird's potential to offer a different perspective on component-based development in Django. It can complement existing library options, offering developers another choice for their project's needs.
 <!-- docs-motivation-end -->
+
 See the [ROADMAP](ROADMAP.md) for planned features and future direction of django-bird.
 
 ## License
