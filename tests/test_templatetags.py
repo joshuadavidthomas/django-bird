@@ -228,28 +228,40 @@ class TestSlotsTemplateTag:
         "template,context,expected",
         [
             ("{{ slot }}", {"slot": "test"}, "test"),
-            ("{% slot %}{% endslot %}", {"slot": "test"}, "test"),
-            ("{% slot default %}{% endslot %}", {"slot": "test"}, "test"),
-            ("{% slot 'default' %}{% endslot %}", {"slot": "test"}, "test"),
-            ('{% slot "default" %}{% endslot %}', {"slot": "test"}, "test"),
-            ("{% slot name='default' %}{% endslot %}", {"slot": "test"}, "test"),
-            ('{% slot name="default" %}{% endslot %}', {"slot": "test"}, "test"),
-            ("{% slot name='not-default' %}{% endslot %}", {"slot": "test"}, ""),
+            ("{% bird:slot %}{% endbird:slot %}", {"slot": "test"}, "test"),
+            ("{% bird:slot default %}{% endbird:slot %}", {"slot": "test"}, "test"),
+            ("{% bird:slot 'default' %}{% endbird:slot %}", {"slot": "test"}, "test"),
+            ('{% bird:slot "default" %}{% endbird:slot %}', {"slot": "test"}, "test"),
             (
-                "{% slot outer %}Outer {% slot inner %}Inner{% endslot %} Content{% endslot %}",
+                "{% bird:slot name='default' %}{% endbird:slot %}",
+                {"slot": "test"},
+                "test",
+            ),
+            (
+                '{% bird:slot name="default" %}{% endbird:slot %}',
+                {"slot": "test"},
+                "test",
+            ),
+            (
+                "{% bird:slot name='not-default' %}{% endbird:slot %}",
+                {"slot": "test"},
+                "",
+            ),
+            (
+                "{% bird:slot outer %}Outer {% bird:slot inner %}Inner{% endbird:slot %} Content{% endbird:slot %}",
                 {"slots": {"outer": "Replaced Content"}},
                 "Replaced Content",
             ),
             (
-                "{% slot outer %}Outer {% slot inner %}Inner{% endslot %} Content{% endslot %}",
+                "{% bird:slot outer %}Outer {% bird:slot inner %}Inner{% endbird:slot %} Content{% endbird:slot %}",
                 {"slots": {"inner": "Replaced Content"}},
                 "Outer Replaced Content Content",
             ),
             (
-                "{% slot outer %}Outer {% slot inner %}Inner Default{% endslot %} Content{% endslot %}",
+                "{% bird:slot outer %}Outer {% bird:slot inner %}Inner Default{% endbird:slot %} Content{% endbird:slot %}",
                 {
                     "slots": {
-                        "outer": "Replaced {% slot inner %}{% endslot %} Outer",
+                        "outer": "Replaced {% bird:slot inner %}{% endbird:slot %} Outer",
                         "inner": "Replaced Inner",
                     },
                 },
@@ -258,7 +270,7 @@ class TestSlotsTemplateTag:
             (
                 "{{ slot }}",
                 {
-                    "slot": "Replaced {% slot inner %}{% endslot %} Outer",
+                    "slot": "Replaced {% bird:slot inner %}{% endbird:slot %} Outer",
                     "slots": {
                         "inner": "Replaced Inner",
                     },
@@ -266,37 +278,37 @@ class TestSlotsTemplateTag:
                 "Replaced Replaced Inner Outer",
             ),
             (
-                "{% slot %}{% endslot %}",
+                "{% bird:slot %}{% endbird:slot %}",
                 {},
                 "",
             ),
             (
-                "{% slot %}Default content{% endslot %}",
+                "{% bird:slot %}Default content{% endbird:slot %}",
                 {},
                 "Default content",
             ),
             (
-                "{% slot 'mal formed' %}{% endslot %}",
+                "{% bird:slot 'mal formed' %}{% endbird:slot %}",
                 {"slots": {"mal formed": "content"}},
                 "content",
             ),
             (
-                "{% slot CaseSensitive %}{% endslot %}",
+                "{% bird:slot CaseSensitive %}{% endbird:slot %}",
                 {"slots": {"CaseSensitive": "Upper", "casesensitive": "Lower"}},
                 "Upper",
             ),
             (
-                "{% slot %}{% endslot %}",
+                "{% bird:slot %}{% endbird:slot %}",
                 {"slots": {"default": 42}},
                 "42",
             ),
             (
-                "{% slot %}{% endslot %}",
+                "{% bird:slot %}{% endbird:slot %}",
                 {"slots": {"default": "<b>Bold</b>"}},
                 "<b>Bold</b>",
             ),
             (
-                "{% slot unicode_slot %}{% endslot %}",
+                "{% bird:slot unicode_slot %}{% endbird:slot %}",
                 {"slots": {"unicode_slot": "こんにちは"}},
                 "こんにちは",
             ),
@@ -310,4 +322,4 @@ class TestSlotsTemplateTag:
 
     def test_too_many_args(self):
         with pytest.raises(TemplateSyntaxError):
-            Template("{% slot too many args %}{% endslot %}")
+            Template("{% bird:slot too many args %}{% endbird:slot %}")

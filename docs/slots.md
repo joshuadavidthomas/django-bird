@@ -9,8 +9,8 @@ Every component in django-bird has a default slot.
 There are three ways to reference this default slot in your component template:
 
 1. `{{ slot }}`
-2. `{% slot %}{% endslot %}`
-3. `{% slot default %}{% endslot %}`
+2. `{% bird:slot %}{% endbird:slot %}`
+3. `{% bird:slot default %}{% endbird:slot %}`
 
 These are all equivalent and will render the content placed between the opening and closing tags of your component when it's used. Let's look at each approach:
 
@@ -24,25 +24,25 @@ Using `{{ slot }}`:
 </button>
 ```
 
-Alternatively, you can use `{% slot %}{% endslot %}`:
+Alternatively, you can use `{% bird:slot %}{% endbird:slot %}`:
 
 ```{code-block} htmldjango
 :caption: templates/bird/button.html
 
 <button>
-    {% slot %}
-    {% endslot %}
+    {% bird:slot %}
+    {% endbird:slot %}
 </button>
 ```
 
-Or, you can explicitly name the default slot with `{% slot default %}{% endslot %}`:
+Or, you can explicitly name the default slot with `{% bird:slot default %}{% endbird:slot %}`:
 
 ```{code-block} htmldjango
 :caption: templates/bird/button.html
 
 <button>
-    {% slot default %}
-    {% endslot %}
+    {% bird:slot default %}
+    {% endbird:slot %}
 </button>
 ```
 
@@ -76,8 +76,8 @@ Here's a basic example of a component with a named slot:
 :caption: templates/bird/button.html
 
 <button>
-    {% slot leading-icon %}
-    {% endslot %}
+    {% bird:slot leading-icon %}
+    {% endbird:slot %}
     {{ slot }}  {# This is the default slot #}
 </button>
 ```
@@ -86,9 +86,9 @@ To use this component with a named slot:
 
 ```htmldjango
 {% bird button %}
-    {% slot leading-icon %}
+    {% bird:slot leading-icon %}
         <i class="icon-star"></i>
-    {% endslot %}
+    {% endbird:slot %}
     Click me  {# This content goes into the default slot #}
 {% endbird %}
 ```
@@ -114,8 +114,8 @@ Here's an example of how you might use this:
 <button{% if slots.leading-icon %} class="with-icon"{% endif %}>
     {% if slots.leading-icon %}
         <span class="icon">
-            {% slot leading-icon %}
-            {% endslot %}
+            {% bird:slot leading-icon %}
+            {% endbird:slot %}
         </span>
     {% endif %}
 
@@ -143,9 +143,9 @@ But if you include the `leading-icon` slot:
 
 ```htmldjango
 {% bird button %}
-    {% slot leading-icon %}
+    {% bird:slot leading-icon %}
         <i class="icon-star"></i>
-    {% endslot %}
+    {% endbird:slot %}
 
     Click me
 {% endbird %}
@@ -173,8 +173,8 @@ You can define as many named slots as you need in a component. Here's an example
 <div class="card">
     {% if slots.header %}
         <div class="card-header">
-            {% slot header %}
-            {% endslot %}
+            {% bird:slot header %}
+            {% endbird:slot %}
         </div>
     {% endif %}
 
@@ -192,7 +192,7 @@ You can define as many named slots as you need in a component. Here's an example
 
 Note the different approaches used here:
 
-1. For the `header`, we use the `{% slot header %}{% endslot %}` syntax.
+1. For the `header`, we use the `{% bird:slot header %}{% endbird:slot %}` syntax.
 2. For the main content, we use the `{{ slot }}` syntax for the default slot.
 3. For the `footer`, we directly reference `{{ slots.footer }}`.
 
@@ -202,15 +202,15 @@ This allows for very flexible usage of the component:
 
 ```htmldjango
 {% bird card %}
-    {% slot header %}
+    {% bird:slot header %}
         Card Title
-    {% endslot %}
+    {% endbird:slot %}
 
     This is the main content of the card.
 
-    {% slot footer %}
+    {% bird:slot footer %}
         Card Footer
-    {% endslot %}
+    {% endbird:slot %}
 {% endbird %}
 ```
 
@@ -242,15 +242,15 @@ You can provide default content for both named slots and the default slot that w
 :caption: templates/bird/button.html
 
 <button>
-    {% slot leading-icon %}
+    {% bird:slot leading-icon %}
         <span>
             Default icon
         </span>
-    {% endslot %}
+    {% endbird:slot %}
 
-    {% slot %}
+    {% bird:slot %}
         Click me
-    {% endslot %}
+    {% endbird:slot %}
 </button>
 ```
 
