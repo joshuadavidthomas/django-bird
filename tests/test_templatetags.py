@@ -60,31 +60,46 @@ class TestBirdTemplateTag:
         assert node.attrs == expected_attrs
 
     @pytest.mark.parametrize(
-        "component,template,expected",
+        "component,template,context,expected",
         [
             (
                 "<button>Click me</button>",
                 "{% bird button %}Click me{% endbird %}",
+                {},
                 "<button>Click me</button>",
             ),
             (
                 "<button>Click me</button>",
                 "{% bird 'button' %}Click me{% endbird %}",
+                {},
                 "<button>Click me</button>",
             ),
             (
                 "<button>Click me</button>",
                 '{% bird "button" %}Click me{% endbird %}',
+                {},
+                "<button>Click me</button>",
+            ),
+            (
+                "<button>Click me</button>",
+                "{% bird dynamic-name %}Click me{% endbird %}",
+                {"dynamic-name": "button"},
                 "<button>Click me</button>",
             ),
         ],
     )
     def test_rendered_name(
-        self, component, template, expected, create_bird_template, normalize_whitespace
+        self,
+        component,
+        template,
+        context,
+        expected,
+        create_bird_template,
+        normalize_whitespace,
     ):
         create_bird_template("button", component)
         t = Template(template)
-        rendered = t.render(context=Context({}))
+        rendered = t.render(context=Context(context))
         assert normalize_whitespace(rendered) == expected
 
     @pytest.mark.parametrize(
@@ -286,7 +301,7 @@ class TestBirdNode:
     def test_get_template_names_invalid(self):
         node = BirdNode(name="input.label", attrs=[], nodelist=None)
 
-        template_names = node.get_template_names()
+        template_names = node.get_template_names(node.name)
 
         assert "bird/input/label/invalid.html" not in template_names
 
