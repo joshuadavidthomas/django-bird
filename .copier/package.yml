@@ -3,7 +3,7 @@ _commit: v2024.27-4-g3fe659b
 _src_path: /home/josh/projects/work/django-twc-package
 author_email: josh@joshthomas.dev
 author_name: Josh Thomas
-current_version: 0.1.0a1
+current_version: 0.1.0
 django_versions:
   - "4.2"
   - "5.0"
