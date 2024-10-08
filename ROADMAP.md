@@ -35,7 +35,7 @@ Here's a potential example of how you might define a button component with inlin
 
 The `$bird` variable in the JavaScript is a potential special identifier that could be used to scope the script to the specific component instance.
 
-Alternatively, you could potentially separate the styles and scripts into their own files:
+Alternatively, you could potentially separate the styles and scripts into their own files. This is similar to how django-components handles CSS and JS assets.
 
 ```htmldjango
 {# templates/bird/button.html #}
