@@ -136,9 +136,11 @@ Initially, I considered contributing to existing libraries or wrapping one to ad
 3. Building something new gives me the freedom to fully control the direction and architecture, without being constrained by design choices made in other libraries.
 4. Healthy competition among libraries helps drive innovation, and I see this as an opportunity to contribute to the broader Django ecosystem.
 5. Recent libraries like [django-cotton](https://github.com/wrabit/django-cotton) and [dj-angles](https://github.com/adamghill/dj-angles) are pushing Django templates in new and exciting directions and I wanted to join in on the fun. 😄
+
+It's very early days for django-bird. What you see here is laying the foundation for a template-centric approach to Django components. The current implementation focuses on core functionality, setting the stage for future features and enhancements.
 <!-- docs-motivation-end -->
 
-See the [ROADMAP](ROADMAP.md) for planned features and future direction of django-bird.
+See the [ROADMAP](ROADMAP.md) for planned features and the future direction of django-bird.
 
 ## License
 
