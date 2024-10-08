@@ -168,11 +168,11 @@ class BirdNode(template.Node):
         return template_names
 
 
-@register.tag
-def slot(parser: Parser, token: Token) -> SlotNode:
+@register.tag("bird:slot")
+def do_slot(parser: Parser, token: Token) -> SlotNode:
     bits = token.split_contents()
     name = parse_slot_name(bits)
-    nodelist = parser.parse(("endslot",))
+    nodelist = parser.parse(("endbird:slot",))
     parser.delete_first_token()
     return SlotNode(name, nodelist)
 
