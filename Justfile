@@ -27,8 +27,8 @@ coverage:
 lint:
     uv run --with pre-commit-uv pre-commit run --all-files
 
-lock:
-    uv lock
+lock *ARGS:
+    uv lock {{ ARGS }}
 
 test *ARGS:
     @just nox test {{ ARGS }}
