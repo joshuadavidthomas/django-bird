@@ -24,7 +24,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
-  "django>=4.2",
+  "django>=4.2"
 ]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
@@ -35,21 +35,30 @@ readme = "README.md"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-bumpver = ["bumpver"]
-copier = ["copier", "copier-templates-extensions"]
-hatch = ["hatch"]
-types = ["django-stubs", "django-stubs-ext", "mypy"]
 docs = [
-  "cogapp",
-  "furo",
-  "myst-parser",
-  "sphinx",
-  "sphinx-autobuild",
-  "sphinx-autodoc2",
-  "sphinx-copybutton",
-  "sphinx-inline-tabs"
+  "cogapp>=3.4.1",
+  "furo>=2024.8.6",
+  "myst-parser>=4.0.0",
+  "sphinx>=8.0.2",
+  "sphinx-autobuild>=2024.10.3",
+  "sphinx-autodoc2>=0.5.0",
+  "sphinx-copybutton>=0.5.2",
+  "sphinx-inline-tabs>=2023.4.21"
 ]
-lint = ["pre-commit"]
+tests = [
+  "faker>=30.3.0",
+  "model-bakery>=1.19.5",
+  "pytest>=8.3.3",
+  "pytest-cov>=5.0.0",
+  "pytest-django>=4.9.0",
+  "pytest-randomly>=3.15.0",
+  "pytest-xdist>=3.6.1"
+]
+types = [
+  "django-stubs>=5.1.0",
+  "django-stubs-ext>=5.1.0",
+  "mypy>=1.11.2"
+]
 
 [project.urls]
 Documentation = "https://django-bird.readthedocs.io/"
@@ -236,15 +245,10 @@ keep-runtime-typing = true
 
 [tool.uv]
 dev-dependencies = [
-    "django-stubs>=5.0.4",
-    "django-stubs-ext>=5.0.4",
-    "faker>=29.0.0",
-    "model-bakery>=1.19.5",
-    "nox[uv]>=2024.4.15",
-    "pytest>=8.3.3",
-    "pytest-cov>=5.0.0",
-    "pytest-django>=4.9.0",
-    "pytest-randomly>=3.15.0",
-    "pytest-xdist>=3.6.1",
-    "ruff>=0.6.6",
+  "copier>=9.3.1",
+  "copier-templates-extensions>=0.3.0",
+  "django-stubs>=5.0.4",
+  "django-stubs-ext>=5.0.4",
+  "nox[uv]>=2024.4.15",
+  "ruff>=0.6.6"
 ]

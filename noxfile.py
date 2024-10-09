@@ -40,6 +40,10 @@ def should_skip(python: str, django: str) -> bool:
         # Django main requires Python 3.10+
         return True
 
+    if django == DJ51 and version(python) < version(PY310):
+        # Django 5.1 requires Python 3.10+
+        return True
+
     if django == DJ50 and version(python) < version(PY310):
         # Django 5.0 requires Python 3.10+
         return True
@@ -63,7 +67,17 @@ def test(session):
     ],
 )
 def tests(session, django):
-    session.install("django-bird[dev] @ .")
+    session.run_install(
+        "uv",
+        "sync",
+        "--frozen",
+        "--extra",
+        "tests",
+        "--inexact",
+        "--no-install-package",
+        "django",
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
 
     if django == DJMAIN:
         session.install(
@@ -72,22 +86,27 @@ def tests(session, django):
     else:
         session.install(f"django=={django}")
 
-    command = ["uv", "run", "pytest"]
-    if session.posargs:
+    command = ["pytest"]
+    if session.posargs and all(arg for arg in session.posargs):
         command.append(*session.posargs)
     session.run(*command)
 
 
 @nox.session
 def coverage(session):
-    session.install("django-bird[dev] @ .")
+    session.run_install(
+        "uv",
+        "sync",
+        "--frozen",
+        "--extra",
+        "tests",
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
 
     try:
-        session.run("uv", "run", "pytest", "--cov")
+        session.run("pytest", "--cov", "--cov-report=")
     finally:
-        report_cmd = ["uv", "run", "coverage", "report"]
-        html_cmd = ["uv", "run", "coverage", "html"]
-
+        report_cmd = ["coverage", "report"]
         session.run(*report_cmd)
 
         if summary := os.getenv("GITHUB_STEP_SUMMARY"):
@@ -99,20 +118,24 @@ def coverage(session):
                 output_buffer.flush()
                 session.run(*report_cmd, stdout=output_buffer)
         else:
-            html_cmd.extend(["--skip-covered", "--skip-empty"])
-            session.run(*html_cmd)
+            session.run("coverage", "html", "--skip-covered", "--skip-empty")
 
 
 @nox.session
-def lint(session):
-    session.install("django-bird[lint] @ .")
-    session.run("uv", "run", "pre_commit", "run", "--all-files")
+def types(session):
+    session.run_install(
+        "uv",
+        "sync",
+        "--frozen",
+        "--extra",
+        "types",
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
 
-
-@nox.session
-def mypy(session):
-    session.install("django-bird[types] @ .")
-    session.run("uv", "run", "mypy", ".")
+    command = ["mypy", "."]
+    if session.posargs and all(arg for arg in session.posargs):
+        command.append(*session.posargs)
+    session.run(*command)
 
 
 @nox.session
