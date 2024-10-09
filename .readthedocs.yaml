@@ -12,7 +12,8 @@ build:
       - asdf plugin add just && asdf install just latest && asdf global just latest
       - asdf plugin add uv && asdf install uv latest && asdf global uv latest
       - just docs cog
-      - uv sync --extra docs
+      - uv venv
+      - uv pip install .[docs]
 
 sphinx:
   configuration: docs/conf.py
