@@ -48,9 +48,6 @@ jobs:
           enable-cache: true
           version: "0.4.x"
 
-      - name: Install Python
-        run: uv python install ${{ matrix.python-version }}
-
       - name: Run tests
         run: |
           uv run nox --session "tests(python='${{ matrix.python-version }}', django='${{ matrix.django-version }}')"
@@ -93,6 +90,6 @@ jobs:
           enable-cache: true
           version: "0.4.x"
 
-      - name: Run mypy
+      - name: Run coverage
         run: |
           uv run nox --session "coverage"
