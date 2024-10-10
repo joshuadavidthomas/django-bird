@@ -13,6 +13,7 @@ concurrency:
 env:
   PYTHONUNBUFFERED: "1"
   FORCE_COLOR: "1"
+  UV_VERSION: "0.4.x"
 
 jobs:
   generate-matrix:
@@ -26,10 +27,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          version: "0.4.x"
-
-      - name: Install Python
-        run: uv python install 3.10
+          version: ${{ env.UV_VERSION }}
 
       - id: set-matrix
         run: |
@@ -49,10 +47,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          version: "0.4.x"
-
-      - name: Install Python
-        run: uv python install ${{ matrix.python-version }}
+          version: ${{ env.UV_VERSION }}
 
       - name: Run tests
         run: |
@@ -79,12 +74,9 @@ jobs:
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          version: "0.4.x"
+          version: ${{ env.UV_VERSION }}
 
-      - name: Install Python
-        run: uv python install 3.13
-
-      - name: Run mypy
+      - name: Run type checks
         run: |
           uv run nox --session "types"
 
@@ -97,11 +89,8 @@ jobs:
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          version: "0.4.x"
+          version: ${{ env.UV_VERSION }}
 
-      - name: Install Python
-        run: uv python install 3.10
-
-      - name: Run mypy
+      - name: Generate code coverage
         run: |
           uv run nox --session "coverage"

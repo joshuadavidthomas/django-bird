@@ -70,12 +70,14 @@ def tests(session, django):
     session.run_install(
         "uv",
         "sync",
-        "--frozen",
         "--extra",
         "tests",
+        "--frozen",
         "--inexact",
         "--no-install-package",
         "django",
+        "--python",
+        session.python,
         env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
     )
 
@@ -86,7 +88,7 @@ def tests(session, django):
     else:
         session.install(f"django=={django}")
 
-    command = ["pytest"]
+    command = ["python", "-m", "pytest"]
     if session.posargs and all(arg for arg in session.posargs):
         command.append(*session.posargs)
     session.run(*command)
@@ -97,16 +99,18 @@ def coverage(session):
     session.run_install(
         "uv",
         "sync",
-        "--frozen",
         "--extra",
         "tests",
+        "--frozen",
+        "--python",
+        PY_DEFAULT,
         env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
     )
 
     try:
-        session.run("pytest", "--cov", "--cov-report=")
+        session.run("python", "-m", "pytest", "--cov", "--cov-report=")
     finally:
-        report_cmd = ["coverage", "report"]
+        report_cmd = ["python", "-m", "coverage", "report"]
         session.run(*report_cmd)
 
         if summary := os.getenv("GITHUB_STEP_SUMMARY"):
@@ -118,7 +122,9 @@ def coverage(session):
                 output_buffer.flush()
                 session.run(*report_cmd, stdout=output_buffer)
         else:
-            session.run("coverage", "html", "--skip-covered", "--skip-empty")
+            session.run(
+                "python", "-m", "coverage", "html", "--skip-covered", "--skip-empty"
+            )
 
 
 @nox.session
@@ -126,13 +132,15 @@ def types(session):
     session.run_install(
         "uv",
         "sync",
-        "--frozen",
         "--extra",
         "types",
+        "--frozen",
+        "--python",
+        PY_LATEST,
         env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
     )
 
-    command = ["mypy", "."]
+    command = ["python", "-m", "mypy", "."]
     if session.posargs and all(arg for arg in session.posargs):
         command.append(*session.posargs)
     session.run(*command)
