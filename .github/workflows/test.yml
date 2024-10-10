@@ -76,7 +76,7 @@ jobs:
           enable-cache: true
           version: ${{ env.UV_VERSION }}
 
-      - name: Run mypy
+      - name: Run type checks
         run: |
           uv run nox --session "types"
 
@@ -91,6 +91,6 @@ jobs:
           enable-cache: true
           version: ${{ env.UV_VERSION }}
 
-      - name: Run coverage
+      - name: Generate code coverage
         run: |
           uv run nox --session "coverage"
