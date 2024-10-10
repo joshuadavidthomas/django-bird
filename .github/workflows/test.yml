@@ -28,9 +28,6 @@ jobs:
           enable-cache: true
           version: "0.4.x"
 
-      - name: Install Python
-        run: uv python install 3.10
-
       - id: set-matrix
         run: |
           uv run nox --session "gha_matrix"
@@ -81,9 +78,6 @@ jobs:
           enable-cache: true
           version: "0.4.x"
 
-      - name: Install Python
-        run: uv python install 3.13
-
       - name: Run mypy
         run: |
           uv run nox --session "types"
@@ -98,9 +92,6 @@ jobs:
         with:
           enable-cache: true
           version: "0.4.x"
-
-      - name: Install Python
-        run: uv python install 3.10
 
       - name: Run mypy
         run: |
