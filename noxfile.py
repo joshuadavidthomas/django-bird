@@ -147,6 +147,21 @@ def types(session):
 
 
 @nox.session
+def lint(session):
+    session.run(
+        "uv",
+        "run",
+        "--with",
+        "pre-commit-uv",
+        "--python",
+        PY_LATEST,
+        "pre-commit",
+        "run",
+        "--all-files",
+    )
+
+
+@nox.session
 def gha_matrix(session):
     sessions = session.run("nox", "-l", "--json", silent=True)
     matrix = {
