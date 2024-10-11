@@ -140,7 +140,7 @@ path = "src/django_bird/__init__.py"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-manifest-path = "src/loader/Cargo.toml"
+manifest-path = "src/_bird_loader/Cargo.toml"
 
 [tool.mypy]
 check_untyped_defs = true

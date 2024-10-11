@@ -10,7 +10,7 @@ default:
 fmt:
     @just --fmt --justfile {{ justfile }}
 
-set working-directory := "../src/loader"
+set working-directory := "../src/_bird_loader"
 
 cargo *ARGS:
     cargo {{ ARGS }}
