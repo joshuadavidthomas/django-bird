@@ -9,9 +9,6 @@ mod rust ".just/rust.just"
 default:
     @just --list
 
-# [private]
-# cargo *ARGS:
-#     cd {{justfile_directory()}}/src/compiler && cargo {{ ARGS }}
 [private]
 cargo *ARGS:
     just rust cargo {{ ARGS }}
