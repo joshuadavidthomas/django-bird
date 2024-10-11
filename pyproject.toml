@@ -245,7 +245,7 @@ unfixable = []
 [tool.ruff.lint.isort]
 force-single-line = true
 known-first-party = [
-  "_django_bird",
+  "_bird_loader",
   "django_bird"
 ]
 required-imports = ["from __future__ import annotations"]
