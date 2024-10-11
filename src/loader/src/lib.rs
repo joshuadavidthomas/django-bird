@@ -8,7 +8,6 @@ use std::io::{self, Read};
 
 mod compiler;
 
-// Modified regex without backreference
 const BIRD_PATTERN: &str = r"(?s)(?m)<bird:(\w+)([^>]*)(?:/>|>(.*?)</bird:\w+>)";
 
 #[pyfunction]
