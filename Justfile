@@ -1,3 +1,4 @@
+set dotenv-load := true
 set unstable := true
 
 mod copier ".just/copier.just"
@@ -25,7 +26,7 @@ coverage:
     @just nox coverage
 
 lint:
-    uv run --with pre-commit-uv pre-commit run --all-files
+    @just nox lint
 
 lock *ARGS:
     uv lock {{ ARGS }}
