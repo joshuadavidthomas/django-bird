@@ -13,7 +13,6 @@ class BirdLoader(FileSystemLoader):
     @override
     def get_contents(self, origin: Origin) -> str:
         try:
-            contents = get_contents(origin.name, self.engine.file_charset)
-            return contents
+            return get_contents(origin.name, self.engine.file_charset)
         except FileNotFoundError as err:
             raise TemplateDoesNotExist(origin) from err
