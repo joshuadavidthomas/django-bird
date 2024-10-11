@@ -1,10 +1,10 @@
 use encoding_rs::Encoding;
 use once_cell::sync::OnceCell;
-use pyo3::exceptions::{PyFileNotFoundError, PyUnicodeDecodeError};
+use pyo3::exceptions::{PyFileNotFoundError, PyUnicodeDecodeError, PyValueError};
 use pyo3::prelude::*;
 use regex::Regex;
-use std::fs::File;
-use std::io::{self, Read};
+use std::fs;
+use std::io;
 
 mod compiler;
 
@@ -18,9 +18,7 @@ fn get_contents(py: Python, file_path: &str, encoding: &str) -> PyResult<PyObjec
         BIRD_REGEX.get_or_init(|| Regex::new(BIRD_PATTERN).expect("Failed to compile BIRD_REGEX"));
 
     let result = (|| -> Result<String, io::Error> {
-        let mut file = File::open(file_path)?;
-        let mut bytes = Vec::new();
-        file.read_to_end(&mut bytes)?;
+        let bytes = fs::read(file_path)?;
 
         let encoding = Encoding::for_label(encoding.as_bytes())
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid encoding"))?;
@@ -43,13 +41,12 @@ fn get_contents(py: Python, file_path: &str, encoding: &str) -> PyResult<PyObjec
 
     match result {
         Ok(contents) => Ok(contents.to_object(py)),
-        Err(e) if e.kind() == io::ErrorKind::NotFound => {
-            Err(PyFileNotFoundError::new_err(e.to_string()))
-        }
-        Err(e) if e.kind() == io::ErrorKind::InvalidData => {
-            Err(PyUnicodeDecodeError::new_err(e.to_string()))
-        }
-        Err(e) => Err(PyErr::new::<pyo3::exceptions::PyIOError, _>(e.to_string())),
+        Err(e) => match e.kind() {
+            io::ErrorKind::NotFound => Err(PyFileNotFoundError::new_err(e.to_string())),
+            io::ErrorKind::InvalidData => Err(PyUnicodeDecodeError::new_err(e.to_string())),
+            io::ErrorKind::InvalidInput => Err(PyValueError::new_err(e.to_string())),
+            _ => Err(PyErr::new::<pyo3::exceptions::PyIOError, _>(e.to_string())),
+        },
     }
 }
 
