@@ -1,6 +1,6 @@
 [build-system]
-build-backend = "hatchling.build"
-requires = ["hatchling"]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
 
 [project]
 authors = [
@@ -21,7 +21,8 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: Implementation :: CPython"
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Rust"
 ]
 dependencies = [
   "django>=4.2"
@@ -129,6 +130,10 @@ packages = ["src/django_bird"]
 
 [tool.hatch.version]
 path = "src/django_bird/__init__.py"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+manifest-path = "src/compiler/Cargo.toml"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -250,5 +255,6 @@ dev-dependencies = [
   "django-stubs>=5.0.4",
   "django-stubs-ext>=5.0.4",
   "nox[uv]>=2024.4.15",
-  "ruff>=0.6.6"
+  "ruff>=0.6.6",
+  "maturin>=1.7.4",
 ]

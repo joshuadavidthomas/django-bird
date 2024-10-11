@@ -69,6 +69,7 @@ def test(session):
     ],
 )
 def tests(session, django):
+    session.run_install("maturin", "develop", "--uv")
     session.run_install(
         "uv",
         "sync",

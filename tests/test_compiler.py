@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from _compiler import sum_as_string
+
 from django_bird.compiler import Compiler
 
 
@@ -33,3 +35,7 @@ def test_compiler():
     assert ast
     assert transformed
     assert compiled
+
+
+def test_sum_as_string():
+    assert sum_as_string(1, 1) == "2"
