@@ -37,7 +37,8 @@ fn get_contents(py: Python, file_path: &str, encoding: &str) -> PyResult<PyObjec
             Ok(contents)
         } else {
             let compiler = compiler::Compiler;
-            Ok(compiler.compile(&contents))
+            let compiled_contents = compiler.compile(&contents);
+            Ok(compiled_contents.to_string())
         }
     })();
 

@@ -1,11 +1,10 @@
 pub struct Compiler;
 
 impl Compiler {
-    pub fn compile(&self, input_string: &str) -> String {
+    pub fn compile<'a>(&self, input_string: &'a str) -> &'a str {
         let tokens = self.tokenize(input_string);
         let ast = self.parse(tokens);
-        let transformed = self.transform(ast);
-        transformed.to_string()
+        self.transform(ast)
     }
 
     fn tokenize<'a>(&self, input_string: &'a str) -> &'a str {
