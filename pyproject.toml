@@ -66,6 +66,13 @@ Documentation = "https://django-bird.readthedocs.io/"
 Issues = "https://github.com/joshuadavidthomas/django-bird/issues"
 Source = "https://github.com/joshuadavidthomas/django-bird"
 
+[tool.basedpyright]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__"
+]
+include = ["src"]
+
 [tool.bumpver]
 commit = true
 commit_message = ":bookmark: bump version {old_version} -> {new_version}"
@@ -133,7 +140,7 @@ path = "src/django_bird/__init__.py"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-manifest-path = "src/compiler/Cargo.toml"
+manifest-path = "src/loader/Cargo.toml"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -237,7 +244,10 @@ unfixable = []
 
 [tool.ruff.lint.isort]
 force-single-line = true
-known-first-party = ["django_bird"]
+known-first-party = [
+  "_django_bird",
+  "django_bird"
+]
 required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.per-file-ignores]
@@ -258,3 +268,4 @@ dev-dependencies = [
   "ruff>=0.6.6",
   "maturin>=1.7.4",
 ]
+reinstall-package = ["django_bird"]

@@ -190,3 +190,5 @@ mediafiles/
 
 # pyright config for nvim-lspconfig
 pyrightconfig.json
+
+.direnv

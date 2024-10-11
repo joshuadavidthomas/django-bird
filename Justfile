@@ -3,10 +3,18 @@ set unstable := true
 
 mod copier ".just/copier.just"
 mod docs ".just/documentation.just"
+mod rust ".just/rust.just"
 
 [private]
 default:
     @just --list
+
+# [private]
+# cargo *ARGS:
+#     cd {{justfile_directory()}}/src/compiler && cargo {{ ARGS }}
+[private]
+cargo *ARGS:
+    just rust cargo {{ ARGS }}
 
 [private]
 fmt:
