@@ -1,3 +1,4 @@
+set dotenv-load := true
 set unstable := true
 
 mod copier ".just/copier.just"
