@@ -23,7 +23,9 @@ DJ51 = "5.1"
 DJMAIN = "main"
 DJMAIN_MIN_PY = PY310
 DJ_VERSIONS = [DJ42, DJ50, DJ51, DJMAIN]
-DJ_LTS = [DJ42]
+DJ_LTS = [
+    version for version in DJ_VERSIONS if version.endswith(".2") and version != DJMAIN
+]
 DJ_DEFAULT = DJ_LTS[0]
 DJ_LATEST = DJ_VERSIONS[-2]
 
