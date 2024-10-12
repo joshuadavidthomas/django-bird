@@ -178,16 +178,3 @@ def gha_matrix(session):
     }
     with Path(os.environ["GITHUB_OUTPUT"]).open("a") as fh:
         print(f"matrix={matrix}", file=fh)
-
-
-@nox.session
-def benchmark(session):
-    session.run_install("maturin", "develop", "--uv")
-    session.run_install(
-        "uv",
-        "sync",
-        "--locked",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
-    )
-
-    session.run("python", "benchmark.py")
