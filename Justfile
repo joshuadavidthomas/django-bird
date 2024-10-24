@@ -1,44 +1,37 @@
 set dotenv-load := true
+set unstable := true
 
-@_default:
-    just --list
+mod copier ".just/copier.just"
+mod docs ".just/documentation.just"
+mod project ".just/project.just"
 
-# ----------------------------------------------------------------------
-# DEPENDENCIES
-# ----------------------------------------------------------------------
+[private]
+default:
+    @just --list --list-submodules
+
+[private]
+fmt:
+    @just --fmt
+    @just copier fmt
+    @just docs fmt
+    @just project fmt
+
+[private]
+nox SESSION *ARGS:
+    uv run nox --session "{{ SESSION }}" -- "{{ ARGS }}"
 
 bootstrap:
-    @just pup
-    @just install
+    uv python install
+    uv sync --locked
 
-install:
-    python -m uv pip install --editable '.[dev]'
+coverage *ARGS:
+    @just nox coverage {{ ARGS }}
 
-pup:
-    python -m pip install --upgrade pip uv
+lint:
+    @just nox lint
 
-# ----------------------------------------------------------------------
-# TESTING/TYPES
-# ----------------------------------------------------------------------
-
-nox SESSION *ARGS:
-    python -m nox --session "{{ SESSION }}" -- "{{ ARGS }}"
-
-test *ARGS:
-    python -m nox --session "test" -- "{{ ARGS }}"
-
-testall *ARGS:
-    python -m nox --session "tests" -- "{{ ARGS }}"
-
-coverage:
-    python -m nox --session "coverage"
-
-types:
-    python -m nox --session "mypy"
-
-# ----------------------------------------------------------------------
-# DJANGO
-# ----------------------------------------------------------------------
+lock *ARGS:
+    uv lock {{ ARGS }}
 
 manage *COMMAND:
     #!/usr/bin/env python
@@ -54,65 +47,14 @@ manage *COMMAND:
             "forget to activate a virtual environment?"
         ) from exc
 
-    settings.configure(INSTALLED_APPS=["bird"])
+    settings.configure(INSTALLED_APPS=["django_bird"])
     execute_from_command_line(sys.argv + "{{ COMMAND }}".split(" "))
 
-alias mm := makemigrations
+test *ARGS:
+    @just nox test {{ ARGS }}
 
-makemigrations *APPS:
-    @just manage makemigrations {{ APPS }}
+testall *ARGS:
+    @just nox tests {{ ARGS }}
 
-migrate *ARGS:
-    @just manage migrate {{ ARGS }}
-
-# ----------------------------------------------------------------------
-# DOCS
-# ----------------------------------------------------------------------
-
-@docs-install:
-    @just pup
-    python -m uv pip install 'bird[docs] @ .'
-
-@docs-serve:
-    #!/usr/bin/env sh
-    just _cog
-    if [ -f "/.dockerenv" ]; then
-        sphinx-autobuild docs docs/_build/html --host "0.0.0.0"
-    else
-        sphinx-autobuild docs docs/_build/html --host "localhost"
-    fi
-
-@docs-build LOCATION="docs/_build/html":
-    just _cog
-    sphinx-build docs {{ LOCATION }}
-
-_cog:
-    cog -r docs/development/just.md
-
-# ----------------------------------------------------------------------
-# UTILS
-# ----------------------------------------------------------------------
-
-# format justfile
-fmt:
-    just --fmt --unstable
-
-# run pre-commit on all files
-lint:
-    python -m nox --session "lint"
-
-# ----------------------------------------------------------------------
-# COPIER
-# ----------------------------------------------------------------------
-
-# apply a copier template to project
-copier-copy TEMPLATE_PATH DESTINATION_PATH=".":
-    copier copy {{ TEMPLATE_PATH }} {{ DESTINATION_PATH }}
-
-# update the project using a copier answers file
-copier-update ANSWERS_FILE *ARGS:
-    copier update --trust --answers-file {{ ANSWERS_FILE }} {{ ARGS }}
-
-# loop through all answers files and update the project using copier
-@copier-update-all *ARGS:
-    for file in `ls .copier/`; do just copier-update .copier/$file "{{ ARGS }}"; done
+types *ARGS:
+    @just nox types {{ ARGS }}

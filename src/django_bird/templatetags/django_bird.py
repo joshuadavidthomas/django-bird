@@ -117,21 +117,20 @@ class BirdNode(template.Node):
                 attrs[attr] = True
 
         return " ".join(
-            f'{key}="{value}"' if value else key
+            key if isinstance(value, bool) and value else f'{key}="{value}"'
             for key, value in attrs.items()
-            if not value
         )
 
     def get_template_names(self, name: str) -> list[str]:
         """
         Generate a list of potential template names for a component.
 
-        The function searches for templates in the following order:
-        1. In the base component directory, using the full component name
-        2. In a subdirectory named after the component
-            a. Using the full name (for subcomponents)
-            b. Using the last part of the name
-        3. In the same subdirectory, using a fallback 'index.html'
+        The function searches for templates in the following order (from most specific to most general):
+
+        1. In a subdirectory named after the component, using the component name
+        2. In the same subdirectory, using a fallback 'index.html'
+        3. In parent directory for nested components
+        4. In the base component directory, using the full component name
 
         The order of names is important as it determines the template resolution priority.
         This order allows for both direct matches and hierarchical component structures,
@@ -145,37 +144,34 @@ class BirdNode(template.Node):
 
         For example:
         - For an "input" component, the ordering would be:
-          1. `{component_dir}/input.html`
-          2. `{component_dir}/input/input.html`
-          3. `{component_dir}/input/index.html`
+            1. `{component_dir}/input/input.html`
+            2. `{component_dir}/input/index.html`
+            3. `{component_dir}/input.html`
         - For an "input.label" component:
-          1. `{component_dir}/input.label.html`
-          2. `{component_dir}/input/label.html`
-          3. `{component_dir}/input/label/label.html`
-          3. `{component_dir}/input/label/index.html`
+            1. `{component_dir}/input/label/label.html`
+            2. `{component_dir}/input/label/index.html`
+            3. `{component_dir}/input/label.html`
+            4. `{component_dir}/input.label.html`
 
         Returns:
             list[str]: A list of potential template names in resolution order.
         """
+        template_names = []
+        component_dirs = list(dict.fromkeys([*app_settings.COMPONENT_DIRS, "bird"]))
 
-        template_names: list[str] = []
+        name_parts = self.name.split(".")
+        path_name = "/".join(name_parts)
 
-        for component_dir in app_settings.COMPONENT_DIRS + ["bird"]:
-            name_parts = name.split(".")
-            path_name = "/".join(name_parts)
+        for component_dir in component_dirs:
             potential_names = [
-                f"{component_dir}/{name}.html",
-                f"{component_dir}/{path_name}.html",
                 f"{component_dir}/{path_name}/{name_parts[-1]}.html",
                 f"{component_dir}/{path_name}/index.html",
+                f"{component_dir}/{path_name}.html",
+                f"{component_dir}/{self.name}.html",
             ]
-            # Preserve order while ensuring uniqueness by removing duplicates.
-            # Using a set here would not keep the ordering which is important
-            # in template resolution.
-            ordered_unique_names = dict.fromkeys(potential_names)
-            template_names.extend(list(ordered_unique_names))
+            template_names.extend(potential_names)
 
-        return template_names
+        return list(dict.fromkeys(template_names))
 
 
 @register.tag("bird:slot")

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
 from django.template import Context
+from django.template import Library
 from django.template import Template
 from django.template.base import Parser
 from django.template.base import Token
@@ -103,19 +106,19 @@ class TestBirdTemplateTag:
         "component,template,context,expected",
         [
             (
-                "<button class='btn'>Click me</button>",
+                "<button {{ attrs }}>Click me</button>",
                 "{% bird button class='btn' %}Click me{% endbird %}",
                 {},
-                "<button class='btn'>Click me</button>",
+                '<button class="btn">Click me</button>',
             ),
             (
-                "<button class='btn' id='my-btn' disabled>Click me</button>",
+                "<button {{ attrs }}>Click me</button>",
                 "{% bird button class='btn' id='my-btn' disabled %}Click me{% endbird %}",
                 {},
-                "<button class='btn' id='my-btn' disabled>Click me</button>",
+                '<button class="btn" id="my-btn" disabled>Click me</button>',
             ),
             (
-                "<button>{{ slot }}</button>",
+                "<button {{ attrs }}>{{ slot }}</button>",
                 "{% bird button %}{{ slot }}{% endbird %}",
                 {"slot": "Click me"},
                 "<button>Click me</button>",
@@ -185,6 +188,56 @@ class TestBirdTemplateTag:
         rendered = t.render(context=Context(context))
         assert normalize_whitespace(rendered) == expected
 
+    @pytest.mark.parametrize(
+        "component,template,context,expected",
+        [
+            (
+                "<button>{{ slot }}</button>",
+                "{% load custom_filters %}{% bird button %}{{ text|make_fancy }}{% endbird %}",
+                {"text": "click me"},
+                "<button>✨click me✨</button>",
+            ),
+            (
+                "<button>{% bird:slot label %}{% endbird:slot %}</button>",
+                "{% load custom_filters %}{% bird button %}{% bird:slot label %}{{ text|make_fancy }}{% endbird:slot %}{% endbird %}",
+                {"text": "click me"},
+                "<button>✨click me✨</button>",
+            ),
+            (
+                "<button><span>{% bird:slot icon %}{% endbird:slot %}</span>{{ slot }}</button>",
+                "{% load custom_filters %}{% bird button %}{% bird:slot icon %}{{ icon_text|make_fancy }}{% endbird:slot %}{{ text|make_fancy }}{% endbird %}",
+                {"text": "click me", "icon_text": "icon"},
+                "<button><span>✨icon✨</span>✨click me✨</button>",
+            ),
+        ],
+    )
+    def test_slots_with_outside_templatetag(
+        self,
+        component,
+        template,
+        context,
+        expected,
+        create_bird_template,
+        normalize_whitespace,
+    ):
+        register = Library()
+
+        @register.filter
+        def make_fancy(value):
+            return f"✨{value}✨"
+
+        def get_template_libraries(self, libraries):
+            return {"custom_filters": register}
+
+        with patch(
+            "django.template.engine.Engine.get_template_libraries",
+            get_template_libraries,
+        ):
+            create_bird_template("button", component)
+            t = Template(template)
+            rendered = t.render(context=Context(context))
+            assert normalize_whitespace(rendered) == expected
+
 
 @pytest.mark.xfail(reason="Feature not implemented yet")
 class TestBirdTemplateTagFutureFeatures:
@@ -225,65 +278,66 @@ class TestBirdNode:
         "sub_dir,filename,component,nodename,expected",
         [
             (
-                None,
                 "button",
-                "<button>Click me</button>",
-                "button",
-                "bird/button.html",
+                [],
+                [
+                    "bird/button/button.html",
+                    "bird/button/index.html",
+                    "bird/button.html",
+                ],
+            ),
+            (
+                "input.label",
+                [],
+                [
+                    "bird/input/label/label.html",
+                    "bird/input/label/index.html",
+                    "bird/input/label.html",
+                    "bird/input.label.html",
+                ],
             ),
             (
                 "button",
-                "index",
-                "<button>Click me</button>",
-                "button",
-                "bird/button/index.html",
-            ),
-            (
-                "button",
-                "button",
-                "<button>Click me</button>",
-                "button",
-                "bird/button/button.html",
-            ),
-            (
-                None,
-                "button.label",
-                "<button>Click me</button>",
-                "button.label",
-                "bird/button.label.html",
-            ),
-            (
-                None,
-                "button.label",
-                "<button>Click me</button>",
-                "button.label",
-                "bird/button/label.html",
+                ["custom", "theme"],
+                [
+                    "custom/button/button.html",
+                    "custom/button/index.html",
+                    "custom/button.html",
+                    "theme/button/button.html",
+                    "theme/button/index.html",
+                    "theme/button.html",
+                    "bird/button/button.html",
+                    "bird/button/index.html",
+                    "bird/button.html",
+                ],
             ),
         ],
     )
-    def test_get_template_names(
-        self, sub_dir, filename, component, nodename, expected, create_bird_template
-    ):
-        create_bird_template(name=filename, content=component, sub_dir=sub_dir)
-        node = BirdNode(name=nodename, attrs=[], nodelist=None)
+    def test_get_template_names(self, name, component_dirs, expected):
+        node = BirdNode(name=name, attrs=[], nodelist=None)
 
         template_names = node.get_template_names(node.name)
 
-        assert any(expected in template_name for template_name in template_names)
+        assert template_names == expected
 
-    @override_settings(DJANGO_BIRD={"COMPONENT_DIRS": ["not_default"]})
-    def test_get_template_names_path_component_dirs(self, create_bird_template):
-        create_bird_template(
-            name="button",
-            content="<button class=btn_class>Click me</button>",
-            bird_dir_name="not_default",
-        )
-
-        node = BirdNode(name="button", attrs=[], nodelist=None)
+    def test_get_template_names_invalid(self):
+        node = BirdNode(name="input.label", attrs=[], nodelist=None)
 
         template_names = node.get_template_names(node.name)
 
-        assert any("not_default" in template_name for template_name in template_names)
+        template_names = node.get_template_names(node.name)
+
+    def test_get_template_names_duplicates(self):
+        with override_settings(DJANGO_BIRD={"COMPONENT_DIRS": ["bird"]}):
+            node = BirdNode(name="button", attrs=[], nodelist=None)
+            template_names = node.get_template_names()
+
+            template_counts = {}
+            for template in template_names:
+                template_counts[template] = template_counts.get(template, 0) + 1
+
+            for template, count in template_counts.items():
+                assert count == 1
 
 
 class TestSlotsTemplateTag:

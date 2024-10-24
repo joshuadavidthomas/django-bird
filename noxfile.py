@@ -23,7 +23,9 @@ DJ51 = "5.1"
 DJMAIN = "main"
 DJMAIN_MIN_PY = PY310
 DJ_VERSIONS = [DJ42, DJ50, DJ51, DJMAIN]
-DJ_LTS = [DJ42]
+DJ_LTS = [
+    version for version in DJ_VERSIONS if version.endswith(".2") and version != DJMAIN
+]
 DJ_DEFAULT = DJ_LTS[0]
 DJ_LATEST = DJ_VERSIONS[-2]
 
@@ -38,6 +40,10 @@ def should_skip(python: str, django: str) -> bool:
 
     if django == DJMAIN and version(python) < version(DJMAIN_MIN_PY):
         # Django main requires Python 3.10+
+        return True
+
+    if django == DJ51 and version(python) < version(PY310):
+        # Django 5.1 requires Python 3.10+
         return True
 
     if django == DJ50 and version(python) < version(PY310):
@@ -63,7 +69,17 @@ def test(session):
     ],
 )
 def tests(session, django):
-    session.install("django-bird[dev] @ .")
+    session.run_install(
+        "uv",
+        "sync",
+        "--frozen",
+        "--inexact",
+        "--no-install-package",
+        "django",
+        "--python",
+        session.python,
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
 
     if django == DJMAIN:
         session.install(
@@ -72,23 +88,41 @@ def tests(session, django):
     else:
         session.install(f"django=={django}")
 
-    command = ["uv", "run", "pytest"]
+    command = ["python", "-m", "pytest"]
     if session.posargs:
-        command.append(*session.posargs)
+        args = []
+        for arg in session.posargs:
+            args.extend(arg.split(" "))
+        command.extend(args)
     session.run(*command)
 
 
 @nox.session
 def coverage(session):
-    session.install("django-bird[dev] @ .")
+    session.run_install(
+        "uv",
+        "sync",
+        "--frozen",
+        "--python",
+        PY_DEFAULT,
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
 
     try:
-        session.run("uv", "run", "pytest", "--cov")
+        command = ["python", "-m", "pytest", "--cov", "--cov-report="]
+        if session.posargs:
+            args = []
+            for arg in session.posargs:
+                args.extend(arg.split(" "))
+            command.extend(args)
+        session.run(*command)
     finally:
-        report_cmd = ["uv", "run", "coverage", "report"]
-        html_cmd = ["uv", "run", "coverage", "html"]
+        # 0 -> OK
+        # 2 -> code coverage percent unmet
+        success_codes = [0, 2]
 
-        session.run(*report_cmd)
+        report_cmd = ["python", "-m", "coverage", "report"]
+        session.run(*report_cmd, success_codes=success_codes)
 
         if summary := os.getenv("GITHUB_STEP_SUMMARY"):
             report_cmd.extend(["--skip-covered", "--skip-empty", "--format=markdown"])
@@ -97,22 +131,56 @@ def coverage(session):
                 output_buffer.write("")
                 output_buffer.write("### Coverage\n\n")
                 output_buffer.flush()
-                session.run(*report_cmd, stdout=output_buffer)
+                session.run(
+                    *report_cmd, stdout=output_buffer, success_codes=success_codes
+                )
         else:
-            html_cmd.extend(["--skip-covered", "--skip-empty"])
-            session.run(*html_cmd)
+            session.run(
+                "python",
+                "-m",
+                "coverage",
+                "html",
+                "--skip-covered",
+                "--skip-empty",
+                success_codes=success_codes,
+            )
+
+
+@nox.session
+def types(session):
+    session.run_install(
+        "uv",
+        "sync",
+        "--group",
+        "types",
+        "--frozen",
+        "--python",
+        PY_LATEST,
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
+
+    command = ["python", "-m", "mypy", "."]
+    if session.posargs:
+        args = []
+        for arg in session.posargs:
+            args.extend(arg.split(" "))
+        command.extend(args)
+    session.run(*command)
 
 
 @nox.session
 def lint(session):
-    session.install("django-bird[lint] @ .")
-    session.run("uv", "run", "pre_commit", "run", "--all-files")
-
-
-@nox.session
-def mypy(session):
-    session.install("django-bird[types] @ .")
-    session.run("uv", "run", "mypy", ".")
+    session.run(
+        "uv",
+        "run",
+        "--with",
+        "pre-commit-uv",
+        "--python",
+        PY_LATEST,
+        "pre-commit",
+        "run",
+        "--all-files",
+    )
 
 
 @nox.session

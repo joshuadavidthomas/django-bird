@@ -18,6 +18,30 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+🚨 This release contains a breaking change. See the Changed section for more information. 🚨
+
+### Changed
+
+- Reversed template resolution order to prefer component-specific templates over generic ones.
+
+  For example, given a component named `button`, the previous resolution order was:
+
+  1. `button.html`
+  2. `button/button.html`
+  3. `button/index.html`
+
+  The new resolution order is:
+
+  1. `button/button.html`
+  2. `button/index.html`
+  3. `button.html`
+
+## [0.1.1]
+
+### Fixed
+
+- Fixed rendering of flat attributes in `{% bird %}` component templates. Previously, a small mistake in trying to render `boolean` values caused no attributes to be rendered. E.g. `{% bird foo disabled=True %}` should have been rendered using `{{ attrs }}` inside the `foo` bird component as just `disabled` -- instead nothing was being rendered, even `key="value"` attributes.
+
 ## [0.1.0]
 
 ### Added
@@ -35,5 +59,6 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.1.1...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
+[0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1

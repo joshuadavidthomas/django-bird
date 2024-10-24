@@ -2,6 +2,38 @@
 build-backend = "hatchling.build"
 requires = ["hatchling"]
 
+[dependency-groups]
+dev = [
+  "copier>=9.3.1",
+  "copier-templates-extensions>=0.3.0",
+  "coverage[toml]>=7.6.4",
+  "faker>=30.3.0",
+  "django-stubs>=5.0.4",
+  "django-stubs-ext>=5.0.4",
+  "model-bakery>=1.19.5",
+  "nox[uv]>=2024.4.15",
+  "pytest>=8.3.3",
+  "pytest-cov>=5.0.0",
+  "pytest-django>=4.9.0",
+  "pytest-randomly>=3.15.0",
+  "pytest-xdist>=3.6.1",
+  "ruff>=0.6.6"
+]
+docs = [
+  "furo>=2024.8.6",
+  "myst-parser>=4.0.0",
+  "sphinx>=8.0.2",
+  "sphinx-autobuild>=2024.10.3",
+  "sphinx-autodoc2>=0.5.0",
+  "sphinx-copybutton>=0.5.2",
+  "sphinx-inline-tabs>=2023.4.21"
+]
+types = [
+  "django-stubs>=5.1.0",
+  "django-stubs-ext>=5.1.0",
+  "mypy>=1.11.2"
+]
+
 [project]
 authors = [
   {name = "Josh Thomas", email = "josh@joshthomas.dev"}
@@ -24,7 +56,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
-  "django>=4.2",
+  "django>=4.2"
 ]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
@@ -34,23 +66,6 @@ name = "django-bird"
 readme = "README.md"
 requires-python = ">=3.10"
 
-[project.optional-dependencies]
-bumpver = ["bumpver"]
-copier = ["copier", "copier-templates-extensions"]
-hatch = ["hatch"]
-types = ["django-stubs", "django-stubs-ext", "mypy"]
-docs = [
-  "cogapp",
-  "furo",
-  "myst-parser",
-  "sphinx",
-  "sphinx-autobuild",
-  "sphinx-autodoc2",
-  "sphinx-copybutton",
-  "sphinx-inline-tabs"
-]
-lint = ["pre-commit"]
-
 [project.urls]
 Documentation = "https://django-bird.readthedocs.io/"
 Issues = "https://github.com/joshuadavidthomas/django-bird/issues"
@@ -59,7 +74,7 @@ Source = "https://github.com/joshuadavidthomas/django-bird"
 [tool.bumpver]
 commit = true
 commit_message = ":bookmark: bump version {old_version} -> {new_version}"
-current_version = "0.1.0a1"
+current_version = "0.1.1"
 push = false  # set to false for CI
 tag = false
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
@@ -87,7 +102,7 @@ exclude_lines = [
   "if TYPE_CHECKING:",
   'def __str__\(self\)\s?\-?\>?\s?\w*\:'
 ]
-fail_under = 75
+fail_under = 98
 
 [tool.coverage.run]
 omit = [
@@ -104,7 +119,7 @@ strict_settings = false
 [tool.djlint]
 blank_line_after_tag = "endblock,endpartialdef,extends,load"
 blank_line_before_tag = "block,partialdef"
-custom_blocks = "partialdef"
+custom_blocks = "bird,bird:slot,partialdef"
 ignore = "H031"  # Don't require `meta` tag keywords
 indent = 2
 profile = "django"
@@ -146,16 +161,6 @@ module = [
   "*.migrations.*",
   "docs.*",
   "tests.*"
-]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = [
-  # not sure why this is needed as nox has a `py.typed` marker, but
-  # putting this in here for now until I figure out where the issue
-  # is. i'm sure i've configured it or am calling it wrong somewhere.
-  # TODO: fix missing `nox` type library error and remove this line
-  "nox.*"
 ]
 
 [tool.mypy_django_plugin]
@@ -233,18 +238,3 @@ required-imports = ["from __future__ import annotations"]
 [tool.ruff.lint.pyupgrade]
 # Preserve types, even if a file imports `from __future__ import annotations`.
 keep-runtime-typing = true
-
-[tool.uv]
-dev-dependencies = [
-    "django-stubs>=5.0.4",
-    "django-stubs-ext>=5.0.4",
-    "faker>=29.0.0",
-    "model-bakery>=1.19.5",
-    "nox[uv]>=2024.4.15",
-    "pytest>=8.3.3",
-    "pytest-cov>=5.0.0",
-    "pytest-django>=4.9.0",
-    "pytest-randomly>=3.15.0",
-    "pytest-xdist>=3.6.1",
-    "ruff>=0.6.6",
-]
