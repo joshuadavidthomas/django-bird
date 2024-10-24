@@ -104,7 +104,7 @@ django-bird offers features for creating flexible components, such as:
 - Named slots for organizing content within components
 - Subcomponents for building complex component structures
 
-For a full overview of the features and configuration options, please refer to the [documentation](https://bird.readthedocs.io).
+For a full overview of the features and configuration options, please refer to the [documentation](https://django-bird.readthedocs.io).
 
 ## Motivation
 
