@@ -109,9 +109,8 @@ class BirdNode(template.Node):
                 attrs[attr] = True
 
         return " ".join(
-            f'{key}="{value}"' if value else key
+            key if isinstance(value, bool) and value else f'{key}="{value}"'
             for key, value in attrs.items()
-            if not value
         )
 
     def get_template_names(self):
