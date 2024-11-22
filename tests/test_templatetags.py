@@ -88,19 +88,19 @@ class TestBirdTemplateTag:
         "component,template,context,expected",
         [
             (
-                "<button class='btn'>Click me</button>",
+                "<button {{ attrs }}>Click me</button>",
                 "{% bird button class='btn' %}Click me{% endbird %}",
                 {},
-                "<button class='btn'>Click me</button>",
+                '<button class="btn">Click me</button>',
             ),
             (
-                "<button class='btn' id='my-btn' disabled>Click me</button>",
+                "<button {{ attrs }}>Click me</button>",
                 "{% bird button class='btn' id='my-btn' disabled %}Click me{% endbird %}",
                 {},
-                "<button class='btn' id='my-btn' disabled>Click me</button>",
+                '<button class="btn" id="my-btn" disabled>Click me</button>',
             ),
             (
-                "<button>{{ slot }}</button>",
+                "<button {{ attrs }}>{{ slot }}</button>",
                 "{% bird button %}{{ slot }}{% endbird %}",
                 {"slot": "Click me"},
                 "<button>Click me</button>",
