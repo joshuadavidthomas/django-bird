@@ -8,52 +8,173 @@ Not all contributions need to start with an issue, such as typo fixes in documen
 
 We adhere to Django's Code of Conduct in all interactions and expect all contributors to do the same. Please read the [Code of Conduct](https://www.djangoproject.com/conduct/) before contributing.
 
+## Requirements
+
+- [uv](https://github.com/astral-sh/uv) - Modern Python toolchain that handles:
+  - Python version management and installation
+  - Virtual environment creation and management
+  - Fast, reliable dependency resolution and installation
+  - Reproducible builds via lockfile
+- [direnv](https://github.com/direnv/direnv) (Optional) - Automatic environment variable loading
+- [just](https://github.com/casey/just) (Optional) - Command runner for development tasks
+
+### `Justfile`
+
+The repository includes a `Justfile` that provides all common development tasks with a consistent interface. Running `just` without arguments shows all available commands and their descriptions.
+
+<!-- [[[cog
+import subprocess
+import cog
+
+output_raw = subprocess.run(["just", "--list", "--list-submodules"], stdout=subprocess.PIPE)
+output_list = output_raw.stdout.decode("utf-8").split("\n")
+
+cog.outl("""\
+```bash
+$ just
+$ # just --list --list-submodules
+""")
+
+for i, line in enumerate(output_list):
+    if not line:
+        continue
+    cog.out(line)
+    if i < len(output_list):
+        cog.out("\n")
+
+cog.out("```")
+]]] -->
+```bash
+$ just
+$ # just --list --list-submodules
+
+Available recipes:
+    bootstrap
+    coverage *ARGS
+    lint
+    lock *ARGS
+    manage *COMMAND
+    test *ARGS
+    testall *ARGS
+    types *ARGS
+    copier:
+        copy TEMPLATE_PATH DESTINATION_PATH="." # Create a copier answers file
+        recopy ANSWERS_FILE *ARGS               # Recopy the project from the original template
+        recopy-all *ARGS                        # Loop through all answers files and recopy the project using copier
+        update ANSWERS_FILE *ARGS               # Update the project using a copier answers file
+        update-all *ARGS                        # Loop through all answers files and update the project using copier
+    docs:
+        build LOCATION="docs/_build/html" # Build documentation using Sphinx
+        serve PORT="8000"                 # Serve documentation locally
+    project:
+        bump *ARGS
+        release *ARGS
+```
+<!-- [[[end]]] -->
+
+All commands below will contain the full command as well as its `just` counterpart.
+
 ## Setup
 
-The following setup steps assume you are using a Unix-like operating system, such as Linux or macOS, and that you have a [supported](https://django-bird.readthedocs.io/#requirements) version of Python installed. If you are using Windows, you will need to adjust the commands accordingly. If you do not have Python installed, you can visit [python.org](https://www.python.org/) for instructions on how to install it for your operating system.
+The following instructions will use `uv` and assume a Unix-like operating system (Linux or macOS).
+
+Windows users will need to adjust commands accordingly, though the core workflow remains the same.
+
+Alternatively, any Python package manager that supports installing from `pyproject.toml` ([PEP 621](https://peps.python.org/pep-0621/)) can be used. If not using `uv`, ensure you have Python installed from [python.org](https://www.python.org/) or another source such as [`pyenv`](https://github.com/pyenv/pyenv).
 
 1. Fork the repository and clone it locally.
-2. Create a virtual environment and activate it. You can use whatever tool you prefer for this. Below is an example using the Python standard library's `venv` module:
 
-```shell
-python -m venv venv
-source venv/bin/activate
+2. Use `uv` to bootstrap your development environment.
+
+   ```bash
+   uv python install
+   uv sync --locked
+   # just bootstrap
+   ```
+
+   This will install the correct Python version, create and configure a virtual environment, and install all dependencies.
+
+## Tests
+
+The project uses [`pytest`](https://docs.pytest.org/) for testing and [`nox`](https://nox.thea.codes/) to run the tests in multiple environments.
+
+To run the test suite against the default versions of Python (lower bound of supported versions) and Django (lower bound of LTS versions):
+
+```bash
+uv run nox --session test
+# just test
 ```
 
-3. Install `django-bird` and the `dev` dependencies in editable mode:
+To run the test suite against the entire matrix of supported versions of Python and Django:
 
-```shell
-python -m pip install --editable '.[dev]'
-# or using [just](#just)
-just bootstrap
+```bash
+uv run nox --session tests
+# just testall
 ```
 
-## Testing
+Both can be passed additional arguments that will be provided to `pytest`.
 
-We use [`pytest`](https://docs.pytest.org/) for testing and [`nox`](https://nox.thea.codes/) to run the tests in multiple environments.
-
-To run the test suite against the default versions of Python (lower bound of supported versions) and Django (lower bound of LTS versions), run:
-
-```shell
-python -m nox --session "test"
-# or using [just](#just)
-just test
+```bash
+uv run nox --session test -- -v --last-failed
+uv run nox --session tests -- --failed-first --maxfail=1
+# just test -v --last-failed
+# just testall --failed-first --maxfail=1
 ```
 
-To run the test suite against all supported versions of Python and Django, run:
+### Coverage
 
-```shell
-python -m nox --session "tests"
-# or using [just](#just)
-just testall
+The project uses [`coverage.py`](https://github.com/nedbat/coverage.py) to measure code coverage and aims to maintain 100% coverage across the codebase.
+
+To run the test suite and measure code coverage:
+
+```bash
+uv run nox --session coverage
+# just coverage
 ```
 
-## `just`
+All pull requests must include tests to maintain 100% coverage. Coverage configuration can be found in the `[tools.coverage.*]` sections of [`pyproject.toml`](pyproject.toml).
 
-[`just`](https://github.com/casey/just) is a command runner that is used to run common commands, similar to `make` or `invoke`. A `Justfile` is provided at the base of the repository, which contains commands for common development tasks, such as running the test suite or linting.
+## Linting and Formatting
 
-To see a list of all available commands, ensure `just` is installed and run the following command at the base of the repository:
+This project enforces code quality standards using [`pre-commit`](https://github.com/pre-commit/pre-commit).
 
-```shell
-just
+To run all formatters and linters:
+
+```bash
+uv run nox --session lint
+# just lint
 ```
+
+The following checks are run:
+
+- [ruff](https://github.com/astral-sh/ruff) - Fast Python linter and formatter
+- Code formatting for Python files in documentation ([blacken-docs](https://github.com/adamchainz/blacken-docs))
+- Django compatibility checks ([django-upgrade](https://github.com/adamchainz/django-upgrade))
+- TOML and YAML validation
+- Basic file hygiene (trailing whitespace, file endings)
+
+To enable pre-commit hooks after cloning:
+
+```bash
+uv run --with pre-commit pre-commit install
+```
+
+Configuration for these tools can be found in:
+
+- [`.pre-commit-config.yaml`](.pre-commit-config.yaml) - Pre-commit hook configuration
+- [`pyproject.toml`](pyproject.toml) - Ruff and other tool settings
+
+## Continuous Integration
+
+This project uses GitHub Actions for CI/CD. The workflows can be found in [`.github/workflows/`](.github/workflows/).
+
+- [`test.yml`](.github/workflows/test.yml) - Runs on pushes to the `main` branch and on all PRs
+  - Tests across Python/Django version matrix
+  - Static type checking
+  - Coverage reporting
+- [`release.yml`](.github/workflows/release.yml) - Runs on GitHub release creation
+  - Runs the [`test.yml`](.github/workflows/test.yml) workflow
+  - Builds package
+  - Publishes to PyPI
+
+PRs must pass all CI checks before being merged.
