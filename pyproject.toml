@@ -1,6 +1,6 @@
 [build-system]
-build-backend = "hatchling.build"
-requires = ["hatchling"]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
 
 [project]
 authors = [
@@ -21,7 +21,8 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: Implementation :: CPython"
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Rust"
 ]
 dependencies = [
   "django>=4.2"
@@ -64,6 +65,13 @@ types = [
 Documentation = "https://django-bird.readthedocs.io/"
 Issues = "https://github.com/joshuadavidthomas/django-bird/issues"
 Source = "https://github.com/joshuadavidthomas/django-bird"
+
+[tool.basedpyright]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__"
+]
+include = ["src"]
 
 [tool.bumpver]
 commit = true
@@ -129,6 +137,10 @@ packages = ["src/django_bird"]
 
 [tool.hatch.version]
 path = "src/django_bird/__init__.py"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+manifest-path = "src/_bird_loader/Cargo.toml"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -232,7 +244,10 @@ unfixable = []
 
 [tool.ruff.lint.isort]
 force-single-line = true
-known-first-party = ["django_bird"]
+known-first-party = [
+  "_bird_loader",
+  "django_bird"
+]
 required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.per-file-ignores]
@@ -250,5 +265,7 @@ dev-dependencies = [
   "django-stubs>=5.0.4",
   "django-stubs-ext>=5.0.4",
   "nox[uv]>=2024.4.15",
-  "ruff>=0.6.6"
+  "ruff>=0.6.6",
+  "maturin>=1.7.4",
 ]
+reinstall-package = ["django_bird"]
