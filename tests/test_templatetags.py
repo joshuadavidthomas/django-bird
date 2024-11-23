@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
 from django.template import Context
+from django.template import Library
 from django.template import Template
 from django.template.base import Parser
 from django.template.base import Token
@@ -169,6 +172,56 @@ class TestBirdTemplateTag:
         t = Template(template)
         rendered = t.render(context=Context(context))
         assert normalize_whitespace(rendered) == expected
+
+    @pytest.mark.parametrize(
+        "component,template,context,expected",
+        [
+            (
+                "<button>{{ slot }}</button>",
+                "{% load custom_filters %}{% bird button %}{{ text|make_fancy }}{% endbird %}",
+                {"text": "click me"},
+                "<button>✨click me✨</button>",
+            ),
+            (
+                "<button>{% bird:slot label %}{% endbird:slot %}</button>",
+                "{% load custom_filters %}{% bird button %}{% bird:slot label %}{{ text|make_fancy }}{% endbird:slot %}{% endbird %}",
+                {"text": "click me"},
+                "<button>✨click me✨</button>",
+            ),
+            (
+                "<button><span>{% bird:slot icon %}{% endbird:slot %}</span>{{ slot }}</button>",
+                "{% load custom_filters %}{% bird button %}{% bird:slot icon %}{{ icon_text|make_fancy }}{% endbird:slot %}{{ text|make_fancy }}{% endbird %}",
+                {"text": "click me", "icon_text": "icon"},
+                "<button><span>✨icon✨</span>✨click me✨</button>",
+            ),
+        ],
+    )
+    def test_slots_with_outside_templatetag(
+        self,
+        component,
+        template,
+        context,
+        expected,
+        create_bird_template,
+        normalize_whitespace,
+    ):
+        register = Library()
+
+        @register.filter
+        def make_fancy(value):
+            return f"✨{value}✨"
+
+        def get_template_libraries(self, libraries):
+            return {"custom_filters": register}
+
+        with patch(
+            "django.template.engine.Engine.get_template_libraries",
+            get_template_libraries,
+        ):
+            create_bird_template("button", component)
+            t = Template(template)
+            rendered = t.render(context=Context(context))
+            assert normalize_whitespace(rendered) == expected
 
 
 @pytest.mark.xfail(reason="Feature not implemented yet")
