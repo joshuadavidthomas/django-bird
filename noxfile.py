@@ -72,8 +72,6 @@ def tests(session, django):
     session.run_install(
         "uv",
         "sync",
-        "--extra",
-        "tests",
         "--frozen",
         "--inexact",
         "--no-install-package",
@@ -91,8 +89,11 @@ def tests(session, django):
         session.install(f"django=={django}")
 
     command = ["python", "-m", "pytest"]
-    if session.posargs and all(arg for arg in session.posargs):
-        command.append(*session.posargs)
+    if session.posargs:
+        args = []
+        for arg in session.posargs:
+            args.extend(arg.split(" "))
+        command.extend(args)
     session.run(*command)
 
 
@@ -101,8 +102,6 @@ def coverage(session):
     session.run_install(
         "uv",
         "sync",
-        "--extra",
-        "tests",
         "--frozen",
         "--python",
         PY_DEFAULT,
@@ -110,10 +109,20 @@ def coverage(session):
     )
 
     try:
-        session.run("python", "-m", "pytest", "--cov", "--cov-report=")
+        command = ["python", "-m", "pytest", "--cov", "--cov-report="]
+        if session.posargs:
+            args = []
+            for arg in session.posargs:
+                args.extend(arg.split(" "))
+            command.extend(args)
+        session.run(*command)
     finally:
+        # 0 -> OK
+        # 2 -> code coverage percent unmet
+        success_codes = [0, 2]
+
         report_cmd = ["python", "-m", "coverage", "report"]
-        session.run(*report_cmd)
+        session.run(*report_cmd, success_codes=success_codes)
 
         if summary := os.getenv("GITHUB_STEP_SUMMARY"):
             report_cmd.extend(["--skip-covered", "--skip-empty", "--format=markdown"])
@@ -122,10 +131,18 @@ def coverage(session):
                 output_buffer.write("")
                 output_buffer.write("### Coverage\n\n")
                 output_buffer.flush()
-                session.run(*report_cmd, stdout=output_buffer)
+                session.run(
+                    *report_cmd, stdout=output_buffer, success_codes=success_codes
+                )
         else:
             session.run(
-                "python", "-m", "coverage", "html", "--skip-covered", "--skip-empty"
+                "python",
+                "-m",
+                "coverage",
+                "html",
+                "--skip-covered",
+                "--skip-empty",
+                success_codes=success_codes,
             )
 
 
@@ -134,7 +151,7 @@ def types(session):
     session.run_install(
         "uv",
         "sync",
-        "--extra",
+        "--group",
         "types",
         "--frozen",
         "--python",
@@ -143,8 +160,11 @@ def types(session):
     )
 
     command = ["python", "-m", "mypy", "."]
-    if session.posargs and all(arg for arg in session.posargs):
-        command.append(*session.posargs)
+    if session.posargs:
+        args = []
+        for arg in session.posargs:
+            args.extend(arg.split(" "))
+        command.extend(args)
     session.run(*command)
 
 
