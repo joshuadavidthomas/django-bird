@@ -44,6 +44,32 @@ for i, line in enumerate(output_list):
 
 cog.out("```")
 ]]] -->
+```bash
+$ just
+$ # just --list --list-submodules
+
+Available recipes:
+    bootstrap
+    coverage *ARGS
+    lint
+    lock *ARGS
+    manage *COMMAND
+    test *ARGS
+    testall *ARGS
+    types *ARGS
+    copier:
+        copy TEMPLATE_PATH DESTINATION_PATH="." # Create a copier answers file
+        recopy ANSWERS_FILE *ARGS               # Recopy the project from the original template
+        recopy-all *ARGS                        # Loop through all answers files and recopy the project using copier
+        update ANSWERS_FILE *ARGS               # Update the project using a copier answers file
+        update-all *ARGS                        # Loop through all answers files and update the project using copier
+    docs:
+        build LOCATION="docs/_build/html" # Build documentation using Sphinx
+        serve PORT="8000"                 # Serve documentation locally
+    project:
+        bump *ARGS
+        release *ARGS
+```
 <!-- [[[end]]] -->
 
 All commands below will contain the full command as well as its `just` counterpart.
