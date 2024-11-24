@@ -275,7 +275,7 @@ class TestBirdNode:
         assert component_name == expected
 
     @pytest.mark.parametrize(
-        "sub_dir,filename,component,nodename,expected",
+        "name,component_dirs,expected",
         [
             (
                 "button",
@@ -316,7 +316,8 @@ class TestBirdNode:
     def test_get_template_names(self, name, component_dirs, expected):
         node = BirdNode(name=name, attrs=[], nodelist=None)
 
-        template_names = node.get_template_names(node.name)
+        with override_settings(DJANGO_BIRD={"COMPONENT_DIRS": component_dirs}):
+            template_names = node.get_template_names(node.name)
 
         assert template_names == expected
 
@@ -325,18 +326,19 @@ class TestBirdNode:
 
         template_names = node.get_template_names(node.name)
 
-        template_names = node.get_template_names(node.name)
+        assert "bird/input/label/invalid.html" not in template_names
 
     def test_get_template_names_duplicates(self):
         with override_settings(DJANGO_BIRD={"COMPONENT_DIRS": ["bird"]}):
             node = BirdNode(name="button", attrs=[], nodelist=None)
-            template_names = node.get_template_names()
+
+            template_names = node.get_template_names(node.name)
 
             template_counts = {}
             for template in template_names:
                 template_counts[template] = template_counts.get(template, 0) + 1
 
-            for template, count in template_counts.items():
+            for _, count in template_counts.items():
                 assert count == 1
 
 

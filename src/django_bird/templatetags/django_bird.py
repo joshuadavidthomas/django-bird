@@ -159,7 +159,7 @@ class BirdNode(template.Node):
         template_names = []
         component_dirs = list(dict.fromkeys([*app_settings.COMPONENT_DIRS, "bird"]))
 
-        name_parts = self.name.split(".")
+        name_parts = name.split(".")
         path_name = "/".join(name_parts)
 
         for component_dir in component_dirs:
