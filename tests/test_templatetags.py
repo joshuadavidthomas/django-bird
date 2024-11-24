@@ -82,6 +82,12 @@ class TestBirdTemplateTag:
             ),
             (
                 "<button>Click me</button>",
+                "{% with dynamic_name='button' %}{% bird dynamic_name %}Click me{% endbird %}{% endwith %}",
+                {},
+                "<button>Click me</button>",
+            ),
+            (
+                "<button>Click me</button>",
                 "{% bird dynamic-name %}Click me{% endbird %}",
                 {"dynamic-name": "button"},
                 "<button>Click me</button>",
