@@ -11,6 +11,7 @@
 ```{toctree}
 :hidden:
 :maxdepth: 3
+Naming <naming>
 attrs
 slots
 Organization <organization>

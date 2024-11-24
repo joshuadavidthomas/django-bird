@@ -20,6 +20,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 🚨 This release contains a breaking change. See the Changed section for more information. 🚨
 
+### Added
+
+- Added support for dynamic component names in `{% bird %}` tag. Component names can now be variables, e.g. `{% bird component_type %}` where `component_type` is a variable in the template context.
+
 ### Changed
 
 - Reversed template resolution order to prefer component-specific templates over generic ones.
