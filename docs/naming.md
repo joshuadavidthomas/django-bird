@@ -51,14 +51,14 @@ Component names can be dynamic, using template variables:
 
 This is particularly useful when the component choice needs to be determined at runtime in your Django view.
 
-## Name Resolution
+## Component Directories
 
-When resolving component names, django-bird searches in this order:
+django-bird searches for component templates in multiple locations, following a specific precedence order:
 
 1. Custom directories specified in `COMPONENT_DIRS` setting
 2. The default `bird` directory
 
-For a component named `accordion`:
+For example, with a component named `accordion`:
 
 ```bash
 templates/
