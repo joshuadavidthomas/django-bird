@@ -2,7 +2,7 @@
 
 Component names in django-bird are derived from their file locations and names within your templates directory. The naming system is flexible and supports both simple and complex component structures.
 
-For more complex component structures and organization patterns, see the [Organization](organization.md) documentation.
+For more complex component structures and organization patterns, see the [Organizing Components](organization.md) documentation.
 
 ## Basic Naming
 
