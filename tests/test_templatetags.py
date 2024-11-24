@@ -237,68 +237,70 @@ class TestBirdTemplateTagFutureFeatures:
 
 class TestBirdNode:
     @pytest.mark.parametrize(
-        "sub_dir,filename,component,nodename,expected",
+        "name,component_dirs,expected",
         [
             (
-                None,
                 "button",
-                "<button>Click me</button>",
-                "button",
-                "bird/button.html",
+                [],
+                [
+                    "bird/button/button.html",
+                    "bird/button/index.html",
+                    "bird/button.html",
+                ],
+            ),
+            (
+                "input.label",
+                [],
+                [
+                    "bird/input/label/label.html",
+                    "bird/input/label/index.html",
+                    "bird/input/label.html",
+                    "bird/input.label.html",
+                ],
             ),
             (
                 "button",
-                "index",
-                "<button>Click me</button>",
-                "button",
-                "bird/button/index.html",
-            ),
-            (
-                "button",
-                "button",
-                "<button>Click me</button>",
-                "button",
-                "bird/button/button.html",
-            ),
-            (
-                None,
-                "button.label",
-                "<button>Click me</button>",
-                "button.label",
-                "bird/button.label.html",
-            ),
-            (
-                None,
-                "button.label",
-                "<button>Click me</button>",
-                "button.label",
-                "bird/button/label.html",
+                ["custom", "theme"],
+                [
+                    "custom/button/button.html",
+                    "custom/button/index.html",
+                    "custom/button.html",
+                    "theme/button/button.html",
+                    "theme/button/index.html",
+                    "theme/button.html",
+                    "bird/button/button.html",
+                    "bird/button/index.html",
+                    "bird/button.html",
+                ],
             ),
         ],
     )
-    def test_get_template_names(
-        self, sub_dir, filename, component, nodename, expected, create_bird_template
-    ):
-        create_bird_template(name=filename, content=component, sub_dir=sub_dir)
-        node = BirdNode(name=nodename, attrs=[], nodelist=None)
+    def test_get_template_names(self, name, component_dirs, expected):
+        node = BirdNode(name=name, attrs=[], nodelist=None)
+
+        with override_settings(DJANGO_BIRD={"COMPONENT_DIRS": component_dirs}):
+            template_names = node.get_template_names()
+
+        assert template_names == expected
+
+    def test_get_template_names_invalid(self):
+        node = BirdNode(name="input.label", attrs=[], nodelist=None)
 
         template_names = node.get_template_names()
 
-        assert any(expected in template_name for template_name in template_names)
+        assert "bird/input/label/invalid.html" not in template_names
 
-    @override_settings(DJANGO_BIRD={"COMPONENT_DIRS": ["not_default"]})
-    def test_get_template_names_path_component_dirs(self, create_bird_template):
-        create_bird_template(
-            name="button",
-            content="<button class=btn_class>Click me</button>",
-            bird_dir_name="not_default",
-        )
+    def test_get_template_names_duplicates(self):
+        with override_settings(DJANGO_BIRD={"COMPONENT_DIRS": ["bird"]}):
+            node = BirdNode(name="button", attrs=[], nodelist=None)
+            template_names = node.get_template_names()
 
-        node = BirdNode(name="button", attrs=[], nodelist=None)
+            template_counts = {}
+            for template in template_names:
+                template_counts[template] = template_counts.get(template, 0) + 1
 
-        template_names = node.get_template_names()
-
-        assert any("not_default" in template_name for template_name in template_names)
+            for template, count in template_counts.items():
+                assert count == 1
 
 
 class TestSlotsTemplateTag:
