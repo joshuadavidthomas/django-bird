@@ -18,6 +18,22 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- Reversed template resolution order to prefer component-specific templates over generic ones.
+
+  For example, given a component named `button`, the previous resolution order was:
+
+  1. `button.html`
+  2. `button/button.html`
+  3. `button/index.html`
+
+  The new resolution order is:
+
+  1. `button/button.html`
+  2. `button/index.html`
+  3. `button.html`
+
 ## [0.1.1]
 
 ### Fixed
