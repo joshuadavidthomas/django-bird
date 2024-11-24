@@ -22,7 +22,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Added
 
-- Added support for dynamic component names in `{% bird %}` tag. Component names can now be variables, e.g. `{% bird component_type %}` where component_type is a variable in the template context.
+- Added support for dynamic component names in `{% bird %}` tag. Component names can now be variables, e.g. `{% bird component_type %}` where `component_type` is a variable in the template context.
 
 ### Changed
 
