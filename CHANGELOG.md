@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+🚨 This release contains a breaking change. See the Changed section for more information. 🚨
+
 ### Changed
 
 - Reversed template resolution order to prefer component-specific templates over generic ones.
