@@ -70,20 +70,26 @@ templates/
 
 The version in `components/` takes precedence over the one in `bird/`.
 
-## Index Files
+## Primary Name
 
-Following the web convention where `example.com/blog/` automatically serves `example.com/blog/index.html`, django-bird will look for either:
+django-bird supports two standard naming patterns for your component's main template file, similar to how web servers handle directory indexes (e.g. `example.com/blog/index.html` automatically being served at `example.com/blog/`).
 
-- `<name>/<name>.html`
-- `<name>/index.html`
+For a component named `accordion`, you can name the main template file either:
 
 ```bash
 templates/
 └── bird/
     └── accordion/
-        ├── index.html  # Primary accordion component
-        ├── item.html
-        └── content.html
+        └── index.html
 ```
 
-The component `{% bird accordion %}` will resolve to `index.html`.
+Or alternatively:
+
+```bash
+templates/
+└── bird/
+    └── accordion/
+        └── accordion.html
+```
+
+In both cases, the template tag `{% bird accordion %}` will find and render the component. You can choose whichever naming convention better matches your project's style.
