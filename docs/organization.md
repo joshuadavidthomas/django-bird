@@ -122,7 +122,7 @@ Here's an example of using our accordion component, based on an MDN [example](ht
             Graduation Requirements
         {% endbird %}
         {% bird accordion.content %}
-            Requires 40 credits, including a passing grade in health, geography, 
+            Requires 40 credits, including a passing grade in health, geography,
             history, economics, and wood shop.
         {% endbird %}
     {% endbird %}
