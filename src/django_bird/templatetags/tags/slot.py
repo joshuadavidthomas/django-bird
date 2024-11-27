@@ -21,8 +21,7 @@ END_TAG = "endbird:slot"
 def do_slot(parser: Parser, token: Token) -> SlotNode:
     bits = token.split_contents()
     name = parse_slot_name(bits)
-    nodelist = parser.parse((END_TAG,))
-    parser.delete_first_token()
+    nodelist = parse_nodelist(parser)
     return SlotNode(name, nodelist)
 
 
@@ -37,9 +36,14 @@ def parse_slot_name(bits: TagBits) -> str:
             name = name
         return name.strip("'\"")
     else:
-        raise template.TemplateSyntaxError(
-            "slot tag requires either no arguments, one argument, or 'name=\"slot_name\"'"
-        )
+        msg = f"{TAG} tag requires either no arguments, one argument, or 'name=\"slot_name\"'"
+        raise template.TemplateSyntaxError(msg)
+
+
+def parse_nodelist(parser: Parser) -> NodeList:
+    nodelist = parser.parse((END_TAG,))
+    parser.delete_first_token()
+    return nodelist
 
 
 class SlotNode(template.Node):
