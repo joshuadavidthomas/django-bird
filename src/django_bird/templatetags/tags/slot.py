@@ -14,14 +14,14 @@ from django.utils.safestring import mark_safe
 from django_bird._typing import TagBits
 from django_bird._typing import override
 
-SLOT_TAG = "bird:slot"
-SLOT_TAG_END = "endbird:slot"
+TAG = "bird:slot"
+END_TAG = "endbird:slot"
 
 
 def do_slot(parser: Parser, token: Token) -> SlotNode:
     bits = token.split_contents()
     name = parse_slot_name(bits)
-    nodelist = parser.parse((SLOT_TAG_END,))
+    nodelist = parser.parse((END_TAG,))
     parser.delete_first_token()
     return SlotNode(name, nodelist)
 
