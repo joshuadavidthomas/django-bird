@@ -12,9 +12,9 @@ from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 from django.test import override_settings
 
-from django_bird.templatetags.django_bird import BirdNode
-from django_bird.templatetags.django_bird import do_bird
-from django_bird.templatetags.django_bird import parse_slot_name
+from django_bird.templatetags.tags.bird import BirdNode
+from django_bird.templatetags.tags.bird import do_bird
+from django_bird.templatetags.tags.slot import parse_slot_name
 
 
 class TestBirdTemplateTag:
