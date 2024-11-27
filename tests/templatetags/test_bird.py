@@ -12,8 +12,8 @@ from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 from django.test import override_settings
 
-from django_bird.templatetags.tags.bird import END_TAG
-from django_bird.templatetags.tags.bird import START_TAG
+from django_bird.templatetags.tags.bird import BIRD_TAG
+from django_bird.templatetags.tags.bird import BIRD_TAG_END
 from django_bird.templatetags.tags.bird import BirdNode
 from django_bird.templatetags.tags.bird import do_bird
 
@@ -29,17 +29,17 @@ class TestTemplateTag:
         ],
     )
     def test_node_name(self, name, expected):
-        token = Token(TokenType.BLOCK, f"{START_TAG} {name}")
+        token = Token(TokenType.BLOCK, f"{BIRD_TAG} {name}")
         parser = Parser(
-            [Token(TokenType.BLOCK, END_TAG)],
+            [Token(TokenType.BLOCK, BIRD_TAG_END)],
         )
         node = do_bird(parser, token)
         assert node.name == expected
 
     def test_missing_argument(self):
-        token = Token(TokenType.BLOCK, START_TAG)
+        token = Token(TokenType.BLOCK, BIRD_TAG)
         parser = Parser(
-            [Token(TokenType.BLOCK, END_TAG)],
+            [Token(TokenType.BLOCK, BIRD_TAG_END)],
         )
         with pytest.raises(TemplateSyntaxError):
             do_bird(parser, token)
@@ -53,9 +53,9 @@ class TestTemplateTag:
         ],
     )
     def test_node_attrs(self, attrs, expected_attrs):
-        token = Token(TokenType.BLOCK, f"{START_TAG} button {attrs}")
+        token = Token(TokenType.BLOCK, f"{BIRD_TAG} button {attrs}")
         parser = Parser(
-            [Token(TokenType.BLOCK, END_TAG)],
+            [Token(TokenType.BLOCK, BIRD_TAG_END)],
         )
         node = do_bird(parser, token)
         assert node.attrs == expected_attrs

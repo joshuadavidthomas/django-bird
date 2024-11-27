@@ -8,5 +8,5 @@ from .tags import slot
 register = template.Library()
 
 
-register.tag(bird.START_TAG, bird.do_bird)
-register.tag(slot.START_TAG, slot.do_slot)
+register.tag(bird.BIRD_TAG, bird.do_bird)
+register.tag(slot.SLOT_TAG, slot.do_slot)
