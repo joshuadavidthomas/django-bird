@@ -1,13 +1,12 @@
-# pyright: reportAny=false
 from __future__ import annotations
 
 from django import template
 
-from .tags import do_bird
-from .tags import do_slot
+from .tags import bird
+from .tags import slot
 
 register = template.Library()
 
 
-register.tag("bird", do_bird)
-register.tag("bird:slot", do_slot)
+register.tag(bird.START_TAG, bird.do_bird)
+register.tag(slot.START_TAG, slot.do_slot)

@@ -11,22 +11,26 @@ from django.template.context import Context
 from django.utils.safestring import SafeString
 from django.utils.safestring import mark_safe
 
+from django_bird._typing import TagBits
 from django_bird._typing import override
+
+START_TAG = "bird:slot"
+END_TAG = "endbird:slot"
 
 
 def do_slot(parser: Parser, token: Token) -> SlotNode:
     bits = token.split_contents()
     name = parse_slot_name(bits)
-    nodelist = parser.parse(("endbird:slot",))
+    nodelist = parser.parse((END_TAG,))
     parser.delete_first_token()
     return SlotNode(name, nodelist)
 
 
-def parse_slot_name(tag_args: list[str]) -> str:
-    if len(tag_args) == 1:
+def parse_slot_name(bits: TagBits) -> str:
+    if len(bits) == 1:
         return "default"
-    elif len(tag_args) == 2:
-        name = tag_args[1]
+    elif len(bits) == 2:
+        name = bits[1]
         if name.startswith("name="):
             name = name.split("=")[1]
         else:

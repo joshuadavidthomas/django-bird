@@ -9,7 +9,7 @@ from django_bird.templatetags.tags.slot import parse_slot_name
 
 
 @pytest.mark.parametrize(
-    "tag_args,expected",
+    "bits,expected",
     [
         (["slot"], "default"),
         (["slot", "foo"], "foo"),
@@ -19,8 +19,8 @@ from django_bird.templatetags.tags.slot import parse_slot_name
         (["slot", "name='foo'"], "foo"),
     ],
 )
-def test_parse_slot_name(tag_args, expected):
-    assert parse_slot_name(tag_args) == expected
+def test_parse_slot_name(bits, expected):
+    assert parse_slot_name(bits) == expected
 
 
 def test_parse_slot_name_no_args():

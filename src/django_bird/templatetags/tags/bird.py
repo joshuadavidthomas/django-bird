@@ -17,6 +17,9 @@ from django_bird.conf import app_settings
 
 from .slot import SlotNode
 
+START_TAG = "bird"
+END_TAG = "endbird"
+
 
 def do_bird(parser: Parser, token: Token) -> BirdNode:
     bits = token.split_contents()
@@ -36,7 +39,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
     if len(attrs) > 0 and attrs[-1] == "/":
         nodelist = None
     else:
-        nodelist = parser.parse(("endbird",))
+        nodelist = parser.parse((END_TAG,))
         parser.delete_first_token()
 
     return BirdNode(name, attrs, nodelist)
