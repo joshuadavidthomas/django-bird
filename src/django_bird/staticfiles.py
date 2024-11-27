@@ -17,16 +17,6 @@ class AssetType(IntEnum):
     CSS = 1
     JS = 2
 
-    @classmethod
-    def from_path(cls, path: Path) -> AssetType:
-        match path.suffix.lower():
-            case ".css":
-                return cls.CSS
-            case ".js":
-                return cls.JS
-            case _:
-                raise ValueError(f"Unknown asset type for path: {path}")
-
 
 @dataclass(frozen=True)
 class Asset:
@@ -42,7 +32,14 @@ class Asset:
 
     @classmethod
     def from_path(cls, path: Path) -> Asset:
-        return cls(path=path, type=AssetType.from_path(path))
+        match path.suffix.lower():
+            case ".css":
+                asset_type = AssetType.CSS
+            case ".js":
+                asset_type = AssetType.JS
+            case _:
+                raise ValueError(f"Unknown asset type for path: {path}")
+        return cls(path=path, type=asset_type)
 
 
 class Registry:
