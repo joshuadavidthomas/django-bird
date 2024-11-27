@@ -1,9 +1,14 @@
 from __future__ import annotations
 
-from abc import ABC
-from abc import abstractmethod
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import IntEnum
 from pathlib import Path
+
+from django.templatetags.static import static
+from django.utils.html import format_html
+from django.utils.html import format_html_join
+from django.utils.safestring import SafeString
 
 from ._typing import override
 
@@ -12,66 +17,80 @@ class AssetType(IntEnum):
     CSS = 1
     JS = 2
 
+    @classmethod
+    def from_path(cls, path: Path) -> AssetType:
+        match path.suffix.lower():
+            case ".css":
+                return cls.CSS
+            case ".js":
+                return cls.JS
+            case _:
+                raise ValueError(f"Unknown asset type for path: {path}")
 
-class Registry(ABC):
-    asset_type: AssetType
 
-    def __init__(self):
-        self._assets: set[Path] = set()
-        self._processed_assets: dict[str, str] = {}
+@dataclass(frozen=True)
+class Asset:
+    path: Path
+    type: AssetType
 
-    def register(self, path: Path) -> None:
-        if not path.exists():
-            raise FileNotFoundError(f"Asset file not found: {path}")
-        self._assets.add(path)
+    @override
+    def __hash__(self) -> int:
+        return hash((str(self.path), self.type))
 
-    def get_processed_content(self, path: Path) -> str:
-        if str(path) not in self._processed_assets:
-            self._processed_assets[str(path)] = self._process_content(path)
-        return self._processed_assets[str(path)]
+    def exists(self) -> bool:
+        return self.path.exists()
 
-    @abstractmethod
-    def _process_content(self, path: Path) -> str: ...
+    @classmethod
+    def from_path(cls, path: Path) -> Asset:
+        return cls(path=path, type=AssetType.from_path(path))
 
-    def get_all_assets(self) -> str:
-        return "\n".join(
-            self.get_processed_content(path) for path in sorted(self._assets)
-        )
+
+class Registry:
+    def __init__(self) -> None:
+        self.assets: set[Asset] = set()
+
+    def register(self, asset: Asset | Path) -> None:
+        if isinstance(asset, Path):
+            asset = Asset.from_path(asset)
+
+        if not asset.exists():
+            raise FileNotFoundError(f"Asset file not found: {asset.path}")
+
+        self.assets.add(asset)
 
     def clear(self) -> None:
-        self._assets.clear()
-        self._processed_assets.clear()
+        self.assets.clear()
+
+    def get_assets(self, asset_type: AssetType) -> list[Asset]:
+        assets = [asset for asset in self.assets if asset.type == asset_type]
+        return self.sort_assets(assets)
+
+    def sort_assets(
+        self,
+        assets: list[Asset],
+        *,
+        key: Callable[[Asset], str] = lambda a: str(a.path),
+    ) -> list[Asset]:
+        return sorted(assets, key=key)
+
+    def get_format_string(self, asset_type: AssetType) -> str:
+        match asset_type:
+            case AssetType.CSS:
+                return '<link rel="stylesheet" href="{}" type="text/css">'
+            case AssetType.JS:
+                return '<script src="{}" type="text/javascript">'
+
+    def render(self, asset_type: AssetType) -> SafeString:
+        assets = self.get_assets(asset_type)
+
+        if not assets:
+            return format_html("")
+
+        return format_html_join(
+            "\n",
+            self.get_format_string(asset_type),
+            ((static(str(asset.path)),) for asset in assets),
+        )
 
 
-class CSSRegistry(Registry):
-    asset_type = AssetType.CSS
-
-    @override
-    def _process_content(self, path: Path) -> str:
-        with open(path) as f:
-            content = f.read()
-        return content
-
-    @override
-    def get_all_assets(self) -> str:
-        css_content = super().get_all_assets()
-        return f'<style type="text/css">\n{css_content}\n</style>'
-
-
-class JSRegistry(Registry):
-    asset_type = AssetType.JS
-
-    @override
-    def _process_content(self, path: Path) -> str:
-        with open(path) as f:
-            content = f.read()
-        return content
-
-    @override
-    def get_all_assets(self) -> str:
-        js_content = super().get_all_assets()
-        return f'<script type="text/javascript">\n{js_content}\n</script>'
-
-
-js_registry = JSRegistry()
-css_registry = CSSRegistry()
+registry = Registry()

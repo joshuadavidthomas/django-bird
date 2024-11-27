@@ -15,6 +15,10 @@ from django.utils.safestring import mark_safe
 
 from django_bird._typing import override
 from django_bird.conf import app_settings
+from django_bird.staticfiles import AssetType
+from django_bird.staticfiles import registry
+
+TagBits = list[str]
 
 register = template.Library()
 
@@ -183,11 +187,11 @@ def do_slot(parser: Parser, token: Token) -> SlotNode:
     return SlotNode(name, nodelist)
 
 
-def parse_slot_name(tag_args: list[str]) -> str:
-    if len(tag_args) == 1:
+def parse_slot_name(bits: TagBits) -> str:
+    if len(bits) == 1:
         return "default"
-    elif len(tag_args) == 2:
-        name = tag_args[1]
+    elif len(bits) == 2:
+        name = bits[1]
         if name.startswith("name="):
             name = name.split("=")[1]
         else:
@@ -220,3 +224,38 @@ class SlotNode(template.Node):
         content = t.render(context)
 
         return mark_safe(content)
+
+
+@register.tag("bird:css")
+@register.tag("bird:js")
+def do_asset(_: Parser, token: Token):
+    bits = token.split_contents()
+    if len(bits) < 1:
+        msg = f"{token.contents.split()[0]} tag takes no arguments"
+        raise template.TemplateSyntaxError(msg)
+    asset_type = parse_asset_type(bits)
+    return AssetNode(asset_type)
+
+
+def parse_asset_type(bits: TagBits) -> AssetType:
+    try:
+        tag_name = bits[0]
+        asset_type = tag_name.split(":")[1]
+        match asset_type:
+            case "css":
+                return AssetType.CSS
+            case "js":
+                return AssetType.JS
+            case _:
+                raise ValueError(f"Unknown asset type: {asset_type}")
+    except IndexError as e:
+        raise ValueError(f"Invalid tag format: {bits}") from e
+
+
+class AssetNode(template.Node):
+    def __init__(self, asset_type: AssetType):
+        self.asset_type = asset_type
+
+    @override
+    def render(self, context: Context) -> SafeString:
+        return registry.render(self.asset_type)
