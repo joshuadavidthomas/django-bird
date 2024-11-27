@@ -10,3 +10,5 @@ else:
     )
 
 override = typing_override
+
+TagBits = list[str]

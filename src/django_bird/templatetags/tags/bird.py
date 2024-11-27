@@ -12,34 +12,48 @@ from django.template.loader import select_template
 from django.utils.safestring import SafeString
 from django.utils.safestring import mark_safe
 
+from django_bird._typing import TagBits
 from django_bird._typing import override
 from django_bird.conf import app_settings
 
 from .slot import SlotNode
 
+TAG = "bird"
+END_TAG = "endbird"
+
 
 def do_bird(parser: Parser, token: Token) -> BirdNode:
     bits = token.split_contents()
+    name = parse_bird_name(bits)
+    attrs = parse_attrs(bits)
+    nodelist = parse_nodelist(attrs, parser)
+    return BirdNode(name, attrs, nodelist)
 
-    if len(bits) < 2:
-        msg = f"{token.contents.split()[0]} tag requires at least one argument"
+
+def parse_bird_name(bits: TagBits) -> str:
+    if len(bits) == 1:
+        msg = f"{TAG} tag requires at least one argument"
         raise template.TemplateSyntaxError(msg)
 
     # {% bird name %}
     # {% bird 'name' %}
     # {% bird "name" %}
-    name = bits[1].strip("'\"")
-    attrs = bits[2:]
+    return bits[1].strip("'\"")
 
+
+def parse_attrs(bits: TagBits) -> TagBits:
+    return bits[2:]
+
+
+def parse_nodelist(attrs: TagBits, parser: Parser) -> NodeList | None:
     # self-closing tag
     # {% bird name / %}
     if len(attrs) > 0 and attrs[-1] == "/":
         nodelist = None
     else:
-        nodelist = parser.parse(("endbird",))
+        nodelist = parser.parse((END_TAG,))
         parser.delete_first_token()
-
-    return BirdNode(name, attrs, nodelist)
+    return nodelist
 
 
 class BirdNode(template.Node):
