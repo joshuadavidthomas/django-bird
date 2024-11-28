@@ -10,7 +10,6 @@ from django.template.base import Token
 from django.template.context import Context
 from django.template.loader import select_template
 from django.utils.safestring import SafeString
-from django.utils.safestring import mark_safe
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
@@ -62,7 +61,6 @@ class BirdNode(template.Node):
         self.name = name
         self.attrs = attrs
         self.nodelist = nodelist
-        self.default_slot = "default"
 
     @override
     def render(self, context: Context) -> SafeString:
@@ -115,6 +113,7 @@ class BirdNode(template.Node):
             contents[self.default_slot] = [context["slot"]]
 
         return {
-            slot: template.Template("".join(content)).render(context)
-            for slot, content in contents.items()
+            "attrs": attrs.flattened,
+            "slot": slots.default,
+            "slots": slots,
         }

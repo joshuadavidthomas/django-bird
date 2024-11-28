@@ -1,8 +1,6 @@
 # pyright: reportAny=false
 from __future__ import annotations
 
-from typing import cast
-
 from django import template
 from django.template.base import NodeList
 from django.template.base import Parser
@@ -53,17 +51,9 @@ class SlotNode(template.Node):
 
     @override
     def render(self, context: Context) -> SafeString:
-        default_content: str = self.nodelist.render(context)
         slots = context.get("slots")
+        if not slots:
+            return mark_safe(self.nodelist.render(context))
 
-        if not slots or not isinstance(slots, dict):
-            slot_content = default_content
-        else:
-            slots_dict = cast(dict[str, str], slots)
-            slot_content = slots_dict.get(self.name, default_content)
-
-        # Recursively process the slot content
-        t = template.Template(slot_content)
-        content = t.render(context)
-
-        return mark_safe(content)
+        slot = slots.get_slot(self.name, default=self.nodelist.render(context))
+        return mark_safe(slot.content if slot else "")
