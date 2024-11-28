@@ -14,7 +14,8 @@ from django.utils.safestring import mark_safe
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
-from django_bird.conf import app_settings
+from django_bird.components.attrs import Attrs
+from django_bird.components.templates import get_template_names
 
 from .slot import SlotNode
 
@@ -67,7 +68,7 @@ class BirdNode(template.Node):
     def render(self, context: Context) -> SafeString:
         component_name = self.get_component_name(context)
         component_context = self.get_component_context_data(context)
-        template_names = self.get_template_names(component_name)
+        template_names = get_template_names(component_name)
         template = select_template(template_names)
         return template.render(component_context)
 
@@ -79,11 +80,11 @@ class BirdNode(template.Node):
         return name
 
     def get_component_context_data(self, context: Context) -> dict[str, Any]:
+        attrs = Attrs.parse(self.attrs, context)
         rendered_slots = self.render_slots(context)
-        flat_attrs = self.flatten_attrs(context)
         default_slot = rendered_slots.get(self.default_slot) or context.get("slot")
         return {
-            "attrs": mark_safe(flat_attrs),
+            "attrs": attrs.flatten(),
             "slot": mark_safe(default_slot),
             "slots": {
                 name: mark_safe(content) for name, content in rendered_slots.items()
@@ -117,70 +118,3 @@ class BirdNode(template.Node):
             slot: template.Template("".join(content)).render(context)
             for slot, content in contents.items()
         }
-
-    def flatten_attrs(self, context: Context) -> str:
-        attrs: dict[str, str | None | bool] = {}
-
-        for attr in self.attrs:
-            if "=" in attr:
-                key, value = attr.split("=", 1)
-                attrs[key] = template.Variable(value).resolve(context)
-            else:
-                attrs[attr] = True
-
-        return " ".join(
-            key if isinstance(value, bool) and value else f'{key}="{value}"'
-            for key, value in attrs.items()
-        )
-
-    def get_template_names(self, name: str) -> list[str]:
-        """
-        Generate a list of potential template names for a component.
-
-        The function searches for templates in the following order (from most specific to most general):
-
-        1. In a subdirectory named after the component, using the component name
-        2. In the same subdirectory, using a fallback 'index.html'
-        3. In parent directory for nested components
-        4. In the base component directory, using the full component name
-
-        The order of names is important as it determines the template resolution priority.
-        This order allows for both direct matches and hierarchical component structures,
-        with more specific paths taking precedence over more general ones.
-
-        This order allows for:
-        - Single file components
-        - Multi-part components
-        - Specific named files within component directories
-        - Fallback default files for components
-
-        For example:
-        - For an "input" component, the ordering would be:
-            1. `{component_dir}/input/input.html`
-            2. `{component_dir}/input/index.html`
-            3. `{component_dir}/input.html`
-        - For an "input.label" component:
-            1. `{component_dir}/input/label/label.html`
-            2. `{component_dir}/input/label/index.html`
-            3. `{component_dir}/input/label.html`
-            4. `{component_dir}/input.label.html`
-
-        Returns:
-            list[str]: A list of potential template names in resolution order.
-        """
-        template_names = []
-        component_dirs = list(dict.fromkeys([*app_settings.COMPONENT_DIRS, "bird"]))
-
-        name_parts = name.split(".")
-        path_name = "/".join(name_parts)
-
-        for component_dir in component_dirs:
-            potential_names = [
-                f"{component_dir}/{path_name}/{name_parts[-1]}.html",
-                f"{component_dir}/{path_name}/index.html",
-                f"{component_dir}/{path_name}.html",
-                f"{component_dir}/{self.name}.html",
-            ]
-            template_names.extend(potential_names)
-
-        return list(dict.fromkeys(template_names))
