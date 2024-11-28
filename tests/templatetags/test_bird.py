@@ -10,7 +10,6 @@ from django.template.base import Parser
 from django.template.base import Token
 from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
-from django.test import override_settings
 
 from django_bird.templatetags.tags.bird import END_TAG
 from django_bird.templatetags.tags.bird import TAG
@@ -280,70 +279,3 @@ class TestNode:
         component_name = node.get_component_name(context=Context(context))
 
         assert component_name == expected
-
-    @pytest.mark.parametrize(
-        "name,component_dirs,expected",
-        [
-            (
-                "button",
-                [],
-                [
-                    "bird/button/button.html",
-                    "bird/button/index.html",
-                    "bird/button.html",
-                ],
-            ),
-            (
-                "input.label",
-                [],
-                [
-                    "bird/input/label/label.html",
-                    "bird/input/label/index.html",
-                    "bird/input/label.html",
-                    "bird/input.label.html",
-                ],
-            ),
-            (
-                "button",
-                ["custom", "theme"],
-                [
-                    "custom/button/button.html",
-                    "custom/button/index.html",
-                    "custom/button.html",
-                    "theme/button/button.html",
-                    "theme/button/index.html",
-                    "theme/button.html",
-                    "bird/button/button.html",
-                    "bird/button/index.html",
-                    "bird/button.html",
-                ],
-            ),
-        ],
-    )
-    def test_get_template_names(self, name, component_dirs, expected):
-        node = BirdNode(name=name, attrs=[], nodelist=None)
-
-        with override_settings(DJANGO_BIRD={"COMPONENT_DIRS": component_dirs}):
-            template_names = node.get_template_names(node.name)
-
-        assert template_names == expected
-
-    def test_get_template_names_invalid(self):
-        node = BirdNode(name="input.label", attrs=[], nodelist=None)
-
-        template_names = node.get_template_names(node.name)
-
-        assert "bird/input/label/invalid.html" not in template_names
-
-    def test_get_template_names_duplicates(self):
-        with override_settings(DJANGO_BIRD={"COMPONENT_DIRS": ["bird"]}):
-            node = BirdNode(name="button", attrs=[], nodelist=None)
-
-            template_names = node.get_template_names(node.name)
-
-            template_counts = {}
-            for template in template_names:
-                template_counts[template] = template_counts.get(template, 0) + 1
-
-            for _, count in template_counts.items():
-                assert count == 1
