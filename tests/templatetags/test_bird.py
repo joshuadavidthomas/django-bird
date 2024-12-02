@@ -11,6 +11,8 @@ from django.template.base import Token
 from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 
+from django_bird.components.params import Param
+from django_bird.components.params import Params
 from django_bird.templatetags.tags.bird import END_TAG
 from django_bird.templatetags.tags.bird import TAG
 from django_bird.templatetags.tags.bird import BirdNode
@@ -44,20 +46,28 @@ class TestTemplateTag:
             do_bird(parser, token)
 
     @pytest.mark.parametrize(
-        "attrs,expected_attrs",
+        "params,expected_params",
         [
-            ("class='btn'", ["class='btn'"]),
-            ("class='btn' id='my-btn'", ["class='btn'", "id='my-btn'"]),
-            ("disabled", ["disabled"]),
+            ("class='btn'", Params(attrs=[Param(name="class", value="btn")])),
+            (
+                "class='btn' id='my-btn'",
+                Params(
+                    attrs=[
+                        Param(name="class", value="btn"),
+                        Param(name="id", value="my-btn"),
+                    ]
+                ),
+            ),
+            ("disabled", Params(attrs=[Param(name="disabled", value=True)])),
         ],
     )
-    def test_node_attrs(self, attrs, expected_attrs):
-        token = Token(TokenType.BLOCK, f"{TAG} button {attrs}")
+    def test_node_params(self, params, expected_params):
+        token = Token(TokenType.BLOCK, f"{TAG} button {params}")
         parser = Parser(
             [Token(TokenType.BLOCK, END_TAG)],
         )
         node = do_bird(parser, token)
-        assert node.attrs == expected_attrs
+        assert node.params == expected_params
 
     @pytest.mark.parametrize(
         "component,template,context,expected",
@@ -274,7 +284,7 @@ class TestNode:
     )
     def test_get_component_name(self, name, context, expected, create_bird_template):
         create_bird_template(name=name, content="<button>Click me</button>")
-        node = BirdNode(name=name, attrs=[], nodelist=None)
+        node = BirdNode(name=name, params=Params([]), nodelist=None)
 
         component_name = node.get_component_name(context=Context(context))
 
