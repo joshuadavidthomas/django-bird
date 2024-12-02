@@ -6,6 +6,7 @@ from typing import Any
 from django import template
 from django.template.base import NodeList
 from django.template.base import Parser
+from django.template.base import Template
 from django.template.base import Token
 from django.template.context import Context
 from django.template.loader import select_template
@@ -61,9 +62,9 @@ class BirdNode(template.Node):
     @override
     def render(self, context: Context) -> SafeString:
         component_name = self.get_component_name(context)
-        component_context = self.get_component_context_data(context)
         template_names = get_template_names(component_name)
         template = select_template(template_names)
+        component_context = self.get_component_context_data(template.template, context)
         return template.render(component_context)
 
     def get_component_name(self, context: Context) -> str:
