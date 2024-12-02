@@ -56,7 +56,7 @@ class Params:
             if not isinstance(node, PropNode):
                 continue
 
-            value = node.default
+            value: str | bool | None = node.default
 
             for idx, attr in enumerate(self.attrs):
                 if node.name == attr.name:
