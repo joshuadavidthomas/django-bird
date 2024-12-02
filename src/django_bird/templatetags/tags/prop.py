@@ -20,7 +20,7 @@ def do_prop(parser: Parser, token: Token) -> PropNode:
 
 
 def parse_prop_name(bits: TagBits) -> tuple[str, str | None]:
-    if len(bits) == 1:
+    if len(bits) <= 1:
         msg = f"{TAG} tag requires at least one argument"
         raise template.TemplateSyntaxError(msg)
 
