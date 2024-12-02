@@ -28,6 +28,7 @@ class Param:
 
     @classmethod
     def from_bit(cls, bit: str):
+        value: str | bool
         if "=" in bit:
             name, value = bit.split("=", 1)
             value = value.strip("'\"")
