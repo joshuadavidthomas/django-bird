@@ -8,13 +8,13 @@ repos:
       - id: check-yaml
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: 1.22.1
+    rev: 1.22.2
     hooks:
       - id: django-upgrade
         args: [--target-version, "4.2"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.0
+    rev: v0.8.1
     hooks:
       - id: ruff
         args: [--fix]
@@ -42,7 +42,7 @@ repos:
         files: '^(?!.*\.min\..*)(?P<name>[\w-]+(\.[\w-]+)*\.(js|jsx|ts|tsx|yml|yaml|css))$'
 
   - repo: https://github.com/djlint/djLint
-    rev: v1.36.1
+    rev: v1.36.3
     hooks:
       - id: djlint-reformat-django
       - id: djlint-django
