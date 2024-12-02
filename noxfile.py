@@ -92,7 +92,8 @@ def tests(session, django):
     if session.posargs:
         args = []
         for arg in session.posargs:
-            args.extend(arg.split(" "))
+            if arg:
+                args.extend(arg.split(" "))
         command.extend(args)
     session.run(*command)
 
@@ -113,7 +114,8 @@ def coverage(session):
         if session.posargs:
             args = []
             for arg in session.posargs:
-                args.extend(arg.split(" "))
+                if arg:
+                    args.extend(arg.split(" "))
             command.extend(args)
         session.run(*command)
     finally:
@@ -163,7 +165,8 @@ def types(session):
     if session.posargs:
         args = []
         for arg in session.posargs:
-            args.extend(arg.split(" "))
+            if arg:
+                args.extend(arg.split(" "))
         command.extend(args)
     session.run(*command)
 
