@@ -13,7 +13,7 @@ from django.utils.safestring import SafeString
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
-from django_bird.components.attrs import Attrs
+from django_bird.components.params import Params
 from django_bird.components.slots import DEFAULT_SLOT
 from django_bird.components.slots import Slots
 from django_bird.components.templates import get_template_names
@@ -25,9 +25,9 @@ END_TAG = "endbird"
 def do_bird(parser: Parser, token: Token) -> BirdNode:
     bits = token.split_contents()
     name = parse_bird_name(bits)
-    attrs = parse_attrs(bits)
-    nodelist = parse_nodelist(attrs, parser)
-    return BirdNode(name, attrs, nodelist)
+    params = Params.from_bits(bits[2:])
+    nodelist = parse_nodelist(bits, parser)
+    return BirdNode(name, params, nodelist)
 
 
 def parse_bird_name(bits: TagBits) -> str:
@@ -41,14 +41,10 @@ def parse_bird_name(bits: TagBits) -> str:
     return bits[1].strip("'\"")
 
 
-def parse_attrs(bits: TagBits) -> TagBits:
-    return bits[2:]
-
-
-def parse_nodelist(attrs: TagBits, parser: Parser) -> NodeList | None:
+def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:
     # self-closing tag
     # {% bird name / %}
-    if len(attrs) > 0 and attrs[-1] == "/":
+    if len(bits) > 0 and bits[-1] == "/":
         nodelist = None
     else:
         nodelist = parser.parse((END_TAG,))
@@ -57,9 +53,9 @@ def parse_nodelist(attrs: TagBits, parser: Parser) -> NodeList | None:
 
 
 class BirdNode(template.Node):
-    def __init__(self, name: str, attrs: list[str], nodelist: NodeList | None) -> None:
+    def __init__(self, name: str, params: Params, nodelist: NodeList | None) -> None:
         self.name = name
-        self.attrs = attrs
+        self.params = params
         self.nodelist = nodelist
 
     @override
@@ -78,11 +74,11 @@ class BirdNode(template.Node):
         return name
 
     def get_component_context_data(self, context: Context) -> dict[str, Any]:
-        attrs = Attrs.parse(self.attrs, context)
+        attrs = self.params.render_attrs(context)
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
         return {
-            "attrs": attrs.flatten(),
+            "attrs": attrs,
             "slot": default_slot,
             "slots": slots,
         }
