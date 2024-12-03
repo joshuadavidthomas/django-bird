@@ -32,7 +32,7 @@ types = [
   "django-stubs>=5.1.0",
   "django-stubs-ext>=5.1.0",
   "mypy>=1.11.2",
-  "types-cachetools>=5.5.0.20240820",
+  "types-cachetools>=5.5.0.20240820"
 ]
 
 [project]
