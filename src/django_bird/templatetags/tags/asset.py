@@ -23,11 +23,11 @@ def do_asset(parser: Parser, token: Token) -> AssetNode:
 
 
 def parse_asset_type(bits: TagBits) -> AssetType:
-    tag_name = bits[0]
-
     if len(bits) < 1:
-        msg = f"{tag_name} tag requires at least one argument"
+        msg = "bird:assets tag requires at least one argument"
         raise template.TemplateSyntaxError(msg)
+
+    tag_name = bits[0]
 
     try:
         asset_type = tag_name.split(":")[1]

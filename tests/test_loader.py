@@ -65,3 +65,28 @@ def test_asset_registry(
     components = loader.asset_registry.components
 
     assert len(components) == 2
+
+
+def test_asset_registry_extends_nonexistent(
+    create_bird_template, create_bird_asset, create_template, templates_dir
+):
+    button = create_bird_template("button", "<button>{{ slot }}</button>")
+    create_bird_asset(button, ".button { color: blue; }", "css")
+    create_bird_asset(button, "console.log('button');", "js")
+
+    child_path = templates_dir / "child.html"
+    child_path.write_text("""
+        {% extends 'base.html' %}
+        {% block content %}
+            {% bird button %}Click me{% endbird %}
+        {% endblock %}
+    """)
+
+    template = create_template(child_path)
+
+    engine = template.template.engine
+    loader = engine.template_loaders[0]
+
+    components = loader.asset_registry.components
+
+    assert len(components) == 1

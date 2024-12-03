@@ -27,10 +27,6 @@ class Component:
     def nodelist(self):
         return self.template.template.nodelist
 
-    @property
-    def origin(self):
-        return self.template.template.origin
-
     @classmethod
     def from_name(cls, name: str):
         template_names = get_template_names(name)

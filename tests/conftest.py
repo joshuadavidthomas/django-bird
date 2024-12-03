@@ -117,7 +117,9 @@ def create_template():
             dirs=[str(template_file.parent)],
             loaders=["django_bird.loader.BirdLoader"],
         )
-        template = engine.get_template(str(template_file))
+        print(f"Engine dirs: {engine.dirs}")  # Debug print
+        print(f"Looking for template: {template_file.name}")  # Debug print
+        template = engine.get_template(template_file.name)
         backend = DjangoTemplates(
             {
                 "NAME": "django",
