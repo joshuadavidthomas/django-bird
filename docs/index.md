@@ -12,7 +12,7 @@
 :hidden:
 :maxdepth: 3
 Naming <naming>
-attrs
+Attributes/Properties <params>
 slots
 Organization <organization>
 configuration
