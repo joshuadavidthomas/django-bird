@@ -122,8 +122,8 @@ def normalize_whitespace():
 
 @pytest.fixture(autouse=True)
 def clear_registry():
-    from django_bird.components import registry
+    from django_bird.components import components
 
-    registry.clear()
+    components.clear()
     yield
-    registry.clear()
+    components.clear()

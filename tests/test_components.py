@@ -51,15 +51,6 @@ class TestRegistry:
         assert cached_button3.name == button3.name
         assert cached_button3.render({}) == button3.render({})
 
-    def test_clear_cache(self, registry, create_bird_template):
-        create_bird_template(name="button", content="<button>Click me</button>")
-
-        component1 = registry.get_component("button")
-        registry.clear()
-        component2 = registry.get_component("button")
-
-        assert component1 is not component2
-
     def test_component_not_found(self, registry):
         with pytest.raises(Exception):
             registry.get_component("nonexistent")

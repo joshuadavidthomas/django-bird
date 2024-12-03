@@ -46,4 +46,4 @@ class Registry:
         self._cache.clear()
 
 
-registry = Registry()
+components = Registry()
