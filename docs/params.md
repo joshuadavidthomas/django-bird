@@ -120,7 +120,7 @@ Components often need multiple props to control different aspects of their behav
 
 {% bird:prop variant='primary' %}
 {% bird:prop size='md' %}
-<button 
+<button
     class="btn btn-{{ props.variant }} btn-{{ props.size }}"
     {{ attrs }}
 >
