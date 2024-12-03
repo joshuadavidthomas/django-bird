@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from cachetools import LRUCache
 from django.template.backends.django import Template
 from django.template.loader import select_template
 
-from .cache import LRUCache
 from .templates import get_template_names
 
 

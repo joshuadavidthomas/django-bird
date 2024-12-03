@@ -56,7 +56,8 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
-  "django>=4.2"
+  "cachetools>=5.5.0",
+  "django>=4.2",
 ]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
