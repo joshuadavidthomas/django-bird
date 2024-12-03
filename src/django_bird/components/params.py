@@ -50,7 +50,7 @@ class Params:
         if nodelist is None:
             return
 
-        indices_to_remove = set()
+        attrs_to_remove = set()
 
         for node in nodelist:
             if not isinstance(node, PropNode):
@@ -61,11 +61,11 @@ class Params:
             for idx, attr in enumerate(self.attrs):
                 if node.name == attr.name:
                     value = attr.value
-                    indices_to_remove.add(idx)
+                    attrs_to_remove.add(idx)
 
             self.props.append(Param(name=node.name, value=value))
 
-        for idx in sorted(indices_to_remove, reverse=True):
+        for idx in sorted(attrs_to_remove, reverse=True):
             self.attrs.pop(idx)
 
         return {prop.name: prop.value for prop in self.props}
