@@ -68,19 +68,22 @@ templates/
     └── button.html
 ```
 
-In `button.html`, create a simple HTML button. Use `{{ slot }}` to indicate where the main content will go.
+In `button.html`, create a simple HTML button. Use `{{ slot }}` to indicate where the main content will go. We will also define a component property via the `{% bird:prop %}` templatetag and add `{{ attrs }}` for passing in arbitrary HTML attributes.
 
 ```htmldjango
 {# templates/bird/button.html #}
-<button>
+{% bird:prop class="btn" %}
+{% bird:prop data_attr="button" %}
+
+<button class="{{ props.class }}" data-attr="{{ props.data_attr }}" {{ attrs }}>
     {{ slot }}
 </button>
 ```
 
-To use your component in a Django template, use the `{% bird %}` templatetag. The content between `{% bird %}` and `{% endbird %}` becomes the `{{ slot }}` content.
+To use your component in a Django template, use the `{% bird %}` templatetag. The content between `{% bird %}` and `{% endbird %}` becomes the `{{ slot }}` content. Properties and attributes are set as parameters on the `{% bird %}` tag itself.
 
 ```htmldjango
-{% bird button %}
+{% bird button class="btn-primary" disabled=True %}
     Click me!
 {% endbird %}
 ```
@@ -88,7 +91,7 @@ To use your component in a Django template, use the `{% bird %}` templatetag. Th
 django-bird automatically recognizes components in the bird directory, so no manual registration is needed. When Django processes the template, django-bird replaces the `{% bird %}` tag with the component's HTML, inserting the provided content into the slot, resulting in:
 
 ```html
-<button>
+<button class="btn-primary" data-attr="button" disabled>
     Click me!
 </button>
 ```
@@ -100,9 +103,10 @@ You now have a button component that can be easily reused across your Django pro
 
 django-bird offers features for creating flexible components, such as:
 
-- Passing attributes to components
-- Named slots for organizing content within components
-- Subcomponents for building complex component structures
+- [Defining and registering components](https://django-bird.readthedocs.io/en/latest/naming.html) entirely within Django templates, without writing a custom templatetag
+- Passing [attributes and properties](https://django-bird.readthedocs.io/en/latest/params.html) to components
+- [Named slots](https://django-bird.readthedocs.io/en/latest/slots.html#named-slots) for organizing content within components
+- [Subcomponents](https://django-bird.readthedocs.io/en/latest/organization.html) for building complex component structures
 
 For a full overview of the features and configuration options, please refer to the [documentation](https://django-bird.readthedocs.io).
 

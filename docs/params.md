@@ -9,7 +9,7 @@ Note that these parameters are distinct from [Slots](slots.md) - they are used t
 For example, a button component might use properties to control its styling and attributes to set HTML attributes, while using slots to define its content:
 
 ```htmldjango
-{% bird button variant="primary" data-analytics="signup" %}
+{% bird button variant="primary" data_analytics="signup" %}
     Click here  {# This content will go in the default slot #}
 {% endbird %}
 ```
@@ -81,6 +81,7 @@ Here's a simple example of a button component that uses props:
 :caption: templates/bird/button.html
 
 {% bird:prop variant='primary' %}
+
 <button class="btn btn-{{ props.variant }}" {{ attrs }}>
     {{ slot }}
 </button>
@@ -120,6 +121,7 @@ Components often need multiple props to control different aspects of their behav
 
 {% bird:prop variant='primary' %}
 {% bird:prop size='md' %}
+
 <button
     class="btn btn-{{ props.variant }} btn-{{ props.size }}"
     {{ attrs }}
@@ -153,6 +155,7 @@ Props can be defined with or without default values:
 ```htmldjango
 {% bird:prop id %}                 {#  No default value  #}
 {% bird:prop variant='primary' %}  {# With default value #}
+
 <button
     id="{{ props.id }}"
     class="btn btn-{{ props.variant }}"

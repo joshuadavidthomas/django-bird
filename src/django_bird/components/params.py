@@ -18,9 +18,13 @@ class Param:
     value: str | bool | None
 
     def render(self, context: Context) -> str:
-        if self.value is None:
+        if self.value is None or (
+            isinstance(self.value, str) and self.value == "False"
+        ):
             return ""
-        if isinstance(self.value, bool) and self.value:
+        if (isinstance(self.value, bool) and self.value) or (
+            isinstance(self.value, str) and self.value == "True"
+        ):
             return self.name
         try:
             value = template.Variable(str(self.value)).resolve(context)
