@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 from django.template.backends.django import Template
+from django.template.exceptions import TemplateDoesNotExist
 
 from django_bird.components import Component
 from django_bird.components import Registry
@@ -52,5 +53,5 @@ class TestRegistry:
         assert cached_button3.render({}) == button3.render({})
 
     def test_component_not_found(self, registry):
-        with pytest.raises(Exception):
+        with pytest.raises(TemplateDoesNotExist):
             registry.get_component("nonexistent")
