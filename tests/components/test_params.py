@@ -52,9 +52,9 @@ class TestParams:
             ),
             (
                 Params(attrs=[Param(name="class", value="btn")]),
-                [],
+                None,
                 {},
-                {},
+                None,
                 [Param(name="class", value="btn")],
             ),
         ],
