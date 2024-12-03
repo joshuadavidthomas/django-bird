@@ -113,7 +113,10 @@ To give you an idea of what the final compiled output might look like, here's a 
 </html>
 ```
 
-## Overriding Default Attributes
+## Overriding Default Attributes ✅
+
+> [!NOTE]
+> This was added in django-bird [v0.3.0](https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.3.0) via the `{% bird:props %}` templatetag. There are now two ways to define parameters passed in to django-bird components: attributes and properties.
 
 Similiarly, this is table stakes for a modern Django component library. You should be able to set default attributes in your component and allow them to be overridden:
 
