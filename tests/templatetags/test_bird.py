@@ -254,6 +254,49 @@ class TestTemplateTag:
             rendered = t.render(context=Context(context))
             assert normalize_whitespace(rendered) == expected
 
+    @pytest.mark.parametrize(
+        "component,template,context,expected",
+        [
+            (
+                "{% bird:prop id %}<button id='{{ props.id }}'>{{ slot }}</button>",
+                "{% bird button id='foo' %}Click me{% endbird %}",
+                {},
+                "<button id='foo'>Click me</button>",
+            ),
+            (
+                "{% bird:prop id='default' %}<button id='{{ props.id }}'>{{ slot }}</button>",
+                "{% bird button %}Click me{% endbird %}",
+                {},
+                "<button id='default'>Click me</button>",
+            ),
+            (
+                "{% bird:prop id='default' %}<button id='{{ props.id }}'>{{ slot }}</button>",
+                "{% bird button id='foo' %}Click me{% endbird %}",
+                {},
+                "<button id='foo'>Click me</button>",
+            ),
+            (
+                '{% bird:prop id="default" %}{% bird:prop class="btn" %}<button id="{{ props.id }}" class="{{ props.class }}" {{ attrs }}>{{ slot }}</button>',
+                "{% bird button data-test='value' %}Click me{% endbird %}",
+                {},
+                '<button id="default" class="btn" data-test="value">Click me</button>',
+            ),
+        ],
+    )
+    def test_with_props(
+        self,
+        component,
+        template,
+        context,
+        expected,
+        create_bird_template,
+        normalize_whitespace,
+    ):
+        create_bird_template("button", component)
+        t = Template(template)
+        rendered = t.render(context=Context(context))
+        assert normalize_whitespace(rendered) == expected
+
 
 @pytest.mark.xfail(reason="Feature not implemented yet")
 class TestTemplateTagFutureFeatures:

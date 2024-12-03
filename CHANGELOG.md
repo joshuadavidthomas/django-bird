@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Created `{% bird:prop %}` tag for defining properties within components. These operate similarly to the `{{ attrs }}` template context variable, but allow for setting defaults. Any attributes passed to a component will override the prop's default value, and props defined in a component template are automatically removed from the component's `attrs`. Props are accessible in templates via the `props` context variable (e.g. `{{ props.id }}`)
+
 ## [0.2.0]
 
 🚨 This release contains a breaking change. See the Changed section for more information. 🚨
