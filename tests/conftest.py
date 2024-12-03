@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from django.conf import settings
+from django.template.backends.django import DjangoTemplates
 from django.template.backends.django import Template as DjangoTemplate
 from django.template.engine import Engine
 from django.test import override_settings
@@ -48,21 +49,21 @@ TEST_SETTINGS = {
 
 
 @pytest.fixture
-def base_dir(tmp_path):
-    base_dir = tmp_path / "templates"
-    base_dir.mkdir()
-    return base_dir
+def templates_dir(tmp_path):
+    templates_dir = tmp_path / "templates"
+    templates_dir.mkdir()
+    return templates_dir
 
 
 @pytest.fixture(autouse=True)
-def override_templates_settings(base_dir):
+def override_templates_settings(templates_dir):
     with override_settings(
         TEMPLATES=[
             settings.TEMPLATES[0]
             | {
                 "DIRS": [
                     *settings.TEMPLATES[0]["DIRS"],
-                    base_dir,
+                    templates_dir,
                 ]
             }
         ]
@@ -71,9 +72,9 @@ def override_templates_settings(base_dir):
 
 
 @pytest.fixture
-def create_bird_dir(base_dir):
+def create_bird_dir(templates_dir):
     def func(name):
-        bird_template_dir = base_dir / name
+        bird_template_dir = templates_dir / name
         bird_template_dir.mkdir(exist_ok=True)
         return bird_template_dir
 
@@ -97,11 +98,39 @@ def create_bird_template(create_bird_dir):
 
 
 @pytest.fixture
+def create_bird_asset():
+    def func(component_template: Path, content: str, asset_type: str):
+        component_dir = component_template.parent
+        component_name = component_template.stem
+        asset_file = component_dir / f"{component_name}.{asset_type}"
+        asset_file.write_text(content)
+        return asset_file
+
+    return func
+
+
+@pytest.fixture
 def create_template():
     def _create_template(template_file: Path) -> DjangoTemplate:
-        engine = Engine.get_default()
-        django_template = engine.get_template(str(template_file))
-        return DjangoTemplate(django_template, engine)
+        engine = Engine(
+            builtins=["django_bird.templatetags.django_bird"],
+            dirs=[str(template_file.parent)],
+            loaders=["django_bird.loader.BirdLoader"],
+        )
+        template = engine.get_template(str(template_file))
+        backend = DjangoTemplates(
+            {
+                "NAME": "django",
+                "DIRS": [],
+                "APP_DIRS": True,
+                "OPTIONS": {
+                    "autoescape": True,
+                    "debug": False,
+                    "context_processors": [],
+                },
+            }
+        )
+        return DjangoTemplate(template, backend)
 
     return _create_template
 

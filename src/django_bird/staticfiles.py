@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from enum import Enum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from django.template.backends.django import Template
+from django.template.backends.django import Template as DjangoTemplate
 
 from ._typing import override
+
+if TYPE_CHECKING:
+    from django_bird.components import Component
 
 
 class AssetType(Enum):
@@ -42,7 +47,7 @@ class Asset:
         return cls(path=path, type=asset_type)
 
 
-def get_template_assets(template: Template):
+def get_template_assets(template: DjangoTemplate):
     assets: set[Asset] = set()
     template_path = Path(template.template.origin.name)
     for asset_type in AssetType:
@@ -50,4 +55,18 @@ def get_template_assets(template: Template):
         if asset_path.exists():
             asset = Asset.from_path(asset_path)
             assets.add(asset)
-    return assets
+    return frozenset(assets)
+
+
+@dataclass
+class ComponentAssetRegistry:
+    components: set[Component] = field(default_factory=set)
+
+    def register(self, component: Component) -> None:
+        self.components.add(component)
+
+    def get_assets(self, asset_type: AssetType) -> set[Asset]:
+        assets: set[Asset] = set()
+        for component in self.components:
+            assets.update(a for a in component.assets if a.type == asset_type)
+        return assets

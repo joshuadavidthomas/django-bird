@@ -8,6 +8,8 @@ from django.template.context import Context
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
+from django_bird.loader import BirdLoader
+from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
 
 CSS_TAG = "bird:css"
@@ -46,5 +48,30 @@ class AssetNode(template.Node):
 
     @override
     def render(self, context: Context) -> str:
-        # TODO
-        return ""
+        template = context.template
+        if template is None:
+            return ""
+        loaders = template.engine.template_loaders
+        for loader in loaders:
+            if isinstance(loader, BirdLoader):
+                assets = loader.asset_registry.get_assets(self.asset_type)
+                return self._render_assets(assets)
+
+        raise RuntimeError("BirdLoader not found in template loaders")
+
+    def _render_assets(self, assets: set[Asset]) -> str:
+        if not assets:
+            return ""
+
+        if self.asset_type == AssetType.CSS:
+            tags = (
+                f'<link rel="stylesheet" href="{asset.path}">'
+                for asset in sorted(assets, key=lambda a: a.path)
+            )
+        else:  # JS
+            tags = (
+                f'<script src="{asset.path}"></script>'
+                for asset in sorted(assets, key=lambda a: a.path)
+            )
+
+        return "\n".join(tags)
