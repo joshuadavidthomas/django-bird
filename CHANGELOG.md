@@ -18,9 +18,15 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added component caching with LRU (Least Recently Used) strategy via global `components` registry.
+  - `cachetools>=5.5.0` is now a dependency of the library to support this new cache strategy
+
 ### Changed
 
 - **Internal**: Flattened package structure by moving files from `components/` subdirectory to root level. No public API changes.
+- **Internal**: `BirdNode` now uses cached components instead of creating new ones each time.
 
 ## [0.4.0]
 

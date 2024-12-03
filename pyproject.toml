@@ -31,7 +31,8 @@ docs = [
 types = [
   "django-stubs>=5.1.0",
   "django-stubs-ext>=5.1.0",
-  "mypy>=1.11.2"
+  "mypy>=1.11.2",
+  "types-cachetools>=5.5.0.20240820"
 ]
 
 [project]
@@ -56,6 +57,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
+  "cachetools>=5.5.0",
   "django>=4.2"
 ]
 description = "High-flying components for perfectionists with deadlines"

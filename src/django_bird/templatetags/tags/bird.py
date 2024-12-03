@@ -12,6 +12,7 @@ from django.template.context import Context
 from django_bird._typing import TagBits
 from django_bird._typing import override
 from django_bird.components import Component
+from django_bird.components import components
 from django_bird.params import Params
 from django_bird.slots import DEFAULT_SLOT
 from django_bird.slots import Slots
@@ -59,7 +60,7 @@ class BirdNode(template.Node):
     @override
     def render(self, context: Context) -> str:
         component_name = self.get_component_name(context)
-        component = Component.from_name(component_name)
+        component = components.get_component(component_name)
         component_context = self.get_component_context_data(component, context)
         return component.render(component_context)
 
