@@ -6,17 +6,61 @@ from django.template.exceptions import TemplateDoesNotExist
 
 from django_bird.components import Component
 from django_bird.components import Registry
+from django_bird.staticfiles import Asset
+from django_bird.staticfiles import AssetType
 
 
 class TestComponent:
-    def test_from_name(self, create_bird_template):
+    def test_from_name_basic(self, create_bird_template):
         create_bird_template("button", "<button>Click me</button>")
 
         comp = Component.from_name("button")
 
         assert comp.name == "button"
+        assert comp.assets == set()
         assert isinstance(comp.template, Template)
         assert comp.render({}) == "<button>Click me</button>"
+
+    def test_from_name_with_assets(self, create_template, create_bird_template):
+        template_file = create_bird_template("button", "<button>Click me</button>")
+        create_template(template_file)
+
+        css_file = template_file.with_suffix(".css")
+        js_file = template_file.with_suffix(".js")
+        css_file.write_text("button { color: red; }")
+        js_file.write_text("console.log('loaded');")
+
+        comp = Component.from_name("button")
+
+        assert len(comp.assets) == 2
+        assert Asset(css_file, AssetType.CSS) in comp.assets
+        assert Asset(js_file, AssetType.JS) in comp.assets
+
+    @pytest.mark.parametrize(
+        "asset_suffix,asset_content,expected_asset_type",
+        [
+            (".css", "button { color: red; }", AssetType.CSS),
+            (".js", "console.log('loaded');", AssetType.JS),
+        ],
+    )
+    def test_from_name_with_partial_assets(
+        self,
+        asset_suffix,
+        asset_content,
+        expected_asset_type,
+        create_template,
+        create_bird_template,
+    ):
+        template_file = create_bird_template("button", "<button>Click me</button>")
+        create_template(template_file)
+
+        file = template_file.with_suffix(asset_suffix)
+        file.write_text(asset_content)
+
+        comp = Component.from_name("button")
+
+        assert len(comp.assets) == 1
+        assert Asset(file, expected_asset_type) in comp.assets
 
 
 class TestRegistry:

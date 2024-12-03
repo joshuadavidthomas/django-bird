@@ -3,11 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from django.utils.safestring import SafeString
 
 from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
-from django_bird.staticfiles import registry
+from django_bird.staticfiles import get_template_assets
 
 
 class TestAsset:
@@ -59,138 +58,64 @@ class TestAsset:
             Asset.from_path(Path("static.html"))
 
 
-class TestRegistry:
-    @pytest.fixture
-    def registry(self):
-        registry.clear()
-        yield registry
-        registry.clear()
+class TestGetTemplateAssets:
+    def test_with_assets(self, create_template, create_bird_template):
+        template_file = create_bird_template(name="button", content="<button>")
 
-    def test_register_asset(self, registry, tmp_path):
-        css_file = tmp_path / "test.css"
-        css_file.touch()
-        asset = Asset(css_file, AssetType.CSS)
+        css_file = template_file.with_suffix(".css")
+        js_file = template_file.with_suffix(".js")
+        css_file.write_text("button { color: red; }")
+        js_file.write_text("console.log('loaded');")
 
-        registry.register(asset)
+        template = create_template(template_file)
+        assets = get_template_assets(template)
 
-        assert asset in registry.assets
+        assert len(assets) == 2
+        assert Asset(css_file, AssetType.CSS) in assets
+        assert Asset(js_file, AssetType.JS) in assets
 
-    def test_register_path(self, registry, tmp_path):
-        css_file = tmp_path / "test.css"
-        css_file.touch()
+    @pytest.mark.parametrize(
+        "suffix,content,expected_type",
+        [
+            (".css", "button { color: red; }", AssetType.CSS),
+            (".js", "console.log('loaded');", AssetType.JS),
+        ],
+    )
+    def test_partial_assets(
+        self, suffix, content, expected_type, create_template, create_bird_template
+    ):
+        template_file = create_bird_template(name="button", content="<button>")
 
-        registry.register(css_file)
+        file = template_file.with_suffix(suffix)
+        file.write_text(content)
 
-        assert len(registry.assets) == 1
-        assert next(iter(registry.assets)).path == css_file
+        template = create_template(template_file)
 
-    def test_register_missing_file(self, registry, tmp_path):
-        missing_file = tmp_path / "missing.css"
-
-        with pytest.raises(FileNotFoundError):
-            registry.register(missing_file)
-
-    def test_clear(self, registry, tmp_path):
-        css_file = tmp_path / "test.css"
-        css_file.touch()
-        js_file = tmp_path / "test.js"
-        js_file.touch()
-        registry.register(Asset(css_file, AssetType.CSS))
-        registry.register(Asset(js_file, AssetType.JS))
-
-        assert len(registry.assets) == 2
-
-        registry.clear()
-
-        assert len(registry.assets) == 0
-
-    @pytest.mark.parametrize("asset_type", [AssetType.CSS, AssetType.JS])
-    def test_get_assets(self, asset_type, registry):
-        css_asset = Asset(Path("test.css"), AssetType.CSS)
-        js_asset = Asset(Path("test.js"), AssetType.JS)
-
-        registry.assets = {css_asset, js_asset}
-
-        assets = registry.get_assets(asset_type)
+        assets = get_template_assets(template)
 
         assert len(assets) == 1
-        assert all(asset.type == asset_type for asset in assets)
+        assert Asset(file, expected_type) in assets
 
-    @pytest.mark.parametrize(
-        "assets,sort_key,expected",
-        [
-            (
-                [
-                    Asset(Path("test/a.css"), AssetType.CSS),
-                    Asset(Path("test/b.css"), AssetType.CSS),
-                ],
-                None,
-                ["test/a.css", "test/b.css"],
-            ),
-            (
-                [
-                    Asset(Path("test/b.css"), AssetType.CSS),
-                    Asset(Path("other/a.css"), AssetType.CSS),
-                ],
-                lambda a: a.path.name,
-                ["other/a.css", "test/b.css"],
-            ),
-            ([], None, []),
-            (
-                [Asset(Path("test.css"), AssetType.CSS)],
-                None,
-                ["test.css"],
-            ),
-        ],
-    )
-    def test_sort_assets(self, assets, sort_key, expected, registry):
-        kwargs = {}
-        if sort_key is not None:
-            kwargs["key"] = sort_key
+    def test_no_assets(self, create_template, create_bird_template):
+        template_file = create_bird_template(name="button", content="<button>")
 
-        sorted_assets = registry.sort_assets(assets, **kwargs)
+        template = create_template(template_file)
 
-        assert [str(a.path) for a in sorted_assets] == expected
+        assets = get_template_assets(template)
 
-    @pytest.mark.parametrize(
-        "asset_type,expected",
-        [
-            (AssetType.CSS, '<link rel="stylesheet" href="{}" type="text/css">'),
-            (AssetType.JS, '<script src="{}" type="text/javascript">'),
-        ],
-    )
-    def test_get_format_string(self, asset_type, expected, registry):
-        assert registry.get_format_string(asset_type) == expected
+        assert len(assets) == 0
 
-    @pytest.mark.parametrize(
-        "assets,asset_type,expected",
-        [
-            (set(), AssetType.CSS, ""),
-            (
-                {Asset(Path("test.css"), AssetType.CSS)},
-                AssetType.CSS,
-                ('rel="stylesheet"', 'href="test.css"'),
-            ),
-            (
-                {Asset(Path("test.js"), AssetType.JS)},
-                AssetType.JS,
-                ('<script src="test.js"',),
-            ),
-            (
-                {
-                    Asset(Path("a.css"), AssetType.CSS),
-                    Asset(Path("b.css"), AssetType.CSS),
-                },
-                AssetType.CSS,
-                ('stylesheet" href="a.css"', 'stylesheet" href="b.css"'),
-            ),
-        ],
-    )
-    def test_render(self, assets, asset_type, expected, registry):
-        registry.assets = assets
+    def test_custom_component_dir(self, create_template, create_bird_template):
+        template_file = create_bird_template(
+            name="button", content="<button>", sub_dir="components"
+        )
 
-        rendered = registry.render(asset_type)
+        css_file = template_file.with_suffix(".css")
+        css_file.write_text("button { color: red; }")
 
-        assert isinstance(rendered, SafeString)
-        for content in expected:
-            assert content in rendered
+        template = create_template(template_file)
+
+        assets = get_template_assets(template)
+
+        assert len(assets) == 1
+        assert Asset(css_file, AssetType.CSS) in assets

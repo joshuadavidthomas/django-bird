@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 from django.conf import settings
+from django.template.backends.django import Template as DjangoTemplate
+from django.template.engine import Engine
 from django.test import override_settings
 
 from .settings import DEFAULT_SETTINGS
@@ -92,6 +94,16 @@ def create_bird_template(create_bird_dir):
         return template
 
     return func
+
+
+@pytest.fixture
+def create_template():
+    def _create_template(template_file: Path) -> DjangoTemplate:
+        engine = Engine.get_default()
+        django_template = engine.get_template(str(template_file))
+        return DjangoTemplate(django_template, engine)
+
+    return _create_template
 
 
 @pytest.fixture
