@@ -14,6 +14,7 @@
 Naming <naming>
 Attributes/Properties <params>
 slots
+Assets <assets>
 Organization <organization>
 configuration
 ```
