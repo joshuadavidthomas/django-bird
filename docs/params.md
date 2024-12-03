@@ -116,7 +116,7 @@ Props can be defined with or without default values:
 ```htmldjango
 {% bird:prop id %}                 {#  No default value  #}
 {% bird:prop variant='primary' %}  {# With default value #}
-<button 
+<button
     id="{{ props.id }}"
     class="btn btn-{{ props.variant }}"
     {{ attrs }}
