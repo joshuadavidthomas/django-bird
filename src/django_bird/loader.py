@@ -4,16 +4,23 @@ import hashlib
 import re
 
 from django.core.cache import cache
+from django.template.base import Node
 from django.template.base import Origin
+from django.template.base import Template
+from django.template.context import Context
 from django.template.engine import Engine
-from django.template.exceptions import TemplateDoesNotExist
+from django.template.loader_tags import ExtendsNode
+from django.template.loader_tags import IncludeNode
 from django.template.loaders.filesystem import Loader as FileSystemLoader
 
 from ._typing import override
-from .compiler import BIRD_PATTERN
 from .compiler import Compiler
 from .components import components
 from .staticfiles import ComponentAssetRegistry
+from .templatetags.tags.bird import TAG
+from .templatetags.tags.bird import BirdNode
+
+BIRD_TAG_PATTERN = re.compile(rf"{{%\s*{TAG}\s+([^\s%}}]+)")
 
 
 class BirdLoader(FileSystemLoader):
@@ -26,19 +33,13 @@ class BirdLoader(FileSystemLoader):
     def get_contents(self, origin: Origin) -> str:
         contents = super().get_contents(origin)
 
-        self._scan_for_components(contents)
-
-        extends_match = re.search(r'{%\s*extends\s+[\'"]([^\'"]+)[\'"]', contents)
-        if extends_match:
-            parent_template = extends_match.group(1)
-            try:
-                parent_contents = self.get_template(parent_template).source
-                self._scan_for_components(parent_contents)
-            except TemplateDoesNotExist:
-                pass
-
-        if not BIRD_PATTERN.search(contents):
+        if not BIRD_TAG_PATTERN.search(contents):
             return contents
+
+        template = Template(contents, origin=origin, engine=self.engine)
+        context = Context()
+        with context.bind_template(template):
+            self._scan_for_components(template, context)
 
         cache_key = f"bird_component_{hashlib.md5(contents.encode()).hexdigest()}"
         compiled = cache.get(cache_key)
@@ -47,8 +48,23 @@ class BirdLoader(FileSystemLoader):
             cache.set(cache_key, compiled, timeout=None)
         return compiled
 
-    def _scan_for_components(self, contents: str) -> None:
-        for match in re.finditer(r"{%\s*bird\s+([^\s%}]+)", contents):
-            component_name = match.group(1).strip("'\"")
-            component = components.get_component(component_name)
-            self.asset_registry.register(component)
+    def _scan_for_components(self, template: Template | Node, context: Context) -> None:
+        if not hasattr(template, "nodelist"):
+            return
+
+        for node in template.nodelist:
+            if isinstance(node, BirdNode):
+                component = components.get_component(node.name)
+                self.asset_registry.register(component)
+
+            if isinstance(node, ExtendsNode):
+                parent_template = node.get_parent(context)
+                self._scan_for_components(parent_template, context)
+
+            if isinstance(node, IncludeNode):
+                template_name = node.template.token.strip("'\"")
+                included_template = self.engine.get_template(template_name)
+                self._scan_for_components(included_template, context)
+
+            if hasattr(node, "nodelist"):
+                self._scan_for_components(node, context)
