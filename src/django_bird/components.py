@@ -5,7 +5,7 @@ from dataclasses import field
 from typing import Any
 
 from cachetools import LRUCache
-from django.template.backends.django import Template
+from django.template.backends.django import Template as DjangoTemplate
 from django.template.loader import select_template
 
 from django_bird.staticfiles import Asset
@@ -17,8 +17,8 @@ from .templates import get_template_names
 @dataclass(frozen=True, slots=True)
 class Component:
     name: str
-    template: Template
-    assets: set[Asset] = field(default_factory=set)
+    template: DjangoTemplate
+    assets: frozenset[Asset] = field(default_factory=frozenset)
 
     def render(self, context: dict[str, Any]):
         return self.template.render(context)
