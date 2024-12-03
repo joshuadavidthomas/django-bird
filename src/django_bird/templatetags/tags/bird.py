@@ -6,18 +6,15 @@ from typing import Any
 from django import template
 from django.template.base import NodeList
 from django.template.base import Parser
-from django.template.base import Template
 from django.template.base import Token
 from django.template.context import Context
-from django.template.loader import select_template
-from django.utils.safestring import SafeString
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
+from django_bird.components import Component
 from django_bird.params import Params
 from django_bird.slots import DEFAULT_SLOT
 from django_bird.slots import Slots
-from django_bird.templates import get_template_names
 
 TAG = "bird"
 END_TAG = "endbird"
@@ -60,12 +57,11 @@ class BirdNode(template.Node):
         self.nodelist = nodelist
 
     @override
-    def render(self, context: Context) -> SafeString:
+    def render(self, context: Context) -> str:
         component_name = self.get_component_name(context)
-        template_names = get_template_names(component_name)
-        template = select_template(template_names)
-        component_context = self.get_component_context_data(template.template, context)
-        return template.render(component_context)
+        component = Component.from_name(component_name)
+        component_context = self.get_component_context_data(component, context)
+        return component.render(component_context)
 
     def get_component_name(self, context: Context) -> str:
         try:
@@ -75,9 +71,9 @@ class BirdNode(template.Node):
         return name
 
     def get_component_context_data(
-        self, template: Template, context: Context
+        self, component: Component, context: Context
     ) -> dict[str, Any]:
-        props = self.params.render_props(template.nodelist, context)
+        props = self.params.render_props(component.nodelist, context)
         attrs = self.params.render_attrs(context)
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
