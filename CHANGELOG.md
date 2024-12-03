@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- **Internal**: Flattened package structure by moving files from `components/` subdirectory to root level. No public API changes.
+
 ## [0.4.0]
 
 ### Changed

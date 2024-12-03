@@ -9,7 +9,7 @@ from django.template.context import Context
 from django.utils.safestring import SafeString
 from django.utils.safestring import mark_safe
 
-from django_bird._typing import TagBits
+from ._typing import TagBits
 
 
 @dataclass

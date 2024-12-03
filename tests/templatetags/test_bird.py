@@ -11,8 +11,8 @@ from django.template.base import Token
 from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 
-from django_bird.components.params import Param
-from django_bird.components.params import Params
+from django_bird.params import Param
+from django_bird.params import Params
 from django_bird.templatetags.tags.bird import END_TAG
 from django_bird.templatetags.tags.bird import TAG
 from django_bird.templatetags.tags.bird import BirdNode

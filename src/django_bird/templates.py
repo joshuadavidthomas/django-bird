@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django_bird.conf import app_settings
+from .conf import app_settings
 
 
 def get_template_names(name: str) -> list[str]:

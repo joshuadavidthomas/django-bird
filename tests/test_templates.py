@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from django.test import override_settings
 
-from django_bird.components.templates import get_template_names
+from django_bird.templates import get_template_names
 
 
 @pytest.mark.parametrize(
