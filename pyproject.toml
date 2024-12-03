@@ -57,7 +57,7 @@ classifiers = [
 ]
 dependencies = [
   "cachetools>=5.5.0",
-  "django>=4.2",
+  "django>=4.2"
 ]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
