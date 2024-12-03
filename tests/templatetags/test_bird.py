@@ -129,6 +129,24 @@ class TestTemplateTag:
             ),
             (
                 "<button {{ attrs }}>Click me</button>",
+                "{% bird button disabled %}Click me{% endbird %}",
+                {},
+                "<button disabled>Click me</button>",
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button disabled=True %}Click me{% endbird %}",
+                {},
+                "<button disabled>Click me</button>",
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button disabled=False %}Click me{% endbird %}",
+                {},
+                "<button>Click me</button>",
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
                 "{% bird button class='btn' id='my-btn' disabled %}Click me{% endbird %}",
                 {},
                 '<button class="btn" id="my-btn" disabled>Click me</button>',
@@ -280,6 +298,12 @@ class TestTemplateTag:
                 "{% bird button data-test='value' %}Click me{% endbird %}",
                 {},
                 '<button id="default" class="btn" data-test="value">Click me</button>',
+            ),
+            (
+                '{% bird:prop class="btn" %}{% bird:prop data_attr="button" %}<button class="{{ props.class }}" data-attr="{{ props.data_attr }}" {{ attrs }}>{{ slot }}</button>',
+                '{% bird button class="btn-primary" disabled=True %}Click me{% endbird %}',
+                {},
+                '<button class="btn-primary" data-attr="button" disabled>Click me</button>',
             ),
         ],
     )
