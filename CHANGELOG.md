@@ -20,10 +20,14 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Added
 
-- Component assets (CSS/JS) are now automatically discovered and associated with components
+- New `{% bird:css %}` and `{% bird:js %}` template tags to automatically include component assets
+- Component assets are automatically discovered from matching CSS/JS files next to component templates
 
 ### Changed
 
+- **Internal**: Extended `BirdLoader` to track component usage and their assets during template rendering
+- **Internal**: Assets are now stored as frozensets for immutability
+- **Internal**: Added `ComponentAssetRegistry` to manage component assets during template rendering
 - **Internal**: Refactored `AssetType` to use string values and file extensions
 
 ### Removed
