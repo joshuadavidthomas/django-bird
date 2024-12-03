@@ -1,6 +1,8 @@
 # Passing Parameters to Components
 
-django-bird provides two ways to pass parameters to your components: attributes and properties. While attributes and properties may look similar when using a component, they serve different purposes. Attributes are passed directly through to the underlying HTML elements, while properties are parameters that your component can use internally to control its rendering logic,
+django-bird provides two ways to pass parameters to your components: attributes and properties. While attributes and properties may look similar when using a component, they serve different purposes.
+
+Attributes are made available to your component template as a flattened string via the `{{ attrs }}` template context variable which can be used to apply HTML attributes to elements, while properties are accessible as individual values (e.g. `{{ props.variant }}`) that your component can use internally to control its rendering logic.
 
 Note that these parameters are distinct from [Slots](slots.md) - they are used to configured how your component behaves or renders, while slots define where content should be inserted into your component's template.
 
@@ -16,7 +18,7 @@ For example, a button component might use properties to control its styling and 
 
 Attributes (i.e. `attrs`) let you pass additional HTML attributes to your components. This feature provides flexibility and customization without modifying the component template.
 
-In your component template, the `{{ attrs }}` variable is a special variable that contains all the attributes passed to the component. It automatically handles both key-value attributes (like `class="btn"`) and boolean attributes (like `disabled`).
+In your component template, the `{{ attrs }}` variable is a special variable that contains all the attributes passed to the component as a pre-rendered string. Unlike props which can be accessed individually, attributes are flattened into a single string ready to be inserted into an HTML element. The `{{ attrs }}` variable automatically handles both key-value attributes (like `class="btn"`) and boolean attributes (like `disabled`).
 
 ### Basic Usage
 
@@ -67,9 +69,9 @@ This will render as:
 
 ## Properties
 
-Properties (i.e. `props`) allow you to define parameters that your component expects, with optional default values. Unlike attributes which pass through directly to the HTML, props are processed by the component and can be used to control rendering logic.
+Properties (i.e. `props`) allow you to define parameters that your component expects, with optional default values. Unlike attributes which are provided as a flattened string via `{{ attrs }}`, props are processed by the component and made available as individual values (e.g. `{{ props.variant }}`) that can be used to control rendering logic.
 
-In your component template, props are defined using the `{% bird:prop %}` tag and accessed via the `{{ props }}` context variable. When a prop is defined, any matching attribute passed to the component will be removed from `{{ attrs }}` and made available in `{{ props }}` instead.
+In your component template, props are defined using the `{% bird:prop %}` tag and accessed via the `{{ props }}` context variable. You can define as many props as needed using separate `{% bird:prop %}` tags. When a prop is defined, any matching attribute passed to the component will be removed from `{{ attrs }}` and made available in `{{ props }}` instead.
 
 ### Basic Usage
 
@@ -108,6 +110,41 @@ Notice how this works:
 - The final HTML only includes `variant`'s value as part of the class name, while `id` appears as a direct attribute
 
 This separation allows you to use props to control your component's logic while still accepting arbitrary HTML attributes.
+
+### Multiple Props
+
+Components often need multiple props to control different aspects of their behavior. Each prop is defined with its own `{% bird:prop %}` tag:
+
+```{code-block} htmldjango
+:caption: templates/bird/button.html
+
+{% bird:prop variant='primary' %}
+{% bird:prop size='md' %}
+<button 
+    class="btn btn-{{ props.variant }} btn-{{ props.size }}"
+    {{ attrs }}
+>
+    {{ slot }}
+</button>
+```
+
+Use the component by setting any combination of these props:
+
+```htmldjango
+{% bird button variant="secondary" size="lg" disabled=True %}
+    Click me!
+{% endbird %}
+```
+
+It will render as:
+
+```html
+<button class="btn btn-secondary btn-lg" disabled>
+    Click me!
+</button>
+```
+
+This approach of using separate tags for each prop makes it easier to expand the prop system in the future - for example, adding features like type validation or choice constraints while maintaining a clean syntax.
 
 ### Props with Defaults
 
