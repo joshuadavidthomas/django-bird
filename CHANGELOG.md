@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.3.0]
+
 ### Added
 
 - Created `{% bird:prop %}` tag for defining properties within components. These operate similarly to the `{{ attrs }}` template context variable, but allow for setting defaults. Any attributes passed to a component will override the prop's default value, and props defined in a component template are automatically removed from the component's `attrs`. Props are accessible in templates via the `props` context variable (e.g. `{{ props.id }}`)
@@ -69,7 +71,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.3.0...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
+[0.3.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.3.0
