@@ -1,6 +1,12 @@
 version = 1
 requires-python = ">=3.10"
 
+[manifest]
+members = [
+    "bird-compiler",
+    "django-bird",
+]
+
 [[package]]
 name = "alabaster"
 version = "1.0.0"
@@ -87,6 +93,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/b3/ca/824b1195773ce6166
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b1/fe/e8c672695b37eecc5cbf43e1d0638d88d66ba3a44c4d321c796f4e59167f/beautifulsoup4-4.12.3-py3-none-any.whl", hash = "sha256:b80878c9f40111313e55da8ba20bdba06d8fa3969fc68304167741bbf9e082ed", size = 147925 },
 ]
+
+[[package]]
+name = "bird-compiler"
+version = "0.1.0"
+source = { editable = "packages/bird-compiler" }
 
 [[package]]
 name = "cachetools"
@@ -335,6 +346,7 @@ name = "django-bird"
 version = "0.5.0"
 source = { editable = "." }
 dependencies = [
+    { name = "bird-compiler" },
     { name = "cachetools" },
     { name = "django" },
 ]
@@ -374,6 +386,7 @@ types = [
 
 [package.metadata]
 requires-dist = [
+    { name = "bird-compiler", editable = "packages/bird-compiler" },
     { name = "cachetools", specifier = ">=5.5.0" },
     { name = "django", specifier = ">=4.2" },
 ]
