@@ -72,7 +72,7 @@ def override_templates_settings(base_dir):
 def create_bird_dir(base_dir):
     def func(name):
         bird_template_dir = base_dir / name
-        bird_template_dir.mkdir()
+        bird_template_dir.mkdir(exist_ok=True)
         return bird_template_dir
 
     return func
@@ -118,3 +118,12 @@ def normalize_whitespace():
         return text.strip()
 
     return func
+
+
+@pytest.fixture(autouse=True)
+def clear_registry():
+    from django_bird.components import registry
+
+    registry.clear()
+    yield
+    registry.clear()
