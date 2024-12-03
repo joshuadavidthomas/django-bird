@@ -4,7 +4,21 @@ Below are a bunch of features I'd like to bring to django-bird.
 
 I have included code snippets where applicable, but they are back-of-the-napkin sketches of potential APIs -- subject to change if and when the feature is actually introduced.
 
-## Static Asset Collection
+## Static Asset Collection 🏗️
+
+> [!NOTE]
+> django-bird [v0.6.0](https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.6.0) introduced automatic asset management via `{% bird:css %}` and `{% bird:js %}` templatetags. The current implementation automatically discovers and loads CSS and JS files that match your component names:
+>
+> ```bash
+> templates/bird/button/
+> ├── button.css     # Automatically loaded by {% bird:css %}
+> ├── button.html    # Component template
+> └── button.js      # Automatically loaded by {% bird:js %}
+> ```
+>
+> Future versions should eventually add support for inline styles and scripts with proper component scoping, compilation, and bundling.
+>
+> See the [docs](https://django-bird.readthedocs.io/en/latest/assets.html) for more information.
 
 This is table stakes for a modern Django template component library. The goal is to allow you to define CSS and JS for a component and have it loaded automatically when you use that component.
 
@@ -112,6 +126,14 @@ To give you an idea of what the final compiled output might look like, here's a 
     </body>
 </html>
 ```
+
+> **Update, 2024-12-03**
+> The current implementation handles basic asset discovery and loading, but future enhancements will include:
+>
+> - Inline style and script support with component scoping
+> - Asset compilation and bundling
+> - The `$bird` variable for component-specific JavaScript
+> - CSS scoping via data attributes
 
 ## Overriding Default Attributes ✅
 
