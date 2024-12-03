@@ -4,6 +4,7 @@ import pytest
 
 from django_bird.components.params import Param
 from django_bird.components.params import Params
+from django_bird.templatetags.tags.prop import PropNode
 
 
 class TestParam:
@@ -32,6 +33,38 @@ class TestParam:
 
 
 class TestParams:
+    @pytest.mark.parametrize(
+        "params,nodelist,context,expected_props,expected_attrs",
+        [
+            (
+                Params(attrs=[Param(name="class", value=None)]),
+                [PropNode(name="class", default="btn", attrs=[])],
+                {},
+                {"class": "btn"},
+                [],
+            ),
+            (
+                Params(attrs=[Param(name="class", value="btn")]),
+                [PropNode(name="class", default=None, attrs=[])],
+                {},
+                {"class": "btn"},
+                [],
+            ),
+            (
+                Params(attrs=[Param(name="class", value="btn")]),
+                [],
+                {},
+                {},
+                [Param(name="class", value="btn")],
+            ),
+        ],
+    )
+    def test_render_props(
+        self, params, nodelist, context, expected_props, expected_attrs
+    ):
+        assert params.render_props(nodelist, context) == expected_props
+        assert params.attrs == expected_attrs
+
     @pytest.mark.parametrize(
         "params,context,expected",
         [

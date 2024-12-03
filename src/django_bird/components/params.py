@@ -60,7 +60,8 @@ class Params:
 
             for idx, attr in enumerate(self.attrs):
                 if node.name == attr.name:
-                    value = attr.value
+                    if attr.value:
+                        value = attr.value
                     attrs_to_remove.add(idx)
 
             self.props.append(Param(name=node.name, value=value))
