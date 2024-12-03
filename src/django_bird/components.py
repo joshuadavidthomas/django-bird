@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 
 from cachetools import LRUCache
 from django.template.backends.django import Template
 from django.template.loader import select_template
 
+from django_bird.staticfiles import Asset
+
+from .staticfiles import get_template_assets
 from .templates import get_template_names
 
 
@@ -14,6 +18,7 @@ from .templates import get_template_names
 class Component:
     name: str
     template: Template
+    assets: set[Asset] = field(default_factory=set)
 
     def render(self, context: dict[str, Any]):
         return self.template.render(context)
@@ -26,7 +31,8 @@ class Component:
     def from_name(cls, name: str):
         template_names = get_template_names(name)
         template = select_template(template_names)
-        return cls(name=name, template=template)
+        assets = get_template_assets(template)
+        return cls(name=name, template=template, assets=assets)
 
 
 class Registry:
