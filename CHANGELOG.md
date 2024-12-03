@@ -18,6 +18,18 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Component assets (CSS/JS) are now automatically discovered and associated with components
+
+### Changed
+
+- **Internal**: Refactored `AssetType` to use string values and file extensions
+
+### Removed
+
+- **Internal**: Simplified asset handling by removing global registry in favor of per-component assets
+
 ## [0.5.0]
 
 ### Added
