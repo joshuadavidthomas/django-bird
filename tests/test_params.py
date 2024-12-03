@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from django_bird.components.params import Param
-from django_bird.components.params import Params
+from django_bird.params import Param
+from django_bird.params import Params
 from django_bird.templatetags.tags.prop import PropNode
 
 

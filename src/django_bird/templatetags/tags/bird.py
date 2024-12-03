@@ -14,10 +14,10 @@ from django.utils.safestring import SafeString
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
-from django_bird.components.params import Params
-from django_bird.components.slots import DEFAULT_SLOT
-from django_bird.components.slots import Slots
-from django_bird.components.templates import get_template_names
+from django_bird.params import Params
+from django_bird.slots import DEFAULT_SLOT
+from django_bird.slots import Slots
+from django_bird.templates import get_template_names
 
 TAG = "bird"
 END_TAG = "endbird"
