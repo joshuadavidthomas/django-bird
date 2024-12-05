@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 from django.template.backends.django import Template
+from django.test import override_settings
 from django.template.exceptions import TemplateDoesNotExist
 
 from django_bird.components import Component
@@ -99,3 +100,17 @@ class TestRegistry:
     def test_component_not_found(self, registry):
         with pytest.raises(TemplateDoesNotExist):
             registry.get_component("nonexistent")
+
+    def test_cache_with_debug(self, registry, create_bird_template):
+        create_bird_template(name="button", content="<button>Click me</button>")
+
+        assert len(registry._cache) == 0
+
+        with override_settings(DEBUG=True):
+            registry.get_component("button")
+
+        assert len(registry._cache) == 0
+
+        registry.get_component("button")
+
+        assert len(registry._cache) == 1
