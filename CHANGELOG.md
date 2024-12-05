@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a `TypeError` in the `BirdLoader` when scanning for assets if a `Template` or `Node` had a `None` nodelist. This could occur with self-closing `{% bird component / %}` components and their corresponding `BirdNode` instances.
+
 ## [0.6.0]
 
 ### Added

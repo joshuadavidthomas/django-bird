@@ -13,6 +13,7 @@ from django.template.loader_tags import ExtendsNode
 from django.template.loader_tags import IncludeNode
 from django.template.loaders.filesystem import Loader as FileSystemLoader
 
+from ._typing import _has_nodelist
 from ._typing import override
 from .compiler import Compiler
 from .components import components
@@ -48,23 +49,27 @@ class BirdLoader(FileSystemLoader):
             cache.set(cache_key, compiled, timeout=None)
         return compiled
 
-    def _scan_for_components(self, template: Template | Node, context: Context) -> None:
-        if not hasattr(template, "nodelist"):
+    def _scan_for_components(self, node: Template | Node, context: Context) -> None:
+        if isinstance(node, BirdNode):
+            component = components.get_component(node.name)
+            self.asset_registry.register(component)
+
+        if not _has_nodelist(node) or node.nodelist is None:
             return
 
-        for node in template.nodelist:
-            if isinstance(node, BirdNode):
-                component = components.get_component(node.name)
+        for child in node.nodelist:
+            if isinstance(child, BirdNode):
+                component = components.get_component(child.name)
                 self.asset_registry.register(component)
 
-            if isinstance(node, ExtendsNode):
-                parent_template = node.get_parent(context)
+            if isinstance(child, ExtendsNode):
+                parent_template = child.get_parent(context)
                 self._scan_for_components(parent_template, context)
 
-            if isinstance(node, IncludeNode):
-                template_name = node.template.token.strip("'\"")
+            if isinstance(child, IncludeNode):
+                template_name = child.template.token.strip("'\"")
                 included_template = self.engine.get_template(template_name)
                 self._scan_for_components(included_template, context)
 
-            if hasattr(node, "nodelist"):
-                self._scan_for_components(node, context)
+            if hasattr(child, "nodelist"):
+                self._scan_for_components(child, context)
