@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- When `DEBUG=True`, the `django_bird.components.Registry` will no longer cache the retrieval of `Component` instances.
+
 ## [0.6.1]
 
 ### Fixed

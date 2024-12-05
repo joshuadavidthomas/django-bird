@@ -5,6 +5,7 @@ from dataclasses import field
 from typing import Any
 
 from cachetools import LRUCache
+from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
 from django.template.loader import select_template
 
@@ -44,7 +45,8 @@ class Registry:
             return self._cache[name]
         except KeyError:
             component = Component.from_name(name)
-            self._cache[name] = component
+            if not settings.DEBUG:
+                self._cache[name] = component
             return component
 
     def clear(self) -> None:
