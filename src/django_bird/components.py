@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
-from django.conf import settings
 from cachetools import LRUCache
+from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
 from django.template.loader import select_template
 

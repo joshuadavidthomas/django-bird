@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 from django.template.backends.django import Template
-from django.test import override_settings
 from django.template.exceptions import TemplateDoesNotExist
+from django.test import override_settings
 
 from django_bird.components import Component
 from django_bird.components import Registry
