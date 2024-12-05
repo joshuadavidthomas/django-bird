@@ -13,7 +13,7 @@ from django.template.loader_tags import ExtendsNode
 from django.template.loader_tags import IncludeNode
 from django.template.loaders.filesystem import Loader as FileSystemLoader
 
-from ._typing import override
+from ._typing import override, _has_nodelist
 from .compiler import Compiler
 from .components import components
 from .staticfiles import ComponentAssetRegistry
@@ -53,7 +53,7 @@ class BirdLoader(FileSystemLoader):
             component = components.get_component(node.name)
             self.asset_registry.register(component)
 
-        if not hasattr(node, "nodelist") or node.nodelist is None:
+        if not _has_nodelist(node) or node.nodelist is None:
             return
 
         for child in node.nodelist:
