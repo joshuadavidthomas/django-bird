@@ -141,11 +141,3 @@ def test_scan_for_components(
     loader._scan_for_components(node, context)
 
     assert len(loader.asset_registry.components) == expected_count
-
-    # css_assets = loader.asset_registry.get_assets(AssetType.CSS)
-    # js_assets = loader.asset_registry.get_assets(AssetType.JS)
-    #
-    # assert len(css_assets) == 1
-    # assert len(js_assets) == 1
-    # assert Asset(button_css, AssetType.CSS) in css_assets
-    # assert Asset(button_js, AssetType.JS) in js_assets
