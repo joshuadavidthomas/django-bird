@@ -1,8 +1,16 @@
 from __future__ import annotations
 
 import pytest
+from django.template.context import Context
+from django.template.base import Node, NodeList
 from django.template.loader import get_template
+from django.template.engine import Engine
+from django.template.base import Template
+from django_bird.loader import BirdLoader
 
+from django_bird.params import Param, Params
+from django_bird.templatetags.tags.bird import BirdNode
+from django_bird.staticfiles import Asset, AssetType
 from django_bird.loader import BIRD_TAG_PATTERN
 
 
@@ -99,3 +107,45 @@ def test_asset_registry(
     components = loader.asset_registry.components
 
     assert len(components) == 3
+
+
+@pytest.mark.parametrize(
+    "node,expected_count",
+    [
+        (Template("{% bird button %}Click me{% endbird %}"), 1),
+        (BirdNode(name="button", params=Params([]), nodelist=None), 1),
+        (
+            BirdNode(
+                name="button",
+                params=Params([]),
+                nodelist=NodeList(
+                    [BirdNode(name="button", params=Params([]), nodelist=None)],
+                ),
+            ),
+            1,
+        ),
+        (type("NodeWithNoneNodelist", (Node,), {"nodelist": None})(), 0),
+        (Template("{% bird button %}{% bird button %}{% endbird %}{% endbird %}"), 1),
+    ],
+)
+def test_scan_for_components(
+    node, expected_count, create_bird_template, create_bird_asset
+):
+    button = create_bird_template("button", "<button>Click me</button>")
+    create_bird_asset(button, ".button { color: blue; }", "css")
+    create_bird_asset(button, "console.log('button');", "js")
+
+    loader = BirdLoader(Engine.get_default())
+    context = Context()
+
+    loader._scan_for_components(node, context)
+
+    assert len(loader.asset_registry.components) == expected_count
+
+    # css_assets = loader.asset_registry.get_assets(AssetType.CSS)
+    # js_assets = loader.asset_registry.get_assets(AssetType.JS)
+    #
+    # assert len(css_assets) == 1
+    # assert len(js_assets) == 1
+    # assert Asset(button_css, AssetType.CSS) in css_assets
+    # assert Asset(button_js, AssetType.JS) in js_assets
