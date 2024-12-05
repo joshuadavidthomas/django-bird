@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import pytest
-from django.template.context import Context
-from django.template.base import Node, NodeList
-from django.template.loader import get_template
-from django.template.engine import Engine
+from django.template.base import Node
+from django.template.base import NodeList
 from django.template.base import Template
-from django_bird.loader import BirdLoader
+from django.template.context import Context
+from django.template.engine import Engine
+from django.template.loader import get_template
 
-from django_bird.params import Param, Params
-from django_bird.templatetags.tags.bird import BirdNode
-from django_bird.staticfiles import Asset, AssetType
 from django_bird.loader import BIRD_TAG_PATTERN
+from django_bird.loader import BirdLoader
+from django_bird.params import Params
+from django_bird.templatetags.tags.bird import BirdNode
 
 
 @pytest.mark.parametrize(
