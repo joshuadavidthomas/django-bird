@@ -13,7 +13,8 @@ from django.template.loader_tags import ExtendsNode
 from django.template.loader_tags import IncludeNode
 from django.template.loaders.filesystem import Loader as FileSystemLoader
 
-from ._typing import override, _has_nodelist
+from ._typing import _has_nodelist
+from ._typing import override
 from .compiler import Compiler
 from .components import components
 from .staticfiles import ComponentAssetRegistry
