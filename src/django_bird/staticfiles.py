@@ -62,11 +62,18 @@ def get_template_assets(template: DjangoTemplate):
 class ComponentAssetRegistry:
     components: set[Component] = field(default_factory=set)
 
+    def clear(self) -> None:
+        """Clear the component cache. Mainly useful for testing."""
+        self.components.clear()
+
     def register(self, component: Component) -> None:
         self.components.add(component)
 
-    def get_assets(self, asset_type: AssetType) -> set[Asset]:
-        assets: set[Asset] = set()
+    def get_assets(self, asset_type: AssetType) -> list[Asset]:
+        assets: list[Asset] = []
         for component in self.components:
-            assets.update(a for a in component.assets if a.type == asset_type)
+            assets.extend(a for a in component.assets if a.type == asset_type)
         return assets
+
+
+asset_registry = ComponentAssetRegistry()
