@@ -184,3 +184,85 @@ This will render as:
 ```{note}
 Props defined without a default value will render as an empty string if no value is provided when using the component. This behavior may change in a future version to either require default values or handle undefined props differently.
 ```
+
+## Value Resolution
+
+Both attributes and properties support literal (quoted) and dynamic (unquoted) values. This allows you to either hard-code values or resolve them from the template context.
+
+The rules for value resolution are:
+
+- Quoted values (`"value"` or `'value'`) are treated as literal strings
+- Unquoted values are resolved from the template context
+- Boolean values can be passed directly (`disabled=True`) or as strings (`disabled="True"`)
+- Both attributes and properties follow these same resolution rules
+
+### Literal Values
+
+Using quoted values ensures the exact string is used:
+
+```htmldjango
+{% bird button class="btn-primary" variant="large" disabled="true" %}
+    Click me
+{% endbird %}
+```
+
+Renders as:
+
+```html
+<button class="btn-primary" variant="large" disabled="true">Click me</button>
+```
+
+### Dynamic Values
+
+Unquoted values are resolved from the template context:
+
+```htmldjango
+{% bird button class=button_class variant=size disabled=is_disabled %}
+    Click me
+{% endbird %}
+```
+
+With this context:
+
+```python
+{
+    "button_class": "btn-secondary",
+    "size": "small",
+    "is_disabled": True,
+}
+```
+
+Renders as:
+
+```html
+<button class="btn-secondary" variant="small" disabled>Click me</button>
+```
+
+You can also access nested attributes using dot notation:
+
+```htmldjango
+{% bird button class=theme.button.class disabled=user.is_inactive %}
+    Click me
+{% endbird %}
+```
+
+With this context:
+
+```python
+{
+    "theme": {
+        "button": {
+            "class": "themed-button",
+        }
+    },
+    "user": {
+        "is_inactive": True,
+    },
+}
+```
+
+Renders as:
+
+```html
+<button class="themed-button" disabled>Click me</button>
+```

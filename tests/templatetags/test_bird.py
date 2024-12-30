@@ -13,6 +13,7 @@ from django.template.exceptions import TemplateSyntaxError
 
 from django_bird.params import Param
 from django_bird.params import Params
+from django_bird.params import Value
 from django_bird.templatetags.tags.bird import END_TAG
 from django_bird.templatetags.tags.bird import TAG
 from django_bird.templatetags.tags.bird import BirdNode
@@ -48,17 +49,37 @@ class TestTemplateTag:
     @pytest.mark.parametrize(
         "params,expected_params",
         [
-            ("class='btn'", Params(attrs=[Param(name="class", value="btn")])),
+            (
+                "class='btn'",
+                Params(attrs=[Param(name="class", value=Value("btn", quoted=True))]),
+            ),
             (
                 "class='btn' id='my-btn'",
                 Params(
                     attrs=[
-                        Param(name="class", value="btn"),
-                        Param(name="id", value="my-btn"),
+                        Param(name="class", value=Value("btn", quoted=True)),
+                        Param(name="id", value=Value("my-btn", quoted=True)),
                     ]
                 ),
             ),
-            ("disabled", Params(attrs=[Param(name="disabled", value=True)])),
+            ("disabled", Params(attrs=[Param(name="disabled", value=Value(True))])),
+            (
+                "class=dynamic_class",
+                Params(
+                    attrs=[
+                        Param(name="class", value=Value("dynamic_class", quoted=False))
+                    ]
+                ),
+            ),
+            (
+                "class=item.name id=user.id",
+                Params(
+                    attrs=[
+                        Param(name="class", value=Value("item.name", quoted=False)),
+                        Param(name="id", value=Value("user.id", quoted=False)),
+                    ]
+                ),
+            ),
         ],
     )
     def test_node_params(self, params, expected_params):
@@ -156,6 +177,30 @@ class TestTemplateTag:
                 "{% bird button %}{{ slot }}{% endbird %}",
                 {"slot": "Click me"},
                 "<button>Click me</button>",
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button class=dynamic_class %}Click me{% endbird %}",
+                {"dynamic_class": "btn-primary"},
+                '<button class="btn-primary">Click me</button>',
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button class='dynamic_class' %}Click me{% endbird %}",
+                {"dynamic_class": "btn-primary"},
+                '<button class="dynamic_class">Click me</button>',
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button class=btn.class %}Click me{% endbird %}",
+                {"btn": {"class": "btn-success"}},
+                '<button class="btn-success">Click me</button>',
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button class='btn.class' %}Click me{% endbird %}",
+                {"btn": {"class": "btn-success"}},
+                '<button class="btn.class">Click me</button>',
             ),
         ],
     )
@@ -304,6 +349,36 @@ class TestTemplateTag:
                 '{% bird button class="btn-primary" disabled=True %}Click me{% endbird %}',
                 {},
                 '<button class="btn-primary" data-attr="button" disabled>Click me</button>',
+            ),
+            (
+                "{% bird:prop class %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class=dynamic_class %}Click me{% endbird %}",
+                {"dynamic_class": "btn-primary"},
+                "<button class='btn-primary'>Click me</button>",
+            ),
+            (
+                "{% bird:prop class %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class='dynamic_class' %}Click me{% endbird %}",
+                {"dynamic_class": "btn-primary"},
+                "<button class='dynamic_class'>Click me</button>",
+            ),
+            (
+                "{% bird:prop class %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class=btn.class %}Click me{% endbird %}",
+                {"btn": {"class": "btn-success"}},
+                "<button class='btn-success'>Click me</button>",
+            ),
+            (
+                "{% bird:prop class %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class='btn.class' %}Click me{% endbird %}",
+                {"btn": {"class": "btn-success"}},
+                "<button class='btn.class'>Click me</button>",
+            ),
+            (
+                "{% bird:prop class='default' %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class=active_class %}Click me{% endbird %}",
+                {"active_class": "active"},
+                "<button class='active'>Click me</button>",
             ),
         ],
     )

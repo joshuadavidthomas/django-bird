@@ -4,28 +4,101 @@ import pytest
 
 from django_bird.params import Param
 from django_bird.params import Params
+from django_bird.params import Value
 from django_bird.templatetags.tags.prop import PropNode
+
+
+class TestValue:
+    @pytest.mark.parametrize(
+        "value,context,expected",
+        [
+            (Value("btn", quoted=True), {"btn": "blue"}, "btn"),
+            (Value("btn", quoted=False), {"btn": "blue"}, "blue"),
+            (Value(True), {}, True),
+            (Value(None), {}, None),
+            (Value("True"), {}, True),
+            (Value("False"), {}, None),
+        ],
+    )
+    def test_resolve(self, value, context, expected):
+        assert value.resolve(context) == expected
 
 
 class TestParam:
     @pytest.mark.parametrize(
         "param,context,expected",
         [
-            (Param(name="class", value="btn"), {}, 'class="btn"'),
-            (Param(name="class", value="btn"), {"btn": "blue"}, 'class="blue"'),
-            (Param(name="disabled", value=True), {}, "disabled"),
-            (Param(name="disabled", value=None), {}, ""),
+            (Param(name="class", value=Value("btn", quoted=False)), {}, 'class="btn"'),
+            (
+                Param(name="class", value=Value("btn", quoted=False)),
+                {"btn": "blue"},
+                'class="blue"',
+            ),
+            (Param(name="disabled", value=Value(True)), {}, "disabled"),
+            (Param(name="disabled", value=Value(None)), {}, ""),
+            (
+                Param(name="class", value=Value("btn", quoted=True)),
+                {"btn": "blue"},
+                'class="btn"',
+            ),
+            (
+                Param(name="class", value=Value("item.name", quoted=True)),
+                {"item": {"name": "value"}},
+                'class="item.name"',
+            ),
         ],
     )
-    def test_render(self, param, context, expected):
-        assert param.render(context) == expected
+    def test_render_attr(self, param, context, expected):
+        assert param.render_attr(context) == expected
+
+    @pytest.mark.parametrize(
+        "param,context,expected",
+        [
+            (Param(name="class", value=Value("btn", quoted=False)), {}, "btn"),
+            (
+                Param(name="class", value=Value("btn", quoted=False)),
+                {"btn": "blue"},
+                "blue",
+            ),
+            (Param(name="disabled", value=Value(True)), {}, True),
+            (Param(name="disabled", value=Value(None)), {}, None),
+            (
+                Param(name="count", value=Value("items.length", quoted=False)),
+                {"items": {"length": 5}},
+                5,
+            ),
+            (Param(name="isActive", value=Value("False")), {}, None),
+            (Param(name="isActive", value=Value("True")), {}, True),
+            (
+                Param(name="data", value=Value("user.name", quoted=False)),
+                {"user": {"name": "Alice"}},
+                "Alice",
+            ),
+            (
+                Param(name="data", value=Value("user.name", quoted=True)),
+                {"user": {"name": "Alice"}},
+                "user.name",
+            ),
+        ],
+    )
+    def test_render_prop(self, param, context, expected):
+        assert param.render_prop(context) == expected
 
     @pytest.mark.parametrize(
         "bit,expected",
         [
-            ("class='btn'", Param(name="class", value="btn")),
-            ('class="btn"', Param(name="class", value="btn")),
-            ("disabled", Param(name="disabled", value=True)),
+            ("class='btn'", Param(name="class", value=Value("btn", quoted=True))),
+            ('class="btn"', Param(name="class", value=Value("btn", quoted=True))),
+            ("class=btn", Param(name="class", value=Value("btn", quoted=False))),
+            ("disabled", Param(name="disabled", value=Value(True))),
+            (
+                "class=item.name",
+                Param(name="class", value=Value("item.name", quoted=False)),
+            ),
+            (
+                'class="item.name"',
+                Param(name="class", value=Value("item.name", quoted=True)),
+            ),
         ],
     )
     def test_from_bit(self, bit, expected):
@@ -37,25 +110,39 @@ class TestParams:
         "params,nodelist,context,expected_props,expected_attrs",
         [
             (
-                Params(attrs=[Param(name="class", value=None)]),
+                Params(attrs=[Param(name="class", value=Value(None))]),
                 [PropNode(name="class", default="btn", attrs=[])],
                 {},
                 {"class": "btn"},
                 [],
             ),
             (
-                Params(attrs=[Param(name="class", value="btn")]),
+                Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
                 [PropNode(name="class", default=None, attrs=[])],
                 {},
                 {"class": "btn"},
                 [],
             ),
             (
-                Params(attrs=[Param(name="class", value="btn")]),
+                Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
                 None,
                 {},
                 None,
-                [Param(name="class", value="btn")],
+                [Param(name="class", value=Value("btn", quoted=False))],
+            ),
+            (
+                Params(attrs=[Param(name="class", value=Value("static", quoted=True))]),
+                [PropNode(name="class", default=None, attrs=[])],
+                {"static": "dynamic"},
+                {"class": "static"},
+                [],
+            ),
+            (
+                Params(attrs=[Param(name="class", value=Value("var", quoted=False))]),
+                [PropNode(name="class", default=None, attrs=[])],
+                {"var": "dynamic"},
+                {"class": "dynamic"},
+                [],
             ),
         ],
     )
@@ -68,22 +155,36 @@ class TestParams:
     @pytest.mark.parametrize(
         "params,context,expected",
         [
-            (Params(attrs=[Param(name="class", value="btn")]), {}, 'class="btn"'),
             (
-                Params(attrs=[Param(name="class", value="btn")]),
+                Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
+                {},
+                'class="btn"',
+            ),
+            (
+                Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
                 {"btn": "blue"},
                 'class="blue"',
             ),
-            (Params(attrs=[Param(name="disabled", value=True)]), {}, "disabled"),
+            (Params(attrs=[Param(name="disabled", value=Value(True))]), {}, "disabled"),
             (
                 Params(
                     attrs=[
-                        Param(name="class", value="btn"),
-                        Param(name="disabled", value=True),
+                        Param(name="class", value=Value("btn", quoted=False)),
+                        Param(name="disabled", value=Value(True)),
                     ]
                 ),
                 {},
                 'class="btn" disabled',
+            ),
+            (
+                Params(attrs=[Param(name="class", value=Value("static", quoted=True))]),
+                {"static": "dynamic"},
+                'class="static"',
+            ),
+            (
+                Params(attrs=[Param(name="class", value=Value("var", quoted=False))]),
+                {"var": "dynamic"},
+                'class="dynamic"',
             ),
         ],
     )
@@ -93,9 +194,38 @@ class TestParams:
     @pytest.mark.parametrize(
         "bits,expected",
         [
-            (["class='btn'"], Params(attrs=[Param(name="class", value="btn")])),
-            (['class="btn"'], Params(attrs=[Param(name="class", value="btn")])),
-            (["disabled"], Params(attrs=[Param(name="disabled", value=True)])),
+            (
+                ["class='btn'"],
+                Params(attrs=[Param(name="class", value=Value("btn", quoted=True))]),
+            ),
+            (
+                ["class='btn'", "id='my-btn'"],
+                Params(
+                    attrs=[
+                        Param(name="class", value=Value("btn", quoted=True)),
+                        Param(name="id", value=Value("my-btn", quoted=True)),
+                    ]
+                ),
+            ),
+            (
+                ["disabled"],
+                Params(attrs=[Param(name="disabled", value=Value(True))]),
+            ),
+            (
+                ["class=dynamic"],
+                Params(
+                    attrs=[Param(name="class", value=Value("dynamic", quoted=False))]
+                ),
+            ),
+            (
+                ["class=item.name", "id=user.id"],
+                Params(
+                    attrs=[
+                        Param(name="class", value=Value("item.name", quoted=False)),
+                        Param(name="id", value=Value("user.id", quoted=False)),
+                    ]
+                ),
+            ),
         ],
     )
     def test_from_bits(self, bits, expected):
