@@ -192,7 +192,8 @@ Both attributes and properties support literal (quoted) and dynamic (unquoted) v
 The rules for value resolution are:
 
 - Quoted values (`"value"` or `'value'`) are treated as literal strings
-- Unquoted values are resolved from the template context
+- Unquoted values are first attempted to be resolved from the template context
+    - If resolution fails, the literal value is used as a fallback
 - Boolean values can be passed directly (`disabled=True`) or as strings (`disabled="True"`)
 - Both attributes and properties follow these same resolution rules
 
