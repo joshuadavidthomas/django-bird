@@ -192,7 +192,8 @@ Both attributes and properties support literal (quoted) and dynamic (unquoted) v
 The rules for value resolution are:
 
 - Quoted values (`"value"` or `'value'`) are treated as literal strings
-- Unquoted values are resolved from the template context
+- Unquoted values are first attempted to be resolved from the template context
+    - If resolution fails, the literal value is used as a fallback
 - Boolean values can be passed directly (`disabled=True`) or as strings (`disabled="True"`)
 - Both attributes and properties follow these same resolution rules
 
@@ -236,6 +237,20 @@ Renders as:
 
 ```html
 <button class="btn-secondary" variant="small" disabled>Click me</button>
+```
+
+If an unquoted value cannot be resolved from the context, it falls back to using the literal string:
+
+```htmldjango
+{% bird button class=undefined_class %}
+    Click me
+{% endbird %}
+```
+
+With empty context, renders as:
+
+```html
+<button class="undefined_class">Click me</button>
 ```
 
 You can also access nested attributes using dot notation:

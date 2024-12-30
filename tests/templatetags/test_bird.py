@@ -202,6 +202,24 @@ class TestTemplateTag:
                 {"btn": {"class": "btn-success"}},
                 '<button class="btn.class">Click me</button>',
             ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button class=undefined_class %}Click me{% endbird %}",
+                {},
+                '<button class="undefined_class">Click me</button>',
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button class=missing.attr %}Click me{% endbird %}",
+                {},
+                '<button class="missing.attr">Click me</button>',
+            ),
+            (
+                "<button {{ attrs }}>Click me</button>",
+                "{% bird button class=user.preferences.theme %}Click me{% endbird %}",
+                {"user": {"preferences": {}}},
+                '<button class="user.preferences.theme">Click me</button>',
+            ),
         ],
     )
     def test_rendered_attrs(
@@ -379,6 +397,30 @@ class TestTemplateTag:
                 "{% bird button class=active_class %}Click me{% endbird %}",
                 {"active_class": "active"},
                 "<button class='active'>Click me</button>",
+            ),
+            (
+                "{% bird:prop class %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class=undefined_class %}Click me{% endbird %}",
+                {},
+                "<button class='undefined_class'>Click me</button>",
+            ),
+            (
+                "{% bird:prop class %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class=missing.attr %}Click me{% endbird %}",
+                {},
+                "<button class='missing.attr'>Click me</button>",
+            ),
+            (
+                "{% bird:prop class %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class=user.preferences.theme %}Click me{% endbird %}",
+                {"user": {"preferences": {}}},
+                "<button class='user.preferences.theme'>Click me</button>",
+            ),
+            (
+                "{% bird:prop class='fallback' %}<button class='{{ props.class }}'>{{ slot }}</button>",
+                "{% bird button class=undefined_class %}Click me{% endbird %}",
+                {},
+                "<button class='undefined_class'>Click me</button>",
             ),
         ],
     )

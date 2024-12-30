@@ -18,6 +18,9 @@ class TestValue:
             (Value(None), {}, None),
             (Value("True"), {}, True),
             (Value("False"), {}, None),
+            (Value("undefined", quoted=False), {}, "undefined"),
+            (Value("foo.bar", quoted=False), {}, "foo.bar"),
+            (Value("foo.bar", quoted=False), {"foo": {}}, "foo.bar"),
         ],
     )
     def test_resolve(self, value, context, expected):
@@ -45,6 +48,21 @@ class TestParam:
                 Param(name="class", value=Value("item.name", quoted=True)),
                 {"item": {"name": "value"}},
                 'class="item.name"',
+            ),
+            (
+                Param(name="class", value=Value("undefined", quoted=False)),
+                {},
+                'class="undefined"',
+            ),
+            (
+                Param(name="class", value=Value("foo.bar", quoted=False)),
+                {},
+                'class="foo.bar"',
+            ),
+            (
+                Param(name="class", value=Value("foo.bar", quoted=False)),
+                {"foo": {}},
+                'class="foo.bar"',
             ),
         ],
     )
@@ -77,6 +95,21 @@ class TestParam:
             (
                 Param(name="data", value=Value("user.name", quoted=True)),
                 {"user": {"name": "Alice"}},
+                "user.name",
+            ),
+            (
+                Param(name="class", value=Value("undefined", quoted=False)),
+                {},
+                "undefined",
+            ),
+            (
+                Param(name="data", value=Value("user.name", quoted=False)),
+                {},
+                "user.name",
+            ),
+            (
+                Param(name="data", value=Value("user.name", quoted=False)),
+                {"user": {}},
                 "user.name",
             ),
         ],
@@ -144,6 +177,24 @@ class TestParams:
                 {"class": "dynamic"},
                 [],
             ),
+            (
+                Params(
+                    attrs=[Param(name="class", value=Value("undefined", quoted=False))]
+                ),
+                [PropNode(name="class", default=None, attrs=[])],
+                {},
+                {"class": "undefined"},
+                [],
+            ),
+            (
+                Params(
+                    attrs=[Param(name="class", value=Value("user.name", quoted=False))]
+                ),
+                [PropNode(name="class", default=None, attrs=[])],
+                {},
+                {"class": "user.name"},
+                [],
+            ),
         ],
     )
     def test_render_props(
@@ -185,6 +236,27 @@ class TestParams:
                 Params(attrs=[Param(name="class", value=Value("var", quoted=False))]),
                 {"var": "dynamic"},
                 'class="dynamic"',
+            ),
+            (
+                Params(
+                    attrs=[Param(name="class", value=Value("undefined", quoted=False))]
+                ),
+                {},
+                'class="undefined"',
+            ),
+            (
+                Params(
+                    attrs=[Param(name="class", value=Value("user.name", quoted=False))]
+                ),
+                {},
+                'class="user.name"',
+            ),
+            (
+                Params(
+                    attrs=[Param(name="class", value=Value("user.name", quoted=False))]
+                ),
+                {"user": {}},
+                'class="user.name"',
             ),
         ],
     )
