@@ -238,6 +238,20 @@ Renders as:
 <button class="btn-secondary" variant="small" disabled>Click me</button>
 ```
 
+If an unquoted value cannot be resolved from the context, it falls back to using the literal string:
+
+```htmldjango
+{% bird button class=undefined_class %}
+    Click me
+{% endbird %}
+```
+
+With empty context, renders as:
+
+```html
+<button class="undefined_class">Click me</button>
+```
+
 You can also access nested attributes using dot notation:
 
 ```htmldjango
