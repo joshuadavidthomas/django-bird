@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- Improved handling of quoted vs unquoted attribute values in `{% bird %}` components. Quoted values (e.g., `class="static-class"`) are treated as literal strings, while unquoted values (e.g., `class=dynamic_class`) are resolved from the template context. This allows for more explicit control over whether an attribute value should be treated as a literal or resolved dynamically.
+
 ## [0.6.2]
 
 ### Changed
@@ -53,7 +57,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Added
 
 - Added component caching with LRU (Least Recently Used) strategy via global `components` registry.
-  - `cachetools>=5.5.0` is now a dependency of the library to support this new cache strategy
+    - `cachetools>=5.5.0` is now a dependency of the library to support this new cache strategy
 
 ### Changed
 
@@ -112,8 +116,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 - Created a custom template loader for integration with django-bird's compiler and Django's template engine.
 - Added support for nested components and dynamic slot rendering.
 - Initial configuration of the library through the `settings.DJANGO_BIRD` dictionary, including these settings:
-  - `COMPONENT_DIRS` - List of directories to search for components
-  - `ENABLE_AUTO_CONFIG` - Boolean to enable/disable auto-configuration
+    - `COMPONENT_DIRS` - List of directories to search for components
+    - `ENABLE_AUTO_CONFIG` - Boolean to enable/disable auto-configuration
 
 ### New Contributors
 

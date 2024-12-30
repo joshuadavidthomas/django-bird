@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Any
 
 from django import template
 from django.template.base import NodeList
@@ -13,33 +14,55 @@ from ._typing import TagBits
 
 
 @dataclass
+class Value:
+    raw: str | bool | None
+    quoted: bool = False
+
+    def resolve(self, context: Context) -> Any:
+        if self.raw is None or (isinstance(self.raw, str) and self.raw == "False"):
+            return None
+        if (isinstance(self.raw, bool) and self.raw) or (
+            isinstance(self.raw, str) and self.raw == "True"
+        ):
+            return True
+        if isinstance(self.raw, str) and not self.quoted:
+            try:
+                return template.Variable(str(self.raw)).resolve(context)
+            except template.VariableDoesNotExist:
+                return self.raw
+        return self.raw
+
+
+@dataclass
 class Param:
     name: str
-    value: str | bool | None
+    value: Value
 
-    def render(self, context: Context) -> str:
-        if self.value is None or (
-            isinstance(self.value, str) and self.value == "False"
-        ):
+    def _resolve_value(self, context: Context) -> str | bool | None:
+        return self.value.resolve(context)
+
+    def render_attr(self, context: Context) -> str:
+        value = self._resolve_value(context)
+        if value is None:
             return ""
-        if (isinstance(self.value, bool) and self.value) or (
-            isinstance(self.value, str) and self.value == "True"
-        ):
+        if value is True:
             return self.name
-        try:
-            value = template.Variable(str(self.value)).resolve(context)
-        except template.VariableDoesNotExist:
-            value = self.value
         return f'{self.name}="{value}"'
 
+    def render_prop(self, context: Context) -> str | bool | None:
+        return self._resolve_value(context)
+
     @classmethod
-    def from_bit(cls, bit: str):
-        value: str | bool
+    def from_bit(cls, bit: str) -> Param:
         if "=" in bit:
-            name, value = bit.split("=", 1)
-            value = value.strip("'\"")
+            name, raw_value = bit.split("=", 1)
+            # Check if the value is quoted
+            if raw_value.startswith(("'", '"')) and raw_value.endswith(raw_value[0]):
+                value = Value(raw_value[1:-1], quoted=True)
+            else:
+                value = Value(raw_value.strip(), quoted=False)
         else:
-            name, value = bit, True
+            name, value = bit, Value(True)
         return cls(name, value)
 
 
@@ -60,12 +83,13 @@ class Params:
             if not isinstance(node, PropNode):
                 continue
 
-            value: str | bool | None = node.default
+            # Create a Value instance for the default
+            value = Value(node.default, quoted=False)
 
             for idx, attr in enumerate(self.attrs):
                 if node.name == attr.name:
-                    if attr.value:
-                        value = attr.value
+                    if attr.value.raw is not None:  # Changed from attr.value
+                        value = attr.value  # Now passing the entire Value instance
                     attrs_to_remove.add(idx)
 
             self.props.append(Param(name=node.name, value=value))
@@ -73,10 +97,10 @@ class Params:
         for idx in sorted(attrs_to_remove, reverse=True):
             self.attrs.pop(idx)
 
-        return {prop.name: prop.value for prop in self.props}
+        return {prop.name: prop.render_prop(context) for prop in self.props}
 
     def render_attrs(self, context: Context) -> SafeString:
-        rendered = " ".join(attr.render(context) for attr in self.attrs)
+        rendered = " ".join(attr.render_attr(context) for attr in self.attrs)
         return mark_safe(rendered)
 
     @classmethod
