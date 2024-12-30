@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.7.0]
+
 ### Changed
 
 - Improved handling of quoted vs unquoted attribute values in `{% bird %}` components. Quoted values (e.g., `class="static-class"`) are treated as literal strings, while unquoted values (e.g., `class=dynamic_class`) are resolved from the template context. This allows for more explicit control over whether an attribute value should be treated as a literal or resolved dynamically.
@@ -127,7 +129,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.6.2...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.7.0...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -137,3 +139,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.6.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.6.0
 [0.6.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.6.1
 [0.6.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.6.2
+[0.7.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.7.0
