@@ -11,7 +11,7 @@ from django.template.loader import get_template
 from django_bird.loader import BIRD_TAG_PATTERN
 from django_bird.loader import BirdLoader
 from django_bird.params import Params
-from django_bird.staticfiles import asset_registry
+from django_bird.staticfiles import assets
 from django_bird.templatetags.tags.bird import BirdNode
 
 
@@ -87,4 +87,4 @@ def test_scan_for_components(
 
     loader._scan_for_components(node, context)
 
-    assert len(asset_registry.components) == expected_count
+    assert len(assets.components) == expected_count

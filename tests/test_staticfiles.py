@@ -7,7 +7,7 @@ import pytest
 from django_bird.components import components
 from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
-from django_bird.staticfiles import asset_registry
+from django_bird.staticfiles import assets
 from django_bird.staticfiles import get_template_assets
 
 
@@ -170,7 +170,7 @@ class TestComponentAssetRegistry:
 
         create_template(child_path)
 
-        assert len(asset_registry.components) == 3
+        assert len(assets.components) == 3
 
     def test_get_assets_by_type(
         self, create_bird_template, create_bird_asset, create_template
@@ -180,10 +180,10 @@ class TestComponentAssetRegistry:
         js_asset = create_bird_asset(template_file, "console.log('test');", "js")
 
         component = components.get_component("test")
-        asset_registry.register(component)
+        assets.register(component)
 
-        css_assets = asset_registry.get_assets(AssetType.CSS)
-        js_assets = asset_registry.get_assets(AssetType.JS)
+        css_assets = assets.get_assets(AssetType.CSS)
+        js_assets = assets.get_assets(AssetType.JS)
 
         assert len(css_assets) == 1
         assert len(js_assets) == 1
@@ -198,11 +198,11 @@ class TestComponentAssetRegistry:
 
         component = components.get_component("test")
 
-        asset_registry.register(component)
-        asset_registry.register(component)
+        assets.register(component)
+        assets.register(component)
 
-        assert len(asset_registry.components) == 1
-        assert len(asset_registry.get_assets(AssetType.CSS)) == 1
+        assert len(assets.components) == 1
+        assert len(assets.get_assets(AssetType.CSS)) == 1
 
     def test_multiple_components_same_asset_names(
         self, create_bird_template, create_bird_asset
@@ -216,10 +216,10 @@ class TestComponentAssetRegistry:
         comp1 = components.get_component("first/comp1")
         comp2 = components.get_component("second/comp2")
 
-        asset_registry.register(comp1)
-        asset_registry.register(comp2)
+        assets.register(comp1)
+        assets.register(comp2)
 
-        css_assets = asset_registry.get_assets(AssetType.CSS)
+        css_assets = assets.get_assets(AssetType.CSS)
         assert len(css_assets) == 2
 
         asset_paths = {str(asset.path) for asset in css_assets}
@@ -252,13 +252,13 @@ class TestComponentAssetRegistry:
         template = create_template(child_path)
         template.render({})
 
-        css_assets = asset_registry.get_assets(AssetType.CSS)
+        css_assets = assets.get_assets(AssetType.CSS)
         asset_paths = {str(asset.path) for asset in css_assets}
 
         assert str(parent_css) in asset_paths, "Parent CSS not found in assets"
         assert str(child_css) in asset_paths, "Child CSS not found in assets"
 
     def test_empty_registry(self):
-        assert len(asset_registry.components) == 0
-        assert len(asset_registry.get_assets(AssetType.CSS)) == 0
-        assert len(asset_registry.get_assets(AssetType.JS)) == 0
+        assert len(assets.components) == 0
+        assert len(assets.get_assets(AssetType.CSS)) == 0
+        assert len(assets.get_assets(AssetType.JS)) == 0

@@ -76,4 +76,4 @@ class ComponentAssetRegistry:
         return assets
 
 
-asset_registry = ComponentAssetRegistry()
+assets = ComponentAssetRegistry()
