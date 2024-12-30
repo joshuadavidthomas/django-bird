@@ -60,9 +60,6 @@ class BirdNode(template.Node):
     @override
     def render(self, context: Context) -> str:
         component_name = self.get_component_name(context)
-        print(f"self.name: {self.name}")
-        print(f"component_name: {component_name}")
-        print(f"component_name type: {type(component_name)}")
         component = components.get_component(component_name)
         component_context = self.get_component_context_data(component, context)
         return component.render(component_context)
