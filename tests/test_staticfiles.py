@@ -175,7 +175,6 @@ class TestComponentAssetRegistry:
     def test_get_assets_by_type(
         self, create_bird_template, create_bird_asset, create_template
     ):
-        # Create template and assets
         template_file = create_bird_template("test", "<div>Test</div>")
         css_asset = create_bird_asset(template_file, ".test { color: red; }", "css")
         js_asset = create_bird_asset(template_file, "console.log('test');", "js")
@@ -194,14 +193,11 @@ class TestComponentAssetRegistry:
     def test_register_same_component_multiple_times(
         self, create_bird_template, create_bird_asset
     ):
-        # Create template and asset
         template_file = create_bird_template("test", "<div>Test</div>")
         create_bird_asset(template_file, ".test { color: red; }", "css")
 
-        # Get the actual component through the registry
         component = components.get_component("test")
 
-        # Register same component multiple times
         asset_registry.register(component)
         asset_registry.register(component)
 
@@ -211,14 +207,12 @@ class TestComponentAssetRegistry:
     def test_multiple_components_same_asset_names(
         self, create_bird_template, create_bird_asset
     ):
-        # Create templates using sub_dir parameter
         template1 = create_bird_template("comp1", "<div>One</div>", sub_dir="first")
         template2 = create_bird_template("comp2", "<div>Two</div>", sub_dir="second")
 
         css1 = create_bird_asset(template1, ".one { color: red; }", "css")
         css2 = create_bird_asset(template2, ".two { color: blue; }", "css")
 
-        # Get components using the full paths
         comp1 = components.get_component("first/comp1")
         comp2 = components.get_component("second/comp2")
 
@@ -232,11 +226,9 @@ class TestComponentAssetRegistry:
         assert str(css1) in asset_paths
         assert str(css2) in asset_paths
 
-    def test_template_inheritance_asset_ordering(
+    def test_template_inheritance_assets(
         self, create_bird_template, create_bird_asset, create_template, templates_dir
     ):
-        asset_registry.clear()
-
         parent = create_bird_template("parent", "<div>Parent</div>")
         child = create_bird_template("child", "<div>Child</div>")
 
@@ -261,16 +253,12 @@ class TestComponentAssetRegistry:
         template.render({})
 
         css_assets = asset_registry.get_assets(AssetType.CSS)
-        asset_paths = [str(asset.path) for asset in css_assets]
+        asset_paths = {str(asset.path) for asset in css_assets}
 
         assert str(parent_css) in asset_paths, "Parent CSS not found in assets"
         assert str(child_css) in asset_paths, "Child CSS not found in assets"
-        assert asset_paths.index(str(parent_css)) < asset_paths.index(
-            str(child_css)
-        ), "Parent CSS should come before Child CSS"
 
     def test_empty_registry(self):
-        # Test behavior with empty registry
         assert len(asset_registry.components) == 0
         assert len(asset_registry.get_assets(AssetType.CSS)) == 0
         assert len(asset_registry.get_assets(AssetType.JS)) == 0

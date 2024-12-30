@@ -78,8 +78,6 @@ def test_render_template(template_name):
 def test_scan_for_components(
     node, expected_count, create_bird_template, create_bird_asset
 ):
-    asset_registry.components.clear()
-
     button = create_bird_template("button", "<button>Click me</button>")
     create_bird_asset(button, ".button { color: blue; }", "css")
     create_bird_asset(button, "console.log('button');", "js")
