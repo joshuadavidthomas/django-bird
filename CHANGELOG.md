@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Removed
+
+- **Internal**: Removed debug prints from `BirdNode` template tag node.
+
 ## [0.7.0]
 
 ### Changed
