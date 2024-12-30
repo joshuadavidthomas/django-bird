@@ -17,7 +17,7 @@ from ._typing import _has_nodelist
 from ._typing import override
 from .compiler import Compiler
 from .components import components
-from .staticfiles import ComponentAssetRegistry
+from .staticfiles import assets
 from .templatetags.tags.bird import TAG
 from .templatetags.tags.bird import BirdNode
 
@@ -28,7 +28,6 @@ class BirdLoader(FileSystemLoader):
     def __init__(self, engine: Engine):
         super().__init__(engine)
         self.compiler = Compiler()
-        self.asset_registry = ComponentAssetRegistry()
 
     @override
     def get_contents(self, origin: Origin) -> str:
@@ -52,7 +51,7 @@ class BirdLoader(FileSystemLoader):
     def _scan_for_components(self, node: Template | Node, context: Context) -> None:
         if isinstance(node, BirdNode):
             component = components.get_component(node.name)
-            self.asset_registry.register(component)
+            assets.register(component)
 
         if not _has_nodelist(node) or node.nodelist is None:
             return
@@ -60,7 +59,7 @@ class BirdLoader(FileSystemLoader):
         for child in node.nodelist:
             if isinstance(child, BirdNode):
                 component = components.get_component(child.name)
-                self.asset_registry.register(component)
+                assets.register(component)
 
             if isinstance(child, ExtendsNode):
                 parent_template = child.get_parent(context)

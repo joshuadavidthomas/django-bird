@@ -5,7 +5,6 @@ from django.template.base import Parser
 from django.template.base import Token
 from django.template.base import TokenType
 from django.template.context import Context
-from django.template.engine import Engine
 from django.template.exceptions import TemplateSyntaxError
 
 from django_bird.staticfiles import AssetType
@@ -154,29 +153,6 @@ class TestTemplateTag:
         body_start = rendered.find("<body")
         assert f'<script src="{first_js}"></script>' in rendered[body_start:]
         assert f'<script src="{second_js}"></script>' in rendered[body_start:]
-
-    def test_birdloader_required(self, templates_dir, create_template):
-        template_path = templates_dir / "test.html"
-        template_path.write_text("""
-            <html>
-            <head>
-                {% bird:css %}
-            </head>
-            <body>
-                {% bird:js %}
-            </body>
-            </html>
-        """)
-
-        engine = Engine(
-            builtins=["django_bird.templatetags.django_bird"],
-            dirs=[str(templates_dir)],
-            loaders=["django.template.loaders.filesystem.Loader"],
-        )
-        template = engine.get_template("test.html")
-
-        with pytest.raises(RuntimeError):
-            template.render(Context({}))
 
 
 class TestNode:
