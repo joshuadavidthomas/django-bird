@@ -225,7 +225,11 @@ Unquoted values are resolved from the template context:
 With this context:
 
 ```python
-{"button_class": "btn-secondary", "size": "small", "is_disabled": True}
+{
+    "button_class": "btn-secondary", 
+    "size": "small", 
+    "is_disabled": True,
+}
 ```
 
 Renders as:
@@ -245,7 +249,16 @@ You can also access nested attributes using dot notation:
 With this context:
 
 ```python
-{"theme": {"button": {"class": "themed-button"}}, "user": {"is_inactive": True}}
+{
+    "theme": {
+        "button": {
+            "class": "themed-button",
+        }
+    }, 
+    "user": {
+        "is_inactive": True,
+    },
+}
 ```
 
 Renders as:
