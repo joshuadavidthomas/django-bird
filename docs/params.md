@@ -226,8 +226,8 @@ With this context:
 
 ```python
 {
-    "button_class": "btn-secondary", 
-    "size": "small", 
+    "button_class": "btn-secondary",
+    "size": "small",
     "is_disabled": True,
 }
 ```
@@ -254,7 +254,7 @@ With this context:
         "button": {
             "class": "themed-button",
         }
-    }, 
+    },
     "user": {
         "is_inactive": True,
     },
