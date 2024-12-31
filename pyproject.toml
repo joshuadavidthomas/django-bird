@@ -76,7 +76,7 @@ Source = "https://github.com/joshuadavidthomas/django-bird"
 [tool.bumpver]
 commit = true
 commit_message = ":bookmark: bump version {old_version} -> {new_version}"
-current_version = "0.7.1"
+current_version = "0.7.2"
 push = false  # set to false for CI
 tag = false
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
