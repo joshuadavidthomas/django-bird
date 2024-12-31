@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.7.2]
+
 ### Changed
 
 - **Internal**: Improved handling of component parameters in loops by creating fresh `Params` instances for each render. Previously, a single `Params` instance was reused across renders, which could cause issues with attribute resolution in loops. The `BirdNode` now stores raw attributes instead of a `Params` instance, and creates a new `Params` instance for each render.
@@ -143,7 +145,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.7.1...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.7.2...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -155,3 +157,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.6.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.6.2
 [0.7.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.7.0
 [0.7.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.7.1
+[0.7.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.7.2
