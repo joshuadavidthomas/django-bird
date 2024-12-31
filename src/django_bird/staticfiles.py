@@ -1,17 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from dataclasses import field
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-from django.template.backends.django import Template as DjangoTemplate
 
 from ._typing import override
-
-if TYPE_CHECKING:
-    from django_bird.components import Component
 
 
 class AssetType(Enum):
@@ -45,35 +38,3 @@ class Asset:
             case _:
                 raise ValueError(f"Unknown asset type for path: {path}")
         return cls(path=path, type=asset_type)
-
-
-def get_template_assets(template: DjangoTemplate):
-    assets: set[Asset] = set()
-    template_path = Path(template.template.origin.name)
-    for asset_type in AssetType:
-        asset_path = template_path.with_suffix(asset_type.ext)
-        if asset_path.exists():
-            asset = Asset.from_path(asset_path)
-            assets.add(asset)
-    return frozenset(assets)
-
-
-@dataclass
-class AssetRegistry:
-    components: set[Component] = field(default_factory=set)
-
-    def clear(self) -> None:
-        """Clear the component cache. Mainly useful for testing."""
-        self.components.clear()
-
-    def register(self, component: Component) -> None:
-        self.components.add(component)
-
-    def get_assets(self, asset_type: AssetType) -> list[Asset]:
-        assets: list[Asset] = []
-        for component in self.components:
-            assets.extend(a for a in component.assets if a.type == asset_type)
-        return assets
-
-
-assets = AssetRegistry()
