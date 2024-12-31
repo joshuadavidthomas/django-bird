@@ -36,7 +36,7 @@ class Component:
         return cls(name=name, template=template, assets=assets)
 
 
-class Registry:
+class ComponentRegistry:
     def __init__(self, maxsize: int = 100):
         self._cache: LRUCache[str, Component] = LRUCache(maxsize=maxsize)
 
@@ -54,4 +54,4 @@ class Registry:
         self._cache.clear()
 
 
-components = Registry()
+components = ComponentRegistry()

@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- **Internal**: Renamed Component and Asset registries.
+
 ## [0.7.2]
 
 ### Changed

@@ -59,7 +59,7 @@ def get_template_assets(template: DjangoTemplate):
 
 
 @dataclass
-class ComponentAssetRegistry:
+class AssetRegistry:
     components: set[Component] = field(default_factory=set)
 
     def clear(self) -> None:
@@ -76,4 +76,4 @@ class ComponentAssetRegistry:
         return assets
 
 
-assets = ComponentAssetRegistry()
+assets = AssetRegistry()
