@@ -6,7 +6,7 @@ from django.template.exceptions import TemplateDoesNotExist
 from django.test import override_settings
 
 from django_bird.components import Component
-from django_bird.components import Registry
+from django_bird.components import ComponentRegistry
 from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
 
@@ -64,10 +64,10 @@ class TestComponent:
         assert Asset(file, expected_asset_type) in comp.assets
 
 
-class TestRegistry:
+class TestComponentRegistry:
     @pytest.fixture
     def registry(self):
-        return Registry(maxsize=2)
+        return ComponentRegistry(maxsize=2)
 
     def test_get_component_caches(self, registry, create_bird_template):
         create_bird_template(name="button", content="<button>Click me</button>")
