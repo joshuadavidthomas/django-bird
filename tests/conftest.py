@@ -170,12 +170,3 @@ def clear_components_registry():
     components.clear()
     yield
     components.clear()
-
-
-@pytest.fixture(autouse=True)
-def clear_assets_registry():
-    from django_bird.staticfiles import assets
-
-    assets.clear()
-    yield
-    assets.clear()

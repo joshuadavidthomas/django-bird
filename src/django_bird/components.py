@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from pathlib import Path
 from typing import Any
 
 from cachetools import LRUCache
@@ -11,7 +12,7 @@ from django.template.loader import select_template
 
 from django_bird.staticfiles import Asset
 
-from .staticfiles import get_template_assets
+from .staticfiles import AssetType
 from .templates import get_template_names
 
 
@@ -32,26 +33,40 @@ class Component:
     def from_name(cls, name: str):
         template_names = get_template_names(name)
         template = select_template(template_names)
-        assets = get_template_assets(template)
-        return cls(name=name, template=template, assets=assets)
+
+        assets: set[Asset] = set()
+        template_path = Path(template.template.origin.name)
+        for asset_type in AssetType:
+            asset_path = template_path.with_suffix(asset_type.ext)
+            if asset_path.exists():
+                asset = Asset.from_path(asset_path)
+                assets.add(asset)
+
+        return cls(name=name, template=template, assets=frozenset(assets))
 
 
 class ComponentRegistry:
     def __init__(self, maxsize: int = 100):
-        self._cache: LRUCache[str, Component] = LRUCache(maxsize=maxsize)
+        self._components: LRUCache[str, Component] = LRUCache(maxsize=maxsize)
+
+    def clear(self) -> None:
+        """Clear the registry. Mainly useful for testing."""
+        self._components.clear()
 
     def get_component(self, name: str) -> Component:
         try:
-            return self._cache[name]
+            return self._components[name]
         except KeyError:
             component = Component.from_name(name)
             if not settings.DEBUG:
-                self._cache[name] = component
+                self._components[name] = component
             return component
 
-    def clear(self) -> None:
-        """Clear the component cache. Mainly useful for testing."""
-        self._cache.clear()
+    def get_assets(self, asset_type: AssetType) -> list[Asset]:
+        assets: list[Asset] = []
+        for component in self._components.values():
+            assets.extend(a for a in component.assets if a.type == asset_type)
+        return assets
 
 
 components = ComponentRegistry()

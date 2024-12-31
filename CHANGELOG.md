@@ -20,7 +20,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Changed
 
-- **Internal**: Renamed Component and Asset registries.
+- **Internal**: Consolidated Component and Asset registries into a single `ComponentRegistry`.
 
 ## [0.7.2]
 

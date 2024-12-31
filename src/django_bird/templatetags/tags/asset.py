@@ -8,9 +8,9 @@ from django.template.context import Context
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
+from django_bird.components import components
 from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
-from django_bird.staticfiles import assets
 
 CSS_TAG = "bird:css"
 JS_TAG = "bird:js"
@@ -48,7 +48,7 @@ class AssetNode(template.Node):
 
     @override
     def render(self, context: Context) -> str:
-        component_assets = assets.get_assets(self.asset_type)
+        component_assets = components.get_assets(self.asset_type)
         return self._render_assets(component_assets)
 
     def _render_assets(self, assets: list[Asset]) -> str:
