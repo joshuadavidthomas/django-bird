@@ -13,6 +13,7 @@ from django_bird._typing import TagBits
 from django_bird._typing import override
 from django_bird.components import Component
 from django_bird.components import components
+from django_bird.params import Param
 from django_bird.params import Params
 from django_bird.slots import DEFAULT_SLOT
 from django_bird.slots import Slots
@@ -24,9 +25,12 @@ END_TAG = "endbird"
 def do_bird(parser: Parser, token: Token) -> BirdNode:
     bits = token.split_contents()
     name = parse_bird_name(bits)
-    params = Params.from_bits(bits[2:])
+    attrs = []
+    for bit in bits[2:]:
+        param = Param.from_bit(bit)
+        attrs.append(param)
     nodelist = parse_nodelist(bits, parser)
-    return BirdNode(name, params, nodelist)
+    return BirdNode(name, attrs, nodelist)
 
 
 def parse_bird_name(bits: TagBits) -> str:
@@ -52,9 +56,11 @@ def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:
 
 
 class BirdNode(template.Node):
-    def __init__(self, name: str, params: Params, nodelist: NodeList | None) -> None:
+    def __init__(
+        self, name: str, attrs: list[Param], nodelist: NodeList | None
+    ) -> None:
         self.name = name
-        self.params = params
+        self.attrs = attrs
         self.nodelist = nodelist
 
     @override
@@ -74,8 +80,9 @@ class BirdNode(template.Node):
     def get_component_context_data(
         self, component: Component, context: Context
     ) -> dict[str, Any]:
-        props = self.params.render_props(component.nodelist, context)
-        attrs = self.params.render_attrs(context)
+        params = Params.with_attrs(self.attrs)
+        props = params.render_props(component.nodelist, context)
+        attrs = params.render_attrs(context)
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
         return {

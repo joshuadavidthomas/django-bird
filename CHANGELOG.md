@@ -18,6 +18,14 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- **Internal**: Improved handling of component parameters in loops by creating fresh `Params` instances for each render. Previously, a single `Params` instance was reused across renders, which could cause issues with attribute resolution in loops. The `BirdNode` now stores raw attributes instead of a `Params` instance, and creates a new `Params` instance for each render.
+
+### Fixed
+
+- Fixed an issue where nested variable resolution (e.g., `item.url`) would fail in loops after the first iteration. This was caused by attributes being consumed during the first render and not being available for subsequent renders.
+
 ## [0.7.1]
 
 ### Removed

@@ -10,7 +10,6 @@ from django.template.loader import get_template
 
 from django_bird.loader import BIRD_TAG_PATTERN
 from django_bird.loader import BirdLoader
-from django_bird.params import Params
 from django_bird.staticfiles import assets
 from django_bird.templatetags.tags.bird import BirdNode
 
@@ -60,13 +59,13 @@ def test_render_template(template_name):
     "node,expected_count",
     [
         (Template("{% bird button %}Click me{% endbird %}"), 1),
-        (BirdNode(name="button", params=Params([]), nodelist=None), 1),
+        (BirdNode(name="button", attrs=[], nodelist=None), 1),
         (
             BirdNode(
                 name="button",
-                params=Params([]),
+                attrs=[],
                 nodelist=NodeList(
-                    [BirdNode(name="button", params=Params([]), nodelist=None)],
+                    [BirdNode(name="button", attrs=[], nodelist=None)],
                 ),
             ),
             1,

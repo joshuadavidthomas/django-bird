@@ -12,7 +12,6 @@ from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 
 from django_bird.params import Param
-from django_bird.params import Params
 from django_bird.params import Value
 from django_bird.templatetags.tags.bird import END_TAG
 from django_bird.templatetags.tags.bird import TAG
@@ -38,6 +37,45 @@ class TestTemplateTag:
         node = do_bird(parser, token)
         assert node.name == expected
 
+    @pytest.mark.parametrize(
+        "params,expected_attrs",
+        [
+            (
+                "class='btn'",
+                [Param(name="class", value=Value("btn", quoted=True))],
+            ),
+            (
+                "class='btn' id='my-btn'",
+                [
+                    Param(name="class", value=Value("btn", quoted=True)),
+                    Param(name="id", value=Value("my-btn", quoted=True)),
+                ],
+            ),
+            (
+                "disabled",
+                [Param(name="disabled", value=Value(True))],
+            ),
+            (
+                "class=dynamic",
+                [Param(name="class", value=Value("dynamic", quoted=False))],
+            ),
+            (
+                "class=item.name id=user.id",
+                [
+                    Param(name="class", value=Value("item.name", quoted=False)),
+                    Param(name="id", value=Value("user.id", quoted=False)),
+                ],
+            ),
+        ],
+    )
+    def test_attrs_parsing(self, params, expected_attrs):
+        token = Token(TokenType.BLOCK, f"{TAG} button {params}")
+        parser = Parser(
+            [Token(TokenType.BLOCK, END_TAG)],
+        )
+        node = do_bird(parser, token)
+        assert node.attrs == expected_attrs
+
     def test_missing_argument(self):
         token = Token(TokenType.BLOCK, TAG)
         parser = Parser(
@@ -47,48 +85,43 @@ class TestTemplateTag:
             do_bird(parser, token)
 
     @pytest.mark.parametrize(
-        "params,expected_params",
+        "params,expected_attrs",
         [
             (
                 "class='btn'",
-                Params(attrs=[Param(name="class", value=Value("btn", quoted=True))]),
+                [Param(name="class", value=Value("btn", quoted=True))],
             ),
             (
                 "class='btn' id='my-btn'",
-                Params(
-                    attrs=[
-                        Param(name="class", value=Value("btn", quoted=True)),
-                        Param(name="id", value=Value("my-btn", quoted=True)),
-                    ]
-                ),
+                [
+                    Param(name="class", value=Value("btn", quoted=True)),
+                    Param(name="id", value=Value("my-btn", quoted=True)),
+                ],
             ),
-            ("disabled", Params(attrs=[Param(name="disabled", value=Value(True))])),
+            (
+                "disabled",
+                [Param(name="disabled", value=Value(True))],
+            ),
             (
                 "class=dynamic_class",
-                Params(
-                    attrs=[
-                        Param(name="class", value=Value("dynamic_class", quoted=False))
-                    ]
-                ),
+                [Param(name="class", value=Value("dynamic_class", quoted=False))],
             ),
             (
                 "class=item.name id=user.id",
-                Params(
-                    attrs=[
-                        Param(name="class", value=Value("item.name", quoted=False)),
-                        Param(name="id", value=Value("user.id", quoted=False)),
-                    ]
-                ),
+                [
+                    Param(name="class", value=Value("item.name", quoted=False)),
+                    Param(name="id", value=Value("user.id", quoted=False)),
+                ],
             ),
         ],
     )
-    def test_node_params(self, params, expected_params):
+    def test_node_attrs(self, params, expected_attrs):
         token = Token(TokenType.BLOCK, f"{TAG} button {params}")
         parser = Parser(
             [Token(TokenType.BLOCK, END_TAG)],
         )
         node = do_bird(parser, token)
-        assert node.params == expected_params
+        assert node.attrs == expected_attrs
 
     @pytest.mark.parametrize(
         "component,template,context,expected",
@@ -438,6 +471,58 @@ class TestTemplateTag:
         rendered = t.render(context=Context(context))
         assert normalize_whitespace(rendered) == expected
 
+    def test_nested_variable_resolution(
+        self, create_bird_template, normalize_whitespace
+    ):
+        # Create the nav and nav.item components
+        create_bird_template(
+            "nav",
+            """
+            <nav>
+                {{ slot }}
+            </nav>
+            """,
+        )
+
+        create_bird_template(
+            "nav.item",
+            """
+            {% bird:prop href="#" %}
+            <a href="{{ props.href }}">{{ slot }}</a>
+            """,
+        )
+
+        # Create the template that uses these components
+        template = Template("""
+            {% bird nav %}
+                {% for item in items %}
+                    {% bird nav.item href=item.url %}
+                        {{ item.title }}
+                    {% endbird nav.item %}
+                {% endfor %}
+            {% endbird nav %}
+        """)
+
+        # Create context with nested data
+        context = Context(
+            {
+                "items": [
+                    {"url": "/", "title": "Home"},
+                    {"url": "/admin", "title": "Admin"},
+                ]
+            }
+        )
+
+        expected = normalize_whitespace("""
+            <nav>
+                <a href="/">Home</a>
+                <a href="/admin">Admin</a>
+            </nav>
+        """)
+
+        rendered = normalize_whitespace(template.render(context))
+        assert rendered == expected
+
 
 @pytest.mark.xfail(reason="Feature not implemented yet")
 class TestTemplateTagFutureFeatures:
@@ -468,7 +553,7 @@ class TestNode:
     )
     def test_get_component_name(self, name, context, expected, create_bird_template):
         create_bird_template(name=name, content="<button>Click me</button>")
-        node = BirdNode(name=name, params=Params([]), nodelist=None)
+        node = BirdNode(name=name, attrs=[], nodelist=None)
 
         component_name = node.get_component_name(context=Context(context))
 

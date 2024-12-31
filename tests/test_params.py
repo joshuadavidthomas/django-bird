@@ -264,14 +264,17 @@ class TestParams:
         assert params.render_attrs(context) == expected
 
     @pytest.mark.parametrize(
-        "bits,expected",
+        "attrs,expected",
         [
             (
-                ["class='btn'"],
+                [Param(name="class", value=Value("btn", quoted=True))],
                 Params(attrs=[Param(name="class", value=Value("btn", quoted=True))]),
             ),
             (
-                ["class='btn'", "id='my-btn'"],
+                [
+                    Param(name="class", value=Value("btn", quoted=True)),
+                    Param(name="id", value=Value("my-btn", quoted=True)),
+                ],
                 Params(
                     attrs=[
                         Param(name="class", value=Value("btn", quoted=True)),
@@ -280,17 +283,20 @@ class TestParams:
                 ),
             ),
             (
-                ["disabled"],
+                [Param(name="disabled", value=Value(True))],
                 Params(attrs=[Param(name="disabled", value=Value(True))]),
             ),
             (
-                ["class=dynamic"],
+                [Param(name="class", value=Value("dynamic", quoted=False))],
                 Params(
                     attrs=[Param(name="class", value=Value("dynamic", quoted=False))]
                 ),
             ),
             (
-                ["class=item.name", "id=user.id"],
+                [
+                    Param(name="class", value=Value("item.name", quoted=False)),
+                    Param(name="id", value=Value("user.id", quoted=False)),
+                ],
                 Params(
                     attrs=[
                         Param(name="class", value=Value("item.name", quoted=False)),
@@ -300,5 +306,5 @@ class TestParams:
             ),
         ],
     )
-    def test_from_bits(self, bits, expected):
-        assert Params.from_bits(bits) == expected
+    def test_with_attrs(self, attrs, expected):
+        assert Params.with_attrs(attrs) == expected
