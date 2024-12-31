@@ -10,7 +10,7 @@ from django.template.context import Context
 from django.utils.safestring import SafeString
 from django.utils.safestring import mark_safe
 
-from ._typing import TagBits
+from .templatetags.tags.prop import PropNode
 
 
 @dataclass
@@ -18,7 +18,7 @@ class Value:
     raw: str | bool | None
     quoted: bool = False
 
-    def resolve(self, context: Context) -> Any:
+    def resolve(self, context: Context | dict[str, Any]) -> Any:
         if self.raw is None or (isinstance(self.raw, str) and self.raw == "False"):
             return None
         if (isinstance(self.raw, bool) and self.raw) or (
@@ -71,9 +71,12 @@ class Params:
     attrs: list[Param] = field(default_factory=list)
     props: list[Param] = field(default_factory=list)
 
-    def render_props(self, nodelist: NodeList | None, context: Context):
-        from django_bird.templatetags.tags.prop import PropNode
+    @classmethod
+    def with_attrs(cls, attrs: list[Param] | None) -> Params:
+        """Create a Params instance with a copy of the provided attrs."""
+        return cls(attrs=attrs.copy() if attrs is not None else [], props=[])
 
+    def render_props(self, nodelist: NodeList | None, context: Context):
         if nodelist is None:
             return
 
@@ -83,13 +86,13 @@ class Params:
             if not isinstance(node, PropNode):
                 continue
 
-            # Create a Value instance for the default
             value = Value(node.default, quoted=False)
 
             for idx, attr in enumerate(self.attrs):
                 if node.name == attr.name:
-                    if attr.value.raw is not None:  # Changed from attr.value
-                        value = attr.value  # Now passing the entire Value instance
+                    resolved = attr.value.resolve(context)
+                    if resolved is not None:
+                        value = attr.value
                     attrs_to_remove.add(idx)
 
             self.props.append(Param(name=node.name, value=value))
@@ -102,11 +105,3 @@ class Params:
     def render_attrs(self, context: Context) -> SafeString:
         rendered = " ".join(attr.render_attr(context) for attr in self.attrs)
         return mark_safe(rendered)
-
-    @classmethod
-    def from_bits(cls, bits: TagBits):
-        params: list[Param] = []
-        for bit in bits:
-            param = Param.from_bit(bit)
-            params.append(param)
-        return cls(attrs=params)
