@@ -11,7 +11,10 @@ from django.template.loader import get_template
 from django_bird.components import components
 from django_bird.loader import BIRD_TAG_PATTERN
 from django_bird.loader import BirdLoader
+from django_bird.staticfiles import AssetType
 from django_bird.templatetags.tags.bird import BirdNode
+from tests.conftest import TestAsset
+from tests.conftest import TestComponent
 
 
 @pytest.mark.parametrize(
@@ -74,12 +77,17 @@ def test_render_template(template_name):
         (Template("{% bird button %}{% bird button %}{% endbird %}{% endbird %}"), 1),
     ],
 )
-def test_ensure_components_loaded(
-    node, expected_count, create_bird_template, create_bird_asset
-):
-    button = create_bird_template("button", "<button>Click me</button>")
-    create_bird_asset(button, ".button { color: blue; }", "css")
-    create_bird_asset(button, "console.log('button');", "js")
+def test_ensure_components_loaded(node, expected_count, templates_dir):
+    button = TestComponent(name="button", content="<button>Click me</button>").create(
+        templates_dir
+    )
+
+    TestAsset(
+        component=button, content=".button { color: blue; }", asset_type=AssetType.CSS
+    ).create()
+    TestAsset(
+        component=button, content="console.log('button');", asset_type=AssetType.JS
+    ).create()
 
     loader = BirdLoader(Engine.get_default())
     context = Context()
