@@ -3,7 +3,10 @@ from __future__ import annotations
 import contextlib
 import logging
 import re
+from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
+from typing import Any
 
 import pytest
 from django.conf import settings
@@ -84,6 +87,37 @@ def override_app_settings():
     return _override_app_settings
 
 
+@dataclass
+class TestComponent:
+    name: str
+    content: str
+    parent_dir: str = "bird"
+    sub_dir: str | None = None
+
+    def create(self, base_dir: Path) -> Path:
+        parent = base_dir / self.parent_dir
+        parent.mkdir(exist_ok=True)
+
+        if self.sub_dir is not None:
+            dir = parent / self.sub_dir
+            dir.mkdir(exist_ok=True)
+        else:
+            dir = parent
+
+        template = dir / f"{self.name}.html"
+        template.write_text(self.content)
+        return template
+
+
+@dataclass
+class TestComponentCase:
+    component: TestComponent
+    template_content: str
+    expected: str
+    description: str = ""
+    template_context: dict[str, Any] = field(default_factory=dict)
+
+
 @pytest.fixture
 def create_bird_dir(templates_dir):
     def func(name):
@@ -152,25 +186,21 @@ def create_template():
 
 @pytest.fixture
 def normalize_whitespace():
-    def func(text):
-        # this makes writing tests much easier, as it gets rid of any
-        # existing whitespace that may be present in the template file
-
+    def func(text: str) -> str:
+        """Normalize whitespace in rendered template output"""
         # multiple whitespace characters
         text = re.sub(r"\s+", " ", text)
-
         # after opening tag, including when there are attributes
         text = re.sub(r"<(\w+)(\s+[^>]*)?\s*>", r"<\1\2>", text)
-
         # before closing tag
         text = re.sub(r"\s+>", ">", text)
-
         # after opening tag and before closing tag
         text = re.sub(r">\s+<", "><", text)
-
         # immediately after opening tag (including attributes) or before closing tag
         text = re.sub(r"(<\w+(?:\s+[^>]*)?>)\s+|\s+(<\/\w+>)", r"\1\2", text)
-
+        # between tags and text content
+        text = re.sub(r">\s+([^<])", r">\1", text)
+        text = re.sub(r"([^>])\s+<", r"\1<", text)
         return text.strip()
 
     return func
