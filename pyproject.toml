@@ -73,6 +73,26 @@ Documentation = "https://django-bird.readthedocs.io/"
 Issues = "https://github.com/joshuadavidthomas/django-bird/issues"
 Source = "https://github.com/joshuadavidthomas/django-bird"
 
+[tool.basedpyright]
+include = ["src"]
+exclude = [
+  "**/__pycache__",
+]
+
+[[tool.basedpyright.executionEnvironments]]
+root = "src"
+
+[[tool.basedpyright.executionEnvironments]]
+reportArgumentType = false
+reportMissingParameterType = false
+reportPrivateUsage = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
+reportUnusedCallResult = false
+root = "tests"
+
 [tool.bumpver]
 commit = true
 commit_message = ":bookmark: bump version {old_version} -> {new_version}"
