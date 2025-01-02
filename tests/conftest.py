@@ -95,7 +95,6 @@ class TestComponent:
     sub_dir: str | None = None
 
     def create(self, base_dir: Path) -> Path:
-        """Create the component template file and return its path"""
         parent = base_dir / self.parent_dir
         parent.mkdir(exist_ok=True)
 
