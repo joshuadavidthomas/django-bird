@@ -57,13 +57,14 @@ class SlotNode(template.Node):
         slots = context.get("slots")
 
         if not slots or not isinstance(slots, dict):
-            slot_content = default_content
-        else:
-            slots_dict = cast(dict[str, str], slots)
-            slot_content = slots_dict.get(self.name, default_content)
+            return mark_safe(default_content)
 
-        # Recursively process the slot content
+        slots_dict = cast(dict[str, str], slots)
+        slot_content = slots_dict.get(self.name)
+
+        if slot_content is None or slot_content == "":
+            return mark_safe(default_content)
+
         t = template.Template(slot_content)
         content = t.render(context)
-
         return mark_safe(content)
