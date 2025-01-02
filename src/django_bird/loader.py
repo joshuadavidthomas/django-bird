@@ -38,7 +38,7 @@ class BirdLoader(FileSystemLoader):
         template = Template(contents, origin=origin, engine=self.engine)
         context = Context()
         with context.bind_template(template):
-            self._scan_for_components(template, context)
+            self._ensure_components_loaded(template, context)
 
         cache_key = f"bird_component_{hashlib.md5(contents.encode()).hexdigest()}"
         compiled = cache.get(cache_key)
@@ -47,7 +47,10 @@ class BirdLoader(FileSystemLoader):
             cache.set(cache_key, compiled, timeout=None)
         return compiled
 
-    def _scan_for_components(self, node: Template | Node, context: Context) -> None:
+    def _ensure_components_loaded(
+        self, node: Template | Node, context: Context
+    ) -> None:
+        """Ensure all components used in the template are loaded."""
         if isinstance(node, BirdNode):
             components.get_component(node.name)
 
@@ -60,12 +63,12 @@ class BirdLoader(FileSystemLoader):
 
             if isinstance(child, ExtendsNode):
                 parent_template = child.get_parent(context)
-                self._scan_for_components(parent_template, context)
+                self._ensure_components_loaded(parent_template, context)
 
             if isinstance(child, IncludeNode):
                 template_name = child.template.token.strip("'\"")
                 included_template = self.engine.get_template(template_name)
-                self._scan_for_components(included_template, context)
+                self._ensure_components_loaded(included_template, context)
 
             if hasattr(child, "nodelist"):
-                self._scan_for_components(child, context)
+                self._ensure_components_loaded(child, context)
