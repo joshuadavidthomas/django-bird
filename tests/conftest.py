@@ -147,44 +147,6 @@ class TestComponentCase:
 
 
 @pytest.fixture
-def create_bird_dir(templates_dir):
-    def func(name):
-        bird_template_dir = templates_dir / name
-        bird_template_dir.mkdir(exist_ok=True)
-        return bird_template_dir
-
-    return func
-
-
-@pytest.fixture
-def create_bird_template(create_bird_dir):
-    def func(name, content, sub_dir=None, bird_dir_name="bird"):
-        bird_dir = create_bird_dir(bird_dir_name)
-        if sub_dir is not None:
-            dir = bird_dir / sub_dir
-            dir.mkdir()
-        else:
-            dir = bird_dir
-        template = dir / f"{name}.html"
-        template.write_text(content)
-        return template
-
-    return func
-
-
-@pytest.fixture
-def create_bird_asset():
-    def func(component_template: Path, content: str, asset_type: str):
-        component_dir = component_template.parent
-        component_name = component_template.stem
-        asset_file = component_dir / f"{component_name}.{asset_type}"
-        asset_file.write_text(content)
-        return asset_file
-
-    return func
-
-
-@pytest.fixture
 def create_template():
     def _create_template(template_file: Path) -> DjangoTemplate:
         engine = Engine(
@@ -192,8 +154,6 @@ def create_template():
             dirs=[str(template_file.parent)],
             loaders=["django_bird.loader.BirdLoader"],
         )
-        print(f"Engine dirs: {engine.dirs}")  # Debug print
-        print(f"Looking for template: {template_file.name}")  # Debug print
         template = engine.get_template(template_file.name)
         backend = DjangoTemplates(
             {

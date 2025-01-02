@@ -12,6 +12,8 @@ from django_bird.templatetags.tags.asset import CSS_TAG
 from django_bird.templatetags.tags.asset import JS_TAG
 from django_bird.templatetags.tags.asset import AssetNode
 from django_bird.templatetags.tags.asset import do_asset
+from tests.conftest import TestAsset
+from tests.conftest import TestComponent
 
 
 class TestTemplateTag:
@@ -44,16 +46,28 @@ class TestTemplateTag:
         with pytest.raises(ValueError):
             do_asset(parser, token)
 
-    def test_template_inheritence(
-        self, create_bird_template, create_bird_asset, create_template, templates_dir
-    ):
-        alert = create_bird_template("alert", '<div class="alert">{{ slot }}</div>')
-        alert_css = create_bird_asset(alert, ".alert { color: red; }", "css")
-        alert_js = create_bird_asset(alert, "console.log('alert');", "js")
+    def test_template_inheritence(self, create_template, templates_dir):
+        alert = TestComponent(
+            name="alert", content='<div class="alert">{{ slot }}</div>'
+        ).create(templates_dir)
+        alert_css = TestAsset(
+            component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+        ).create()
+        alert_js = TestAsset(
+            component=alert, content="console.log('alert');", asset_type=AssetType.JS
+        ).create()
 
-        button = create_bird_template("button", "<button>{{ slot }}</button>")
-        button_css = create_bird_asset(button, ".button { color: blue; }", "css")
-        button_js = create_bird_asset(button, "console.log('button');", "js")
+        button = TestComponent(
+            name="button", content="<button>{{ slot }}</button>"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        button_js = TestAsset(
+            component=button, content="console.log('button');", asset_type=AssetType.JS
+        ).create()
 
         base_path = templates_dir / "base.html"
         base_path.write_text("""
@@ -82,15 +96,15 @@ class TestTemplateTag:
 
         rendered = template.render({})
 
-        assert f'<link rel="stylesheet" href="{alert_css}">' in rendered
-        assert f'<link rel="stylesheet" href="{button_css}">' in rendered
-        assert f'<script src="{alert_js}"></script>' in rendered
-        assert f'<script src="{button_js}"></script>' in rendered
+        assert f'<link rel="stylesheet" href="{alert_css.file}">' in rendered
+        assert f'<link rel="stylesheet" href="{button_css.file}">' in rendered
+        assert f'<script src="{alert_js.file}"></script>' in rendered
+        assert f'<script src="{button_js.file}"></script>' in rendered
 
-    def test_with_no_assets(
-        self, create_bird_template, create_bird_asset, create_template, templates_dir
-    ):
-        create_bird_template("alert", '<div class="alert">{{ slot }}</div>')
+    def test_with_no_assets(self, create_template, templates_dir):
+        TestComponent(
+            name="alert", content='<div class="alert">{{ slot }}</div>'
+        ).create(templates_dir)
 
         base_path = templates_dir / "base.html"
         base_path.write_text("""
@@ -114,16 +128,28 @@ class TestTemplateTag:
         assert '<link rel="stylesheet" href="' not in rendered
         assert '<script src="' not in rendered
 
-    def test_component_render_order(
-        self, create_bird_template, create_bird_asset, create_template, templates_dir
-    ):
-        first = create_bird_template("first", "<div>First: {{ slot }}</div>")
-        first_css = create_bird_asset(first, ".first { color: red; }", "css")
-        first_js = create_bird_asset(first, "console.log('first');", "js")
+    def test_component_render_order(self, create_template, templates_dir):
+        first = TestComponent(
+            name="first", content="<div>First: {{ slot }}</div>"
+        ).create(templates_dir)
+        first_css = TestAsset(
+            component=first, content=".first { color: red; }", asset_type=AssetType.CSS
+        ).create()
+        first_js = TestAsset(
+            component=first, content="console.log('first');", asset_type=AssetType.JS
+        ).create()
 
-        second = create_bird_template("second", "<div>Second: {{ slot }}</div>")
-        second_css = create_bird_asset(second, ".second { color: red; }", "css")
-        second_js = create_bird_asset(second, "console.log('second');", "js")
+        second = TestComponent(
+            name="second", content="<div>Second: {{ slot }}</div>"
+        ).create(templates_dir)
+        second_css = TestAsset(
+            component=second,
+            content=".second { color: red; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        second_js = TestAsset(
+            component=second, content="console.log('second');", asset_type=AssetType.JS
+        ).create()
 
         template_path = templates_dir / "test.html"
         template_path.write_text("""
@@ -147,12 +173,14 @@ class TestTemplateTag:
         rendered = template.render({})
 
         head_end = rendered.find("</head>")
-        assert f'<link rel="stylesheet" href="{first_css}">' in rendered[:head_end]
-        assert f'<link rel="stylesheet" href="{second_css}">' in rendered[:head_end]
+        assert f'<link rel="stylesheet" href="{first_css.file}">' in rendered[:head_end]
+        assert (
+            f'<link rel="stylesheet" href="{second_css.file}">' in rendered[:head_end]
+        )
 
         body_start = rendered.find("<body")
-        assert f'<script src="{first_js}"></script>' in rendered[body_start:]
-        assert f'<script src="{second_js}"></script>' in rendered[body_start:]
+        assert f'<script src="{first_js.file}"></script>' in rendered[body_start:]
+        assert f'<script src="{second_js.file}"></script>' in rendered[body_start:]
 
 
 class TestNode:

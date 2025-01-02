@@ -3,12 +3,14 @@ from __future__ import annotations
 import pytest
 from django.template.loader import get_template
 
+from tests.conftest import TestComponent
 
-def test_create_bird_template(create_bird_template):
+
+def test_test_component(templates_dir):
     name = "foo"
     content = "<div>bar</div>"
 
-    create_bird_template(name, content)
+    TestComponent(name=name, content=content).create(templates_dir)
 
     template = get_template(f"bird/{name}.html")
 

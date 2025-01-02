@@ -3,11 +3,14 @@ from __future__ import annotations
 from django.apps import apps
 
 from django_bird.components import components
+from tests.conftest import TestComponent
 
 
-def test_ready_scans_components(create_bird_template):
-    create_bird_template("button", "<button>Click me</button>")
-    create_bird_template("alert", "<div>Alert</div>")
+def test_ready_scans_components(templates_dir):
+    TestComponent(name="button", content="<button>Click me</button>").create(
+        templates_dir
+    )
+    TestComponent(name="alert", content="<div>Alert</div>").create(templates_dir)
 
     components.clear()
 
