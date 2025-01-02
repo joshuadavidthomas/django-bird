@@ -15,6 +15,8 @@ from django.template.backends.django import Template as DjangoTemplate
 from django.template.engine import Engine
 from django.test import override_settings
 
+from django_bird.staticfiles import AssetType
+
 from .settings import DEFAULT_SETTINGS
 
 pytest_plugins = []
@@ -91,10 +93,11 @@ def override_app_settings():
 class TestComponent:
     name: str
     content: str
+    file: Path | None = None
     parent_dir: str = "bird"
     sub_dir: str | None = None
 
-    def create(self, base_dir: Path) -> Path:
+    def create(self, base_dir: Path) -> TestComponent:
         parent = base_dir / self.parent_dir
         parent.mkdir(exist_ok=True)
 
@@ -106,7 +109,32 @@ class TestComponent:
 
         template = dir / f"{self.name}.html"
         template.write_text(self.content)
-        return template
+
+        self.file = template
+
+        return self
+
+
+@dataclass
+class TestAsset:
+    component: TestComponent
+    content: str
+    asset_type: AssetType
+    file: Path | None = None
+
+    def create(self) -> TestAsset:
+        if self.component.file is None:
+            raise ValueError("Component must be created before adding assets")
+
+        component_dir = self.component.file.parent
+        component_name = self.component.file.stem
+
+        asset_file = component_dir / f"{component_name}{self.asset_type.ext}"
+        asset_file.write_text(self.content)
+
+        self.file = asset_file
+
+        return self
 
 
 @dataclass

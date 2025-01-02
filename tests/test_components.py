@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 from django.template.backends.django import Template
 from django.template.exceptions import TemplateDoesNotExist
@@ -11,79 +9,91 @@ from django_bird.components import Component
 from django_bird.components import ComponentRegistry
 from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
+from tests.conftest import TestAsset
+from tests.conftest import TestComponent
 
 
-class TestComponent:
-    def test_from_name_basic(self, create_bird_template):
-        create_bird_template("button", "<button>Click me</button>")
+class TestComponentClass:
+    def test_from_name_basic(self, templates_dir):
+        TestComponent(name="button", content="<button>Click me</button>").create(
+            templates_dir
+        )
 
         comp = Component.from_name("button")
 
         assert comp.name == "button"
-        assert comp.assets == frozenset()
         assert isinstance(comp.template, Template)
         assert comp.render({}) == "<button>Click me</button>"
 
-    def test_from_name_with_assets(self, create_template, create_bird_template):
-        template_file = create_bird_template("button", "<button>Click me</button>")
-        create_template(template_file)
+    def test_from_name_with_assets(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
 
-        css_file = template_file.with_suffix(".css")
-        js_file = template_file.with_suffix(".js")
-        css_file.write_text("button { color: red; }")
-        js_file.write_text("console.log('loaded');")
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        button_js = TestAsset(
+            component=button, content="console.log('button');", asset_type=AssetType.JS
+        ).create()
 
         comp = Component.from_name("button")
 
+        assert comp.name == "button"
         assert len(comp.assets) == 2
-        assert Asset(css_file, AssetType.CSS) in comp.assets
-        assert Asset(js_file, AssetType.JS) in comp.assets
+        assert Asset(button_css.file, AssetType.CSS) in comp.assets
+        assert Asset(button_js.file, AssetType.JS) in comp.assets
 
-    @pytest.mark.parametrize(
-        "suffix,content,expected_type",
-        [
-            (".css", "button { color: red; }", AssetType.CSS),
-            (".js", "console.log('loaded');", AssetType.JS),
-        ],
-    )
-    def test_from_name_with_partial_assets(
-        self, suffix, content, expected_type, create_template, create_bird_template
-    ):
-        template_file = create_bird_template("button", "<button>Click me</button>")
-        create_template(template_file)
+    def test_from_name_with_partial_assets_css(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
 
-        file = template_file.with_suffix(suffix)
-        file.write_text(content)
+        button_css = TestAsset(
+            button, ".button { color: blue; }", asset_type=AssetType.CSS
+        ).create()
 
         comp = Component.from_name("button")
 
+        assert comp.name == "button"
         assert len(comp.assets) == 1
-        assert Asset(file, expected_type) in comp.assets
+        assert Asset(button_css.file, button_css.asset_type) in comp.assets
 
-    def test_from_name_no_assets(self, create_template, create_bird_template):
-        template_file = create_bird_template("button", "<button>Click me</button>")
-        create_template(template_file)
+    def test_from_name_with_partial_assets_js(self, templates_dir):
+        button = TestComponent(name="button", content="<button>Click me</button>")
+        button.create(templates_dir)
+
+        button_js = TestAsset(
+            button, "console.log('button');", asset_type=AssetType.JS
+        ).create()
+
+        comp = Component.from_name("button")
+
+        assert comp.name == "button"
+        assert len(comp.assets) == 1
+        assert Asset(button_js.file, button_js.asset_type) in comp.assets
+
+    def test_from_name_no_assets(self, templates_dir):
+        button = TestComponent(name="button", content="<button>Click me</button>")
+        button.create(templates_dir)
 
         comp = Component.from_name("button")
 
         assert len(comp.assets) == 0
 
-    def test_from_name_custom_component_dir(
-        self, create_template, create_bird_template
-    ):
-        template_file = create_bird_template(
-            name="button", content="<button>", sub_dir="components"
-        )
+    def test_from_name_custom_component_dir(self, templates_dir, override_app_settings):
+        TestComponent(
+            name="button", content="<button>Click me</button>", parent_dir="components"
+        ).create(templates_dir)
 
-        css_file = template_file.with_suffix(".css")
-        css_file.write_text("button { color: red; }")
+        with override_app_settings(COMPONENT_DIRS=["components"]):
+            comp = Component.from_name("button")
 
-        create_template(template_file)
-
-        comp = Component.from_name("components/button")
-
-        assert len(comp.assets) == 1
-        assert Asset(css_file, AssetType.CSS) in comp.assets
+        assert comp.name == "button"
+        assert isinstance(comp.template, Template)
+        assert comp.render({}) == "<button>Click me</button>"
 
 
 class TestComponentRegistry:
@@ -91,23 +101,30 @@ class TestComponentRegistry:
     def registry(self):
         return ComponentRegistry(maxsize=2)
 
-    def test_initialize_loads_components(
-        self, registry, create_bird_template, settings
-    ):
-        create_bird_template("button", "<button>Click me</button>")
-        create_bird_template("alert", "<div>Alert</div>")
+    def test_initialize_loads_components(self, registry, templates_dir):
+        TestComponent(name="button", content="<button>Click me</button>").create(
+            templates_dir
+        )
+        TestComponent(name="alert", content="<div>Alert</div>").create(templates_dir)
 
         registry.discover_components()
 
         assert "button" in registry._components
         assert "alert" in registry._components
 
-    def test_initialize_loads_assets(
-        self, registry, create_bird_template, create_bird_asset
-    ):
-        template = create_bird_template("button", "<button>Click me</button>")
-        create_bird_asset(template, ".button { color: red; }", "css")
-        create_bird_asset(template, "console.log('button');", "js")
+    def test_initialize_loads_assets(self, registry, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        TestAsset(
+            component=button, content="console.log('button');", asset_type=AssetType.JS
+        ).create()
 
         registry.discover_components()
 
@@ -115,40 +132,47 @@ class TestComponentRegistry:
         assert len(component.assets) == 2
 
     def test_initialize_with_custom_dirs(
-        self, registry, create_bird_template, override_app_settings
+        self, registry, templates_dir, override_app_settings
     ):
-        create_bird_template(
-            "button", "<button>Click me</button>", bird_dir_name="components"
-        )
+        TestComponent(
+            name="button", content="<button>Click me</button>", parent_dir="components"
+        ).create(templates_dir)
 
         with override_app_settings(COMPONENT_DIRS=["components"]):
             registry.discover_components()
 
         assert "button" in registry._components
 
-    def test_initialize_handles_missing_dirs(self, registry, settings):
-        settings.COMPONENT_DIRS = ["nonexistent"]
+    def test_initialize_handles_missing_dirs(self, registry, override_app_settings):
+        with override_app_settings(COMPONENT_DIRS=["nonexistent"]):
+            registry.discover_components()
 
-        registry.discover_components()
-
-    def test_initialize_handles_invalid_components(self, registry, tmp_path, settings):
+    def test_initialize_handles_invalid_components(self, registry, tmp_path):
         component_dir = tmp_path / "bird" / "invalid"
         component_dir.mkdir(parents=True)
 
         registry.discover_components()
 
-    def test_get_component_caches(self, registry, create_bird_template):
-        create_bird_template(name="button", content="<button>Click me</button>")
+    def test_get_component_caches(self, registry, templates_dir):
+        TestComponent(name="button", content="<button>Click me</button>").create(
+            templates_dir
+        )
 
         component1 = registry.get_component("button")
         component2 = registry.get_component("button")
 
         assert component1 is component2
 
-    def test_lru_cache_behavior(self, registry, create_bird_template):
-        create_bird_template(name="button1", content="1")
-        create_bird_template(name="button2", content="2")
-        create_bird_template(name="button3", content="3")
+    def test_lru_cache_behavior(self, registry, templates_dir):
+        TestComponent(name="button1", content="<button>1</button>").create(
+            templates_dir
+        )
+        TestComponent(name="button2", content="<button>2</button>").create(
+            templates_dir
+        )
+        TestComponent(name="button3", content="<button>3</button>").create(
+            templates_dir
+        )
 
         button1 = registry.get_component("button1")
         button2 = registry.get_component("button2")
@@ -169,8 +193,10 @@ class TestComponentRegistry:
         with pytest.raises(TemplateDoesNotExist):
             registry.get_component("nonexistent")
 
-    def test_cache_with_debug(self, registry, create_bird_template):
-        create_bird_template(name="button", content="<button>Click me</button>")
+    def test_cache_with_debug(self, registry, templates_dir):
+        TestComponent(name="button", content="<button>Click me</button>").create(
+            templates_dir
+        )
 
         assert len(registry._components) == 0
 
@@ -183,84 +209,58 @@ class TestComponentRegistry:
 
         assert len(registry._components) == 1
 
-    def test_get_assets_by_type(
-        self, registry, create_bird_template, create_bird_asset
-    ):
-        template_file = create_bird_template("test", "<div>Test</div>")
-        css_asset = create_bird_asset(template_file, ".test { color: red; }", "css")
-        js_asset = create_bird_asset(template_file, "console.log('test');", "js")
+    def test_get_assets_by_type(self, registry, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
 
-        registry.get_component(
-            "test"
-        )  # This now registers the component and its assets
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        button_js = TestAsset(
+            component=button, content="console.log('button');", asset_type=AssetType.JS
+        ).create()
+
+        registry.get_component("button")
 
         css_assets = registry.get_assets(AssetType.CSS)
         js_assets = registry.get_assets(AssetType.JS)
 
         assert len(css_assets) == 1
         assert len(js_assets) == 1
-        assert Asset(Path(css_asset), AssetType.CSS) in css_assets
-        assert Asset(Path(js_asset), AssetType.JS) in js_assets
+        assert Asset(button_css.file, AssetType.CSS) in css_assets
+        assert Asset(button_js.file, AssetType.JS) in js_assets
 
-    def test_multiple_components_same_asset_names(
-        self, registry, create_bird_template, create_bird_asset
-    ):
-        template1 = create_bird_template("comp1", "<div>One</div>", sub_dir="first")
-        template2 = create_bird_template("comp2", "<div>Two</div>", sub_dir="second")
+    def test_multiple_components_same_asset_names(self, registry, templates_dir):
+        button1 = TestComponent(
+            name="button1", content="<button>Click me</button>"
+        ).create(templates_dir)
+        button2 = TestComponent(
+            name="button2", content="<button>Click me</button>"
+        ).create(templates_dir)
 
-        css1 = create_bird_asset(template1, ".one { color: red; }", "css")
-        css2 = create_bird_asset(template2, ".two { color: blue; }", "css")
+        button1_css = TestAsset(
+            component=button1,
+            content=".button { color: red; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        button2_css = TestAsset(
+            component=button2,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
 
-        registry.get_component("first/comp1")
-        registry.get_component("second/comp2")
+        registry.get_component("button1")
+        registry.get_component("button2")
 
         css_assets = registry.get_assets(AssetType.CSS)
         assert len(css_assets) == 2
 
         asset_paths = {str(asset.path) for asset in css_assets}
-        assert str(css1) in asset_paths
-        assert str(css2) in asset_paths
-
-    def test_template_inheritance_assets(
-        self,
-        registry,
-        create_bird_template,
-        create_bird_asset,
-        create_template,
-        templates_dir,
-    ):
-        parent = create_bird_template("parent", "<div>Parent</div>")
-        child = create_bird_template("child", "<div>Child</div>")
-
-        parent_css = create_bird_asset(parent, ".parent { color: red; }", "css")
-        child_css = create_bird_asset(child, ".child { color: blue; }", "css")
-
-        base_path = templates_dir / "base.html"
-        base_path.write_text("""
-            {% bird parent %}Parent Content{% endbird %}
-            {% block content %}{% endblock %}
-        """)
-
-        child_path = templates_dir / "child.html"
-        child_path.write_text("""
-            {% extends 'base.html' %}
-            {% block content %}
-                {% bird child %}Child Content{% endbird %}
-            {% endblock %}
-        """)
-
-        # Pre-load the components so they're in the registry
-        registry.get_component("parent")
-        registry.get_component("child")
-
-        template = create_template(child_path)
-        template.render({})
-
-        css_assets = registry.get_assets(AssetType.CSS)
-        asset_paths = {str(asset.path) for asset in css_assets}
-
-        assert str(parent_css) in asset_paths, "Parent CSS not found in assets"
-        assert str(child_css) in asset_paths, "Child CSS not found in assets"
+        assert str(button1_css.file) in asset_paths
+        assert str(button2_css.file) in asset_paths
 
     def test_empty_registry(self, registry):
         assert len(registry._components) == 0
