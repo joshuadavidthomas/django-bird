@@ -74,7 +74,7 @@ def test_render_template(template_name):
         (Template("{% bird button %}{% bird button %}{% endbird %}{% endbird %}"), 1),
     ],
 )
-def test_scan_for_components(
+def test_ensure_components_loaded(
     node, expected_count, create_bird_template, create_bird_asset
 ):
     button = create_bird_template("button", "<button>Click me</button>")
@@ -84,6 +84,6 @@ def test_scan_for_components(
     loader = BirdLoader(Engine.get_default())
     context = Context()
 
-    loader._scan_for_components(node, context)
+    loader._ensure_components_loaded(node, context)
 
     assert len(components._components) == expected_count

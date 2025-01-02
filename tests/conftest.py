@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 import re
 from pathlib import Path
@@ -69,6 +70,18 @@ def override_templates_settings(templates_dir):
         ]
     ):
         yield
+
+
+@pytest.fixture
+def override_app_settings():
+    from django_bird.conf import DJANGO_BIRD_SETTINGS_NAME
+
+    @contextlib.contextmanager
+    def _override_app_settings(**kwargs):
+        with override_settings(**{DJANGO_BIRD_SETTINGS_NAME: {**kwargs}}):
+            yield
+
+    return _override_app_settings
 
 
 @pytest.fixture

@@ -21,6 +21,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Changed
 
 - **Internal**: Consolidated Component and Asset registries into a single `ComponentRegistry`.
+- **Internal**: Added component discovery at app startup instead of on-demand in the template loader.
 
 ## [0.7.2]
 

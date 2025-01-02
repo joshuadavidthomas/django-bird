@@ -12,6 +12,8 @@ class DjangoBirdAppConfig(AppConfig):
 
     @override
     def ready(self):
+        from django_bird.components import components
         from django_bird.conf import app_settings
 
         app_settings.autoconfigure()
+        components.discover_components()

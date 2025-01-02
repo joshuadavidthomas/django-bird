@@ -8,10 +8,12 @@ from typing import Any
 from cachetools import LRUCache
 from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
+from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import select_template
 
 from django_bird.staticfiles import Asset
 
+from .conf import app_settings
 from .staticfiles import AssetType
 from .templates import get_template_names
 
@@ -48,6 +50,32 @@ class Component:
 class ComponentRegistry:
     def __init__(self, maxsize: int = 100):
         self._components: LRUCache[str, Component] = LRUCache(maxsize=maxsize)
+
+    def discover_components(self) -> None:
+        template_dirs = [dir for config in settings.TEMPLATES for dir in config["DIRS"]]
+
+        component_dirs = [
+            Path(template_dir) / component_dir
+            for template_dir in template_dirs
+            for component_dir in app_settings.COMPONENT_DIRS + ["bird"]
+        ]
+
+        for component_dir in component_dirs:
+            if not component_dir.is_dir():
+                continue
+
+            for component_path in component_dir.iterdir():
+                if component_path.is_dir():
+                    component_name = component_path.name
+                elif component_path.suffix == ".html":
+                    component_name = component_path.stem
+                else:
+                    continue
+
+                try:
+                    self.get_component(component_name)
+                except TemplateDoesNotExist:
+                    continue
 
     def clear(self) -> None:
         """Clear the registry. Mainly useful for testing."""

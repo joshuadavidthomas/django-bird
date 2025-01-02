@@ -91,6 +91,52 @@ class TestComponentRegistry:
     def registry(self):
         return ComponentRegistry(maxsize=2)
 
+    def test_initialize_loads_components(
+        self, registry, create_bird_template, settings
+    ):
+        create_bird_template("button", "<button>Click me</button>")
+        create_bird_template("alert", "<div>Alert</div>")
+
+        registry.discover_components()
+
+        assert "button" in registry._components
+        assert "alert" in registry._components
+
+    def test_initialize_loads_assets(
+        self, registry, create_bird_template, create_bird_asset
+    ):
+        template = create_bird_template("button", "<button>Click me</button>")
+        create_bird_asset(template, ".button { color: red; }", "css")
+        create_bird_asset(template, "console.log('button');", "js")
+
+        registry.discover_components()
+
+        component = registry._components["button"]
+        assert len(component.assets) == 2
+
+    def test_initialize_with_custom_dirs(
+        self, registry, create_bird_template, override_app_settings
+    ):
+        create_bird_template(
+            "button", "<button>Click me</button>", bird_dir_name="components"
+        )
+
+        with override_app_settings(COMPONENT_DIRS=["components"]):
+            registry.discover_components()
+
+        assert "button" in registry._components
+
+    def test_initialize_handles_missing_dirs(self, registry, settings):
+        settings.COMPONENT_DIRS = ["nonexistent"]
+
+        registry.discover_components()
+
+    def test_initialize_handles_invalid_components(self, registry, tmp_path, settings):
+        component_dir = tmp_path / "bird" / "invalid"
+        component_dir.mkdir(parents=True)
+
+        registry.discover_components()
+
     def test_get_component_caches(self, registry, create_bird_template):
         create_bird_template(name="button", content="<button>Click me</button>")
 
