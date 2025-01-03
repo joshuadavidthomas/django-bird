@@ -427,7 +427,8 @@ class TestComponentRegistryCaching:
             assert second is first
             assert "Original" in second.template.template.source
 
-    def test_asset_tracking(self, templates_dir):
+    @pytest.mark.parametrize("debug", [True, False])
+    def test_asset_tracking(self, debug, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
@@ -438,13 +439,12 @@ class TestComponentRegistryCaching:
             asset_type=AssetType.CSS,
         ).create()
 
-        for debug in [True, False]:
-            with override_settings(DEBUG=debug):
-                components.get_component("button")
-                css_assets = components.get_assets(AssetType.CSS)
+        with override_settings(DEBUG=debug):
+            components.get_component("button")
+            css_assets = components.get_assets(AssetType.CSS)
 
-                assert len(css_assets) == 1
-                assert Asset(button_css.file, button_css.asset_type) in css_assets
+            assert len(css_assets) == 1
+            assert Asset(button_css.file, button_css.asset_type) in css_assets
 
     def test_lru_cache_limit(self, templates_dir):
         small_registry = ComponentRegistry(maxsize=2)
