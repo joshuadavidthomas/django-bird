@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed component discovery for nested directories and Django app templates.
+
 ## [0.8.0]
 
 ### Changed
