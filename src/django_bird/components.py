@@ -6,8 +6,10 @@ from pathlib import Path
 from typing import Any
 
 from cachetools import LRUCache
+from django.apps import apps
 from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
+from django.template.engine import Engine
 from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import select_template
 
@@ -51,8 +53,26 @@ class ComponentRegistry:
     def __init__(self, maxsize: int = 100):
         self._components: LRUCache[str, Component] = LRUCache(maxsize=maxsize)
 
+    def get_dirs(self):
+        engine = Engine.get_default()
+        dirs: list[str | Path] = list(engine.dirs)
+
+        for app_config in apps.get_app_configs():
+            template_dir = Path(app_config.path) / "templates"
+            if template_dir.is_dir():
+                dirs.append(template_dir)
+
+        base_dir = getattr(settings, "BASE_DIR", None)
+
+        if base_dir is not None:
+            root_template_dir = Path(base_dir) / "templates"
+            if root_template_dir.is_dir():
+                dirs.append(root_template_dir)
+
+        return dirs
+
     def discover_components(self) -> None:
-        template_dirs = [dir for config in settings.TEMPLATES for dir in config["DIRS"]]
+        template_dirs = self.get_dirs()
 
         component_dirs = [
             Path(template_dir) / component_dir
@@ -61,17 +81,15 @@ class ComponentRegistry:
         ]
 
         for component_dir in component_dirs:
+            component_dir = Path(component_dir)
+
             if not component_dir.is_dir():
                 continue
 
-            for component_path in component_dir.iterdir():
-                if component_path.is_dir():
-                    component_name = component_path.name
-                elif component_path.suffix == ".html":
-                    component_name = component_path.stem
-                else:
-                    continue
-
+            for component_path in component_dir.rglob("*.html"):
+                component_name = str(
+                    component_path.relative_to(component_dir).with_suffix("")
+                )
                 try:
                     self.get_component(component_name)
                 except TemplateDoesNotExist:
