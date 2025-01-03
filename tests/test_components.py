@@ -219,14 +219,14 @@ class {app_dir.name.capitalize()}Config(AppConfig):
     def test_discover_components_from_app(self):
         app1_templates = self.app1_dir / "templates"
 
-        TestComponent(name="app_button", content="<button>App Button</button>").create(
+        TestComponent(name="app1_button", content="<button>App1</button>").create(
             app1_templates
         )
 
         with override_settings(INSTALLED_APPS=["test_app1"]):
             components.discover_components()
 
-        assert "app_button" in components._components
+        assert "app1_button" in components._components
 
     def test_multiple_apps_components(self):
         TestComponent(name="app1_button", content="<button>App1</button>").create(
@@ -563,7 +563,7 @@ class TestComponentRegistryPerformance:
             current_dir.mkdir()
             TestComponent(
                 name=f"button{i}",
-                content=f"<button>Level {i}</button>",
+                content=f"<button>Nested level {i}</button>",
                 sub_dir="/".join(f"level{j}" for j in range(i + 1)),
             ).create(templates_dir)
 
