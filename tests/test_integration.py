@@ -7,8 +7,9 @@ from django.template import Template
 
 from django_bird.components import components
 from django_bird.staticfiles import AssetType
-from tests.conftest import TestAsset
-from tests.conftest import TestComponent
+
+from .utils import TestAsset
+from .utils import TestComponent
 
 
 @contextmanager

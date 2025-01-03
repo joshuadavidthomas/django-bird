@@ -6,8 +6,8 @@ from django.template import Template
 from django.template.exceptions import TemplateSyntaxError
 
 from django_bird.templatetags.tags.slot import parse_slot_name
-from tests.conftest import TestComponent
-from tests.conftest import TestComponentCase
+from tests.utils import TestComponent
+from tests.utils import TestComponentCase
 
 
 @pytest.mark.parametrize(

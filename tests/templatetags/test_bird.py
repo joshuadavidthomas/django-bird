@@ -18,8 +18,8 @@ from django_bird.templatetags.tags.bird import END_TAG
 from django_bird.templatetags.tags.bird import TAG
 from django_bird.templatetags.tags.bird import BirdNode
 from django_bird.templatetags.tags.bird import do_bird
-from tests.conftest import TestComponent
-from tests.conftest import TestComponentCase
+from tests.utils import TestComponent
+from tests.utils import TestComponentCase
 
 
 class TestTagParsing:

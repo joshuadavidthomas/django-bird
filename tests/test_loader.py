@@ -13,8 +13,9 @@ from django_bird.loader import BIRD_TAG_PATTERN
 from django_bird.loader import BirdLoader
 from django_bird.staticfiles import AssetType
 from django_bird.templatetags.tags.bird import BirdNode
-from tests.conftest import TestAsset
-from tests.conftest import TestComponent
+
+from .utils import TestAsset
+from .utils import TestComponent
 
 
 @pytest.mark.parametrize(

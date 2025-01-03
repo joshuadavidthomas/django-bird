@@ -12,8 +12,8 @@ from django_bird.templatetags.tags.asset import CSS_TAG
 from django_bird.templatetags.tags.asset import JS_TAG
 from django_bird.templatetags.tags.asset import AssetNode
 from django_bird.templatetags.tags.asset import do_asset
-from tests.conftest import TestAsset
-from tests.conftest import TestComponent
+from tests.utils import TestAsset
+from tests.utils import TestComponent
 
 
 class TestTemplateTag:

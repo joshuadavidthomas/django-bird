@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from django.template.loader import get_template
 
-from tests.conftest import TestComponent
+from .utils import TestComponent
 
 
 def test_test_component(templates_dir):
