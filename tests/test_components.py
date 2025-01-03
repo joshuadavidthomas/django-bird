@@ -408,13 +408,10 @@ class TestComponentRegistryCaching:
             assert "Original" in first.template.template.source
 
             component.file.write_text("<button>Updated</button>")
-
             second = components.get_component("button")
-            assert "Updated" in second.template.template.source
 
-        with override_settings(DEBUG=False):
-            third = components.get_component("button")
-            assert third is components._components["button"]
+            assert second is not first
+            assert "Updated" in second.template.template.source
 
     def test_production_mode_caching(self, templates_dir):
         component = TestComponent(
@@ -425,7 +422,6 @@ class TestComponentRegistryCaching:
             first = components.get_component("button")
 
             component.file.write_text("<button>Updated</button>")
-
             second = components.get_component("button")
 
             assert second is first
