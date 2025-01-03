@@ -396,6 +396,60 @@ class TestComponentRegistryAssets:
 
 
 class TestComponentRegistryCaching:
+    def test_debug_mode_caching(self, templates_dir):
+        component = TestComponent(
+            name="button", content="<button>Original</button>"
+        ).create(templates_dir)
+
+        with override_settings(DEBUG=True):
+            first = components.get_component("button")
+
+            assert "button" in components._components
+            assert "Original" in first.template.template.source
+
+            component.file.write_text("<button>Updated</button>")
+
+            second = components.get_component("button")
+            assert "Updated" in second.template.template.source
+
+        with override_settings(DEBUG=False):
+            third = components.get_component("button")
+            assert third is components._components["button"]
+
+    def test_production_mode_caching(self, templates_dir):
+        component = TestComponent(
+            name="button", content="<button>Original</button>"
+        ).create(templates_dir)
+
+        with override_settings(DEBUG=False):
+            first = components.get_component("button")
+
+            component.file.write_text("<button>Updated</button>")
+
+            second = components.get_component("button")
+
+            assert second is first
+            assert "Original" in second.template.template.source
+
+    def test_asset_tracking(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: red; }",
+            asset_type=AssetType.CSS,
+        ).create()
+
+        for debug in [True, False]:
+            with override_settings(DEBUG=debug):
+                components.get_component("button")
+                css_assets = components.get_assets(AssetType.CSS)
+
+                assert len(css_assets) == 1
+                assert Asset(button_css.file, button_css.asset_type) in css_assets
+
     def test_lru_cache_limit(self, templates_dir):
         small_registry = ComponentRegistry(maxsize=2)
 
@@ -411,19 +465,6 @@ class TestComponentRegistryCaching:
         assert "button0" not in small_registry._components
         assert "button1" in small_registry._components
         assert "button2" in small_registry._components
-
-    def test_debug_mode_caching(self, templates_dir):
-        TestComponent(name="button", content="<button>Cache Me</button>").create(
-            templates_dir
-        )
-
-        with override_settings(DEBUG=True):
-            components.get_component("button")
-            assert "button" not in components._components
-
-        with override_settings(DEBUG=False):
-            components.get_component("button")
-            assert "button" in components._components
 
     def test_cache_clear(self, templates_dir):
         TestComponent(name="button", content="<button>Clear Me</button>").create(
