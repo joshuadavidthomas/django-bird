@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- **Internal**: Fixed component caching behavior to properly track assets. Components are now always cached for asset tracking, while still providing fresh templates in `DEBUG` mode.
+
 ## [0.8.1]
 
 ### Fixed

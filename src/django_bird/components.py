@@ -91,7 +91,8 @@ class ComponentRegistry:
                     component_path.relative_to(component_dir).with_suffix("")
                 )
                 try:
-                    self.get_component(component_name)
+                    component = Component.from_name(component_name)
+                    self._components[component_name] = component
                 except TemplateDoesNotExist:
                     continue
 
@@ -101,12 +102,14 @@ class ComponentRegistry:
 
     def get_component(self, name: str) -> Component:
         try:
-            return self._components[name]
-        except KeyError:
-            component = Component.from_name(name)
             if not settings.DEBUG:
-                self._components[name] = component
-            return component
+                return self._components[name]
+        except KeyError:
+            pass
+
+        component = Component.from_name(name)
+        self._components[name] = component
+        return component
 
     def get_assets(self, asset_type: AssetType) -> list[Asset]:
         assets: list[Asset] = []
