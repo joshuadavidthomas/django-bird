@@ -93,8 +93,7 @@ class BirdNode(template.Node):
 
     def get_component_context_data(
         self, component: Component, context: Context
-    ) -> dict[str, Any]:  # Change back to dict[str, Any]
-        # Convert all keys to strings when creating base context
+    ) -> dict[str, Any]:
         context_data: dict[str, Any] = {}
         if not self.only:
             flattened = context.flatten()
