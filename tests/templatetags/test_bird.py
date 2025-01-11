@@ -1234,6 +1234,7 @@ def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
 
     assert normalize_whitespace(rendered) == test_case.expected
 
+
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -1258,19 +1259,26 @@ def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
             component=TestComponent(
                 name="button",
                 content="""
+                    {% bird:prop label %}
                     <button {{ attrs }}>
                         {{ props.label }}
                         {{ slot }}
+                        {{ user.name|default:"Anonymous" }}
                     </button>
                 """,
             ),
             template_content="""
-                {% bird button label="Click" only %}
+                {% bird button id="foo" label="Click" only %}
                     Content
                 {% endbird %}
             """,
-            template_context={"user": {"name": "John"}},
-            expected='<button>Click Content</button>',
+            template_context={
+                "props": {
+                    "label": "Outside",
+                },
+                "user": {"name": "John"},
+            },
+            expected='<button id="foo">Click Content Anonymous</button>',
         ),
         TestComponentCase(
             description="Only flag with named slots",
@@ -1296,7 +1304,9 @@ def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
             component=TestComponent(
                 name="button",
                 content="""
-                    <button>{{ user.name|default:"Anonymous" }}</button>
+                    <button>
+                        {{ user.name|default:"Anonymous" }}
+                    </button>
                 """,
             ),
             template_content="""
@@ -1308,7 +1318,7 @@ def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
     ],
     ids=lambda x: x.description,
 )
-def test_only_flag(self, test_case, templates_dir, normalize_whitespace):
+def test_only_flag(test_case, templates_dir, normalize_whitespace):
     test_case.component.create(templates_dir)
 
     template = Template(test_case.template_content)
