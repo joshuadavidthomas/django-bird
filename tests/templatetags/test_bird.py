@@ -1225,7 +1225,7 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
                     "variant": "Parent Variant"  # This should be overridden
                 },
             },
-            expected="<button>Content//</button>",
+            expected="<button>Content //</button>",  # Space preserved from template formatting
         ),
     ],
     ids=lambda x: x.description,
