@@ -284,7 +284,7 @@ Renders as:
 
 ## Context Isolation
 
-By default, components have access to their parent template's context. This means variables defined in the parent template are available inside the component. While this can be convenient, it can also lead to unintended dependencies and make components harder to reason about.
+By default, components have access to their parent template's context. This means variables defined in the parent template are available inside the component.
 
 You can use the `only` keyword to prevent a component from accessing its parent context:
 
@@ -295,6 +295,7 @@ You can use the `only` keyword to prevent a component from accessing its parent 
 ```
 
 When `only` is used:
+
 - The component cannot access variables from the parent context
 - Props, slots, and other component-specific context still work normally
 - Default values in the component template will be used when parent context variables are not available
@@ -327,9 +328,3 @@ Props and slots still work with `only`:
     Submit
 {% endbird %}
 ```
-
-This feature is particularly useful when:
-- Building reusable components that should be context-independent
-- Preventing accidental dependencies on parent context
-- Making component behavior more predictable
-- Following component isolation best practices
