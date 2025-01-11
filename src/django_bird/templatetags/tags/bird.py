@@ -100,8 +100,8 @@ class BirdNode(template.Node):
             context_data = {str(k): v for k, v in flattened.items()}
 
         params = Params.with_attrs(self.attrs)
-        props = params.render_props(component.nodelist, context) or ""
-        attrs = params.render_attrs(context) or ""
+        props = params.render_props(component.nodelist, context)
+        attrs = params.render_attrs(context)
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot", "")
 
