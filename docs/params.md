@@ -281,3 +281,50 @@ Renders as:
 ```html
 <button class="themed-button" disabled>Click me</button>
 ```
+
+## Context Isolation
+
+By default, components have access to their parent template's context. This means variables defined in the parent template are available inside the component.
+
+You can use the `only` keyword to prevent a component from accessing its parent context:
+
+```htmldjango
+{% bird button only %}
+    Click me
+{% endbird %}
+```
+
+When `only` is used:
+
+- The component cannot access variables from the parent context
+- Props, slots, and other component-specific context still work normally
+- Default values in the component template will be used when parent context variables are not available
+
+### Examples
+
+Without `only`, components can access parent context:
+
+```htmldjango
+{# Parent template with user in context #}
+{% bird button %}
+    {{ user.name }}  {# Will render "John" #}
+{% endbird %}
+```
+
+With `only`, parent context is isolated:
+
+```htmldjango
+{# Parent template with user in context #}
+{% bird button only %}
+    {{ user.name|default:"Anonymous" }}  {# Will render "Anonymous" #}
+{% endbird %}
+```
+
+Props and slots still work with `only`:
+
+```htmldjango
+{% bird button variant="primary" only %}
+    {% bird:slot prefix %}→{% endbird:slot %}
+    Submit
+{% endbird %}
+```

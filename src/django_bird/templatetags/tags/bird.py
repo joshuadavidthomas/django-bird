@@ -26,11 +26,20 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
     bits = token.split_contents()
     name = parse_bird_name(bits)
     attrs = []
+    only = False
+
     for bit in bits[2:]:
-        param = Param.from_bit(bit)
-        attrs.append(param)
+        match bit:
+            case "only":
+                only = True
+            case "/":
+                continue
+            case _:
+                param = Param.from_bit(bit)
+                attrs.append(param)
+
     nodelist = parse_nodelist(bits, parser)
-    return BirdNode(name, attrs, nodelist)
+    return BirdNode(name, attrs, nodelist, only)
 
 
 def parse_bird_name(bits: TagBits) -> str:
@@ -57,11 +66,16 @@ def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:
 
 class BirdNode(template.Node):
     def __init__(
-        self, name: str, attrs: list[Param], nodelist: NodeList | None
+        self,
+        name: str,
+        attrs: list[Param],
+        nodelist: NodeList | None,
+        only: bool = False,
     ) -> None:
         self.name = name
         self.attrs = attrs
         self.nodelist = nodelist
+        self.only = only
 
     @override
     def render(self, context: Context) -> str:
@@ -80,14 +94,24 @@ class BirdNode(template.Node):
     def get_component_context_data(
         self, component: Component, context: Context
     ) -> dict[str, Any]:
+        context_data: dict[str, Any] = {}
+        if not self.only:
+            flattened = context.flatten()
+            context_data = {str(k): v for k, v in flattened.items()}
+
         params = Params.with_attrs(self.attrs)
         props = params.render_props(component.nodelist, context)
         attrs = params.render_attrs(context)
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
-        return {
-            "attrs": attrs,
-            "props": props,
-            "slot": default_slot,
-            "slots": slots,
-        }
+
+        context_data.update(
+            {
+                "attrs": attrs,
+                "props": props,
+                "slot": default_slot,
+                "slots": slots,
+            }
+        )
+
+        return context_data

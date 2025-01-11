@@ -1145,6 +1145,188 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
     """)
 
 
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        TestComponentCase(
+            description="Access parent context variable",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {{ user.name }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button %}{% endbird %}
+            """,
+            template_context={"user": {"name": "John"}},
+            expected="<button>John</button>",
+        ),
+        TestComponentCase(
+            description="Access parent context in slot",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {{ slot }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button %}
+                    {{ user.name }}
+                {% endbird %}
+            """,
+            template_context={"user": {"name": "John"}},
+            expected="<button>John</button>",
+        ),
+        TestComponentCase(
+            description="Access parent context in named slot",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {% bird:slot prefix %}{% endbird:slot %}
+                        {{ slot }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button %}
+                    {% bird:slot prefix %}{{ user.role }}{% endbird:slot %}
+                    {{ user.name }}
+                {% endbird %}
+            """,
+            template_context={"user": {"name": "John", "role": "Admin"}},
+            expected="<button>Admin John</button>",
+        ),
+        TestComponentCase(
+            description="Component-specific context overrides parent context values",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button {{ attrs }}>
+                        {{ slot }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button id="foo" %}
+                    Component Content
+                {% endbird %}
+            """,
+            template_context={
+                "slot": "Parent Content",
+                "attrs": 'id="bar"',
+            },
+            expected='<button id="foo">Component Content</button>',
+        ),
+    ],
+    ids=lambda x: x.description,
+)
+def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
+    test_case.component.create(templates_dir)
+
+    template = Template(test_case.template_content)
+    rendered = template.render(Context(test_case.template_context))
+
+    assert normalize_whitespace(rendered) == test_case.expected
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        TestComponentCase(
+            description="Only flag prevents access to parent context",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {{ user.name|default:"Anonymous" }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button only %}{% endbird %}
+            """,
+            template_context={"user": {"name": "John"}},
+            expected="<button>Anonymous</button>",
+        ),
+        TestComponentCase(
+            description="Only flag still allows props and slots",
+            component=TestComponent(
+                name="button",
+                content="""
+                    {% bird:prop label %}
+                    <button {{ attrs }}>
+                        {{ props.label }}
+                        {{ slot }}
+                        {{ user.name|default:"Anonymous" }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button id="foo" label="Click" only %}
+                    Content
+                {% endbird %}
+            """,
+            template_context={
+                "props": {
+                    "label": "Outside",
+                },
+                "user": {"name": "John"},
+            },
+            expected='<button id="foo">Click Content Anonymous</button>',
+        ),
+        TestComponentCase(
+            description="Only flag with named slots",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {% bird:slot prefix %}{% endbird:slot %}
+                        {{ user.name|default:"Anonymous" }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button only %}
+                    {% bird:slot prefix %}{{ user.role }}{% endbird:slot %}
+                {% endbird %}
+            """,
+            template_context={"user": {"name": "John", "role": "Admin"}},
+            expected="<button>Admin Anonymous</button>",
+        ),
+        TestComponentCase(
+            description="Only flag with self-closing tag",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {{ user.name|default:"Anonymous" }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button only / %}
+            """,
+            template_context={"user": {"name": "John"}},
+            expected="<button>Anonymous</button>",
+        ),
+    ],
+    ids=lambda x: x.description,
+)
+def test_only_flag(test_case, templates_dir, normalize_whitespace):
+    test_case.component.create(templates_dir)
+
+    template = Template(test_case.template_content)
+    rendered = template.render(Context(test_case.template_context))
+
+    assert normalize_whitespace(rendered) == test_case.expected
+
+
 class TestBirdNode:
     @pytest.mark.parametrize(
         "test_case",
