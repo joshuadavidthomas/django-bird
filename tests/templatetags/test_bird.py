@@ -1145,101 +1145,95 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
     """)
 
 
-class TestParentContext:
-    @pytest.mark.parametrize(
-        "test_case",
-        [
-            TestComponentCase(
-                description="Access parent context variable",
-                component=TestComponent(
-                    name="button",
-                    content="""
-                        <button>
-                            {{ user.name }}
-                        </button>
-                    """,
-                ),
-                template_content="""
-                    {% bird button %}{% endbird %}
-                """,
-                template_context={"user": {"name": "John"}},
-                expected="<button>John</button>",
-            ),
-            TestComponentCase(
-                description="Access parent context in slot",
-                component=TestComponent(
-                    name="button",
-                    content="""
-                        <button>
-                            {{ slot }}
-                        </button>
-                    """,
-                ),
-                template_content="""
-                    {% bird button %}
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        TestComponentCase(
+            description="Access parent context variable",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
                         {{ user.name }}
-                    {% endbird %}
+                    </button>
                 """,
-                template_context={"user": {"name": "John"}},
-                expected="<button>John</button>",
             ),
-            TestComponentCase(
-                description="Access parent context in named slot",
-                component=TestComponent(
-                    name="button",
-                    content="""
-                        <button>
-                            {% bird:slot prefix %}{% endbird:slot %}
-                            {{ slot }}
-                        </button>
-                    """,
-                ),
-                template_content="""
-                    {% bird button %}
-                        {% bird:slot prefix %}{{ user.role }}{% endbird:slot %}
-                        {{ user.name }}
-                    {% endbird %}
+            template_content="""
+                {% bird button %}{% endbird %}
+            """,
+            template_context={"user": {"name": "John"}},
+            expected="<button>John</button>",
+        ),
+        TestComponentCase(
+            description="Access parent context in slot",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {{ slot }}
+                    </button>
                 """,
-                template_context={
-                    "user": {
-                        "name": "John",
-                        "role": "Admin"
-                    }
-                },
-                expected="<button>Admin John</button>",
             ),
-            TestComponentCase(
-                description="Component context overrides parent context",
-                component=TestComponent(
-                    name="button",
-                    content="""
-                        <button>
-                            {{ slot }}/{{ attrs }}/{{ props }}
-                        </button>
-                    """,
-                ),
-                template_content="""
-                    {% bird button %}
-                        Content
-                    {% endbird %}
+            template_content="""
+                {% bird button %}
+                    {{ user.name }}
+                {% endbird %}
+            """,
+            template_context={"user": {"name": "John"}},
+            expected="<button>John</button>",
+        ),
+        TestComponentCase(
+            description="Access parent context in named slot",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {% bird:slot prefix %}{% endbird:slot %}
+                        {{ slot }}
+                    </button>
                 """,
-                template_context={
-                    "slot": "Parent Slot",
-                    "attrs": "Parent Attrs", 
-                    "props": "Parent Props"
-                },
-                expected="<button>Content//</button>",
             ),
-        ],
-        ids=lambda x: x.description,
-    )
-    def test_parent_context_access(self, test_case, templates_dir, normalize_whitespace):
-        test_case.component.create(templates_dir)
+            template_content="""
+                {% bird button %}
+                    {% bird:slot prefix %}{{ user.role }}{% endbird:slot %}
+                    {{ user.name }}
+                {% endbird %}
+            """,
+            template_context={"user": {"name": "John", "role": "Admin"}},
+            expected="<button>Admin John</button>",
+        ),
+        TestComponentCase(
+            description="Component context overrides parent context",
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button>
+                        {{ slot }}/{{ attrs }}/{{ props }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button %}
+                    Content
+                {% endbird %}
+            """,
+            template_context={
+                "slot": "Parent Slot",
+                "attrs": "Parent Attrs",
+                "props": "Parent Props",
+            },
+            expected="<button>Content//</button>",
+        ),
+    ],
+    ids=lambda x: x.description,
+)
+def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
+    test_case.component.create(templates_dir)
 
-        template = Template(test_case.template_content)
-        rendered = template.render(Context(test_case.template_context))
+    template = Template(test_case.template_content)
+    rendered = template.render(Context(test_case.template_context))
 
-        assert normalize_whitespace(rendered) == test_case.expected
+    assert normalize_whitespace(rendered) == test_case.expected
 
 
 class TestBirdNode:
