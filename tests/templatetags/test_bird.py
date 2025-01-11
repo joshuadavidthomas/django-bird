@@ -1214,18 +1214,16 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
                 """,
             ),
             template_content="""
-                {% bird button variant="" %}
+                {% bird button %}
                     Content
                 {% endbird %}
             """,
             template_context={
-                "slot": "Parent Slot", 
+                "slot": "Parent Slot",
                 "attrs": "Parent Attrs",
-                "props": {
-                    "variant": "Parent Variant"  # This should be overridden
-                },
+                "props": {"variant": "Parent Variant"},
             },
-            expected="<button>Content //</button>",  # Space preserved from template formatting
+            expected="<button>Content //</button>",
         ),
     ],
     ids=lambda x: x.description,
