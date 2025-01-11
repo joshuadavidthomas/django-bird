@@ -27,17 +27,17 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
     name = parse_bird_name(bits)
     attrs = []
     only = False
-    
+
     for bit in bits[2:]:
         match bit:
             case "only":
                 only = True
             case "/":
-                continue  # Skip the self-closing indicator
+                continue
             case _:
                 param = Param.from_bit(bit)
                 attrs.append(param)
-    
+
     nodelist = parse_nodelist(bits, parser)
     return BirdNode(name, attrs, nodelist, only)
 
@@ -66,7 +66,11 @@ def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:
 
 class BirdNode(template.Node):
     def __init__(
-        self, name: str, attrs: list[Param], nodelist: NodeList | None, only: bool = False
+        self,
+        name: str,
+        attrs: list[Param],
+        nodelist: NodeList | None,
+        only: bool = False,
     ) -> None:
         self.name = name
         self.attrs = attrs
@@ -95,19 +99,16 @@ class BirdNode(template.Node):
         attrs = params.render_attrs(context) or ""
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot", "")
-        
-        if self.only:
-            context_data = {}
-        else:
-            # Start with the parent context
-            context_data = context.flatten()
-        
-        # Add component-specific context
-        context_data.update({
-            "attrs": attrs,
-            "props": props,
-            "slot": default_slot,
-            "slots": slots,
-        })
-        
+
+        context_data = {} if self.only else context.flatten()
+
+        context_data.update(
+            {
+                "attrs": attrs,
+                "props": props,
+                "slot": default_slot,
+                "slots": slots,
+            }
+        )
+
         return context_data
