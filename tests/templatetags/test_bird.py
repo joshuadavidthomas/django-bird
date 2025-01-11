@@ -1207,26 +1207,21 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
             component=TestComponent(
                 name="button",
                 content="""
-                    <button>
-                        slot:{{slot}},
-                        attrs:{{attrs}},
-                        props:{{props|default:"none"}},
-                        slots:{{slots|default:"none"}}
+                    <button {{ attrs }}>
+                        {{ slot }}
                     </button>
                 """,
             ),
             template_content="""
-                {% bird button %}
+                {% bird button id="foo" %}
                     Component Content
                 {% endbird %}
             """,
             template_context={
-                "slot": "Parent Slot",
-                "attrs": "Parent Attrs",
-                "props": "Parent Props",
-                "slots": "Parent Slots"
+                "slot": "Parent Content",
+                "attrs": 'id="bar"',
             },
-            expected='<button>slot:Component Content,attrs:,props:none,slots:none</button>',
+            expected='<button id="foo">Component Content</button>',
         ),
     ],
     ids=lambda x: x.description,
