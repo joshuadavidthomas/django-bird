@@ -1207,8 +1207,9 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
             component=TestComponent(
                 name="button",
                 content="""
+                    {% bird:prop variant %}
                     <button>
-                        {{slot}}/{{attrs}}/{{props}}
+                        {{slot}}/{{attrs}}/{{props.variant}}
                     </button>
                 """,
             ),
@@ -1218,9 +1219,11 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
                 {% endbird %}
             """,
             template_context={
-                "slot": "Parent Slot",
+                "slot": "Parent Slot", 
                 "attrs": "Parent Attrs",
-                "props": "Parent Props",
+                "props": {
+                    "variant": "Parent Variant"  # This should be overridden
+                },
             },
             expected="<button>Content//</button>",
         ),
