@@ -1214,7 +1214,7 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
                 """,
             ),
             template_content="""
-                {% bird button %}
+                {% bird button variant="" %}
                     Content
                 {% endbird %}
             """,
