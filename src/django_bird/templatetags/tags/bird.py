@@ -93,9 +93,8 @@ class BirdNode(template.Node):
 
     def get_component_context_data(
         self, component: Component, context: Context
-    ) -> dict[str, Any]:
-        # Cast the flattened context to dict[str, Any] explicitly
-        context_data: dict[str, Any] = {} if self.only else dict(context.flatten())
+    ) -> dict[str | int, Any]:
+        context_data = {} if self.only else context.flatten()
 
         params = Params.with_attrs(self.attrs)
         props = params.render_props(component.nodelist, context) or ""
