@@ -1203,27 +1203,30 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
             expected="<button>Admin John</button>",
         ),
         TestComponentCase(
-            description="Component context overrides parent context",
+            description="Component-specific context overrides parent context values",
             component=TestComponent(
                 name="button",
                 content="""
-                    {% bird:prop variant %}
                     <button>
-                        {{slot}}/{{attrs}}/{{props.variant}}
+                        slot:{{slot}},
+                        attrs:{{attrs}},
+                        props:{{props|default:"none"}},
+                        slots:{{slots|default:"none"}}
                     </button>
                 """,
             ),
             template_content="""
                 {% bird button %}
-                    Content
+                    Component Content
                 {% endbird %}
             """,
             template_context={
                 "slot": "Parent Slot",
                 "attrs": "Parent Attrs",
-                "props": {"variant": "Parent Variant"},
+                "props": "Parent Props",
+                "slots": "Parent Slots"
             },
-            expected="<button>Content //</button>",
+            expected='<button>slot:Component Content,attrs:,props:none,slots:none</button>',
         ),
     ],
     ids=lambda x: x.description,
