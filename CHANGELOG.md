@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added `only` keyword to `{% bird %}` tag for isolating component context. When used, components cannot access their parent template's context, making them more predictable and reusable. For example: `{% bird button only %}`.
+
 ## [0.8.2]
 
 ### Fixed
