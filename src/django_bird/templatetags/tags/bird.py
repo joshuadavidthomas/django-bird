@@ -1,6 +1,8 @@
 # pyright: reportAny=false
 from __future__ import annotations
 
+from typing import Any
+
 from django import template
 from django.template.base import NodeList
 from django.template.base import Parser
@@ -77,17 +79,20 @@ class BirdNode(template.Node):
 
     def get_component_context_data(
         self, component: Component, context: Context
-    ) -> Context:
+    ) -> dict[str, Any]:
         params = Params.with_attrs(self.attrs)
         props = params.render_props(component.nodelist, context)
         attrs = params.render_attrs(context)
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
-        return context.new(
-            {
-                "attrs": attrs,
-                "props": props,
-                "slot": default_slot,
-                "slots": slots,
-            }
-        )
+        
+        # Use context.new() to properly resolve the component context values
+        component_context = context.new({
+            "attrs": attrs,
+            "props": props,
+            "slot": default_slot,
+            "slots": slots,
+        })
+        
+        # Return the dict form since Django Template.render() expects a dict
+        return component_context.flatten()
