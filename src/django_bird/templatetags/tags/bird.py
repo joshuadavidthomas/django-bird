@@ -86,13 +86,15 @@ class BirdNode(template.Node):
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
         
-        # Use context.new() to properly resolve the component context values
-        component_context = context.new({
+        # Start with the parent context
+        context_data = context.flatten()
+        
+        # Add component-specific context, overriding any existing values
+        context_data.update({
             "attrs": attrs,
             "props": props,
             "slot": default_slot,
             "slots": slots,
         })
         
-        # Return the dict form since Django Template.render() expects a dict
-        return component_context.flatten()
+        return context_data
