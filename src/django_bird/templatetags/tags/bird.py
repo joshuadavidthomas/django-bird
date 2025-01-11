@@ -81,10 +81,10 @@ class BirdNode(template.Node):
         self, component: Component, context: Context
     ) -> dict[str, Any]:
         params = Params.with_attrs(self.attrs)
-        props = params.render_props(component.nodelist, context)
-        attrs = params.render_attrs(context)
+        props = params.render_props(component.nodelist, context) or ""
+        attrs = params.render_attrs(context) or ""
         slots = Slots.collect(self.nodelist, context).render()
-        default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
+        default_slot = slots.get(DEFAULT_SLOT) or context.get("slot", "")
         
         # Start with the parent context
         context_data = context.flatten()
