@@ -85,9 +85,14 @@ class BirdNode(template.Node):
         attrs = params.render_attrs(context)
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
-        return {
+        
+        # Create component-specific context
+        component_context = {
             "attrs": attrs,
             "props": props,
             "slot": default_slot,
             "slots": slots,
         }
+        
+        # Return new context with component data
+        return context.new(component_context)
