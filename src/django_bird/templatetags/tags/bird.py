@@ -26,11 +26,20 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
     bits = token.split_contents()
     name = parse_bird_name(bits)
     attrs = []
+    only = False
+    
     for bit in bits[2:]:
-        param = Param.from_bit(bit)
-        attrs.append(param)
+        match bit:
+            case "only":
+                only = True
+            case "/":
+                continue  # Skip the self-closing indicator
+            case _:
+                param = Param.from_bit(bit)
+                attrs.append(param)
+    
     nodelist = parse_nodelist(bits, parser)
-    return BirdNode(name, attrs, nodelist)
+    return BirdNode(name, attrs, nodelist, only)
 
 
 def parse_bird_name(bits: TagBits) -> str:
@@ -57,11 +66,12 @@ def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:
 
 class BirdNode(template.Node):
     def __init__(
-        self, name: str, attrs: list[Param], nodelist: NodeList | None
+        self, name: str, attrs: list[Param], nodelist: NodeList | None, only: bool = False
     ) -> None:
         self.name = name
         self.attrs = attrs
         self.nodelist = nodelist
+        self.only = only
 
     @override
     def render(self, context: Context) -> str:
@@ -86,10 +96,13 @@ class BirdNode(template.Node):
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot", "")
         
-        # Start with the parent context
-        context_data = context.flatten()
+        if self.only:
+            context_data = {}
+        else:
+            # Start with the parent context
+            context_data = context.flatten()
         
-        # Add component-specific context, overriding any existing values
+        # Add component-specific context
         context_data.update({
             "attrs": attrs,
             "props": props,
