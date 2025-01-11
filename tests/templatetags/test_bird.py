@@ -1208,7 +1208,7 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
                 name="button",
                 content="""
                     <button>
-                        {{ slot }}/{{ attrs }}/{{ props }}
+                        {{slot}}/{{attrs}}/{{props}}
                     </button>
                 """,
             ),
