@@ -67,6 +67,24 @@ This will render as:
 </button>
 ```
 
+### Attribute Names
+
+When rendering attributes, underscores in attribute names are automatically converted to hyphens. This is particularly useful for data attributes and other hyphenated HTML attributes:
+
+```htmldjango
+{% bird button data_analytics="signup" hx_get="/api/data" %}
+    Load Data
+{% endbird %}
+```
+
+This will render as:
+
+```html
+<button data-analytics="signup" hx-get="/api/data">
+    Load Data
+</button>
+```
+
 ## Properties
 
 Properties (i.e. `props`) allow you to define parameters that your component expects, with optional default values. Unlike attributes which are provided as a flattened string via `{{ attrs }}`, props are processed by the component and made available as individual values (e.g. `{{ props.variant }}`) that can be used to control rendering logic.
