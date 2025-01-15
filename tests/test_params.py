@@ -64,6 +64,7 @@ class TestParam:
                 {"foo": {}},
                 'class="foo.bar"',
             ),
+            (Param(name="hx_get", value=Value("/", quoted=False)), {}, 'hx-get="/"'),
         ],
     )
     def test_render_attr(self, param, context, expected):

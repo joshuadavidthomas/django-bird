@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed attribute name handling in components to properly convert underscores to hyphens (e.g. `hx_get` becomes `hx-get`) for better HTML compatibility.
+
 ## [0.9.0]
 
 ### Added

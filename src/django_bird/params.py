@@ -38,19 +38,17 @@ class Param:
     name: str
     value: Value
 
-    def _resolve_value(self, context: Context) -> str | bool | None:
-        return self.value.resolve(context)
-
     def render_attr(self, context: Context) -> str:
-        value = self._resolve_value(context)
+        value = self.value.resolve(context)
+        name = self.name.replace("_", "-")
         if value is None:
             return ""
         if value is True:
-            return self.name
-        return f'{self.name}="{value}"'
+            return name
+        return f'{name}="{value}"'
 
     def render_prop(self, context: Context) -> str | bool | None:
-        return self._resolve_value(context)
+        return self.value.resolve(context)
 
     @classmethod
     def from_bit(cls, bit: str) -> Param:
