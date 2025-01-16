@@ -27,8 +27,8 @@ class TestTagParsing:
         "name,expected",
         [
             ("button", "button"),
-            ("'button'", "button"),
-            ('"button"', "button"),
+            ("'button'", "'button'"),
+            ('"button"', '"button"'),
             ("button.label", "button.label"),
         ],
     )
@@ -202,7 +202,7 @@ class TestTagParsing:
                     name="button",
                     content="""
                         <button>
-                            Click me
+                            {{ slot }}
                         </button>
                     """,
                 ),
@@ -221,7 +221,7 @@ class TestTagParsing:
                     name="button",
                     content="""
                         <button>
-                            Click me
+                            {{ slot }}
                         </button>
                     """,
                 ),
@@ -231,6 +231,24 @@ class TestTagParsing:
                     {% endbird %}
                 """,
                 template_context={"dynamic-name": "button"},
+                expected="<button>Click me</button>",
+            ),
+            TestComponentCase(
+                description="Quoted component name should not be dynamic",
+                component=TestComponent(
+                    name="button",
+                    content="""
+                        <button>
+                            {{ slot }}
+                        </button>
+                    """,
+                ),
+                template_content="""
+                    {% bird "button" %}
+                        Click me
+                    {% endbird %}
+                """,
+                template_context={"button": "dynamic_name"},
                 expected="<button>Click me</button>",
             ),
         ],
@@ -247,6 +265,32 @@ class TestTagParsing:
         rendered = template.render(Context(test_case.template_context))
 
         assert normalize_whitespace(rendered) == test_case.expected
+
+    def test_dynamic_name_with_string(self, templates_dir, normalize_whitespace):
+        button = TestComponent(
+            name="button",
+            content="""
+                <button>
+                    {{ slot }}
+                </button>
+            """,
+        )
+        not_button = TestComponent(
+            name="not_button",
+            content="""
+                <div>
+                    {{ slot }}
+                </div>
+            """,
+        )
+        button.create(templates_dir)
+        not_button.create(templates_dir)
+
+        template = Template("{% bird 'button' %}Click me{% endbird %}")
+        rendered = template.render(Context({"button": "not_button"}))
+
+        assert normalize_whitespace(rendered) == "<button>Click me</button>"
+        assert normalize_whitespace(rendered) != "<div>Click me</div>"
 
     def test_nonexistent_name_templatetag(self, templates_dir):
         template = Template("{% bird nonexistent %}Content{% endbird %}")
