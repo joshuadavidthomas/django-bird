@@ -49,17 +49,24 @@ templates/
 
 See [Organizing Components](organization.md) for detailed directory structure examples.
 
-## Dynamic Names
+## Dynamic vs Literal Names
 
-Component names can be dynamic, using template variables:
+Component names can be either dynamic or literal:
 
 ```htmldjango
+{# Dynamic name - resolves from context #}
 {% with component_name="icon.arrow-down" %}
     {% bird component_name / %}
 {% endwith %}
+
+{# Literal name - always uses "button" #}
+{% bird "button" / %}
+{% bird 'button' / %}
 ```
 
-This is particularly useful when the component choice needs to be determined at runtime in your Django view.
+When using an unquoted name, django-bird will attempt to resolve it from the template context. This is useful when the component choice needs to be determined at runtime in your Django view.
+
+Using quoted names (single or double quotes) ensures the literal string is used as the component name, bypassing context resolution. This is useful when you want to ensure a specific component is always used, even if a variable with the same name exists in the context.
 
 ## Template Resolution
 

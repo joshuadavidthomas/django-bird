@@ -24,7 +24,10 @@ END_TAG = "endbird"
 
 def do_bird(parser: Parser, token: Token) -> BirdNode:
     bits = token.split_contents()
-    name = parse_bird_name(bits)
+    if len(bits) == 1:
+        msg = f"{TAG} tag requires at least one argument"
+        raise template.TemplateSyntaxError(msg)
+    name = bits[1]
     attrs = []
     only = False
 
@@ -40,17 +43,6 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
 
     nodelist = parse_nodelist(bits, parser)
     return BirdNode(name, attrs, nodelist, only)
-
-
-def parse_bird_name(bits: TagBits) -> str:
-    if len(bits) == 1:
-        msg = f"{TAG} tag requires at least one argument"
-        raise template.TemplateSyntaxError(msg)
-
-    # {% bird name %}
-    # {% bird 'name' %}
-    # {% bird "name" %}
-    return bits[1].strip("'\"")
 
 
 def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:

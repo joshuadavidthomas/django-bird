@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- Changed component name handling to preserve quotes, allowing literal string names to bypass dynamic resolution (e.g. `{% bird "button" %}` will always use "button" even if `button` exists in the context).
+
 ## [0.9.1]
 
 ### Fixed
