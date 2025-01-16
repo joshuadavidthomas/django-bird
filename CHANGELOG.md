@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.9.2]
+
 ### Changed
 
 - Changed component name handling to preserve quotes, allowing literal string names to bypass dynamic resolution (e.g. `{% bird "button" %}` will always use "button" even if `button` exists in the context).
@@ -188,7 +190,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.9.1...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.9.2...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -206,3 +208,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.8.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.8.2
 [0.9.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.9.0
 [0.9.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.9.1
+[0.9.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.9.2
