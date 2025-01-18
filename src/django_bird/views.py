@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+from io import BytesIO
 
 from django.conf import settings
 from django.http import FileResponse
@@ -28,6 +29,6 @@ def asset_view(request: HttpRequest, component_name: str, asset_filename: str):
     if not asset or not asset.path.exists():
         raise Http404("Asset not found")
 
-    file = open(asset.path, "rb")
+    content = asset.path.read_bytes()
 
-    return FileResponse(file, content_type=asset.type.content_type)
+    return FileResponse(BytesIO(content), content_type=asset.type.content_type)
