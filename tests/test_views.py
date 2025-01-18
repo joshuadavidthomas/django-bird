@@ -156,7 +156,7 @@ def test_asset_view_nonexistent_asset(templates_dir, client):
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_get_css_warns_in_production(templates_dir, client):
+def test_asset_view_warns_debug_false(templates_dir, client):
     button = TestComponent(name="button", content="<button>Click me</button>").create(
         templates_dir
     )
