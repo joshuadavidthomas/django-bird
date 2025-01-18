@@ -259,6 +259,73 @@ class TestTemplateTag:
             == 1
         )
 
+    def test_unused_component_asset_not_rendered(self, create_template, templates_dir):
+        alert = TestComponent(
+            name="alert", content='<div class="alert">{{ slot }}</div>'
+        ).create(templates_dir)
+        alert_css = TestAsset(
+            component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+        ).create()
+        alert_js = TestAsset(
+            component=alert, content="console.log('alert');", asset_type=AssetType.JS
+        ).create()
+
+        button = TestComponent(
+            name="button", content="<button>{{ slot }}</button>"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        button_js = TestAsset(
+            component=button, content="console.log('button');", asset_type=AssetType.JS
+        ).create()
+
+        base_path = templates_dir / "base.html"
+        base_path.write_text("""
+            <html>
+            <head>
+                <title>Test</title>
+                {% bird:css %}
+            </head>
+            <body>
+                {% bird alert %}Base Alert{% endbird %}
+                {% block content %}{% endblock %}
+                {% bird:js %}
+            </body>
+            </html>
+        """)
+
+        child_path = templates_dir / "child.html"
+        child_path.write_text("""
+            {% extends 'base.html' %}
+            {% block content %}
+                {% bird alert %}Base Alert{% endbird %}
+            {% endblock %}
+        """)
+
+        template = create_template(child_path)
+
+        rendered = template.render({})
+
+        assert (
+            f'<link rel="stylesheet" href="/__bird__/assets/{alert.name}/{alert_css.file.name}">'
+            in rendered
+        )
+        assert (
+            f'<script src="/__bird__/assets/{alert.name}/{alert_js.file.name}"></script>'
+            in rendered
+        )
+        assert (
+            f'<link rel="stylesheet" href="/__bird__/assets/{button.name}/{button_css.file.name}">'
+            not in rendered
+        )
+        assert (
+            f'<script src="/__bird__/assets/{button.name}/{button_js.file.name}"></script>'
+            not in rendered
+        )
+
 
 class TestNode:
     def test_no_template(self):
