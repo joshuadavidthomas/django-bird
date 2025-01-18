@@ -117,11 +117,13 @@ class ComponentRegistry:
         self._components[name] = component
         return component
 
-    def get_assets(self, asset_type: AssetType) -> list[Asset]:
-        assets: list[Asset] = []
+    def get_assets(self, asset_type: AssetType) -> frozenset[Asset]:
+        assets: set[Asset] = set()
         for component in self._components.values():
-            assets.extend(a for a in component.assets if a.type == asset_type)
-        return assets
+            for asset in component.assets:
+                if asset.type == asset_type:
+                    assets.add(asset)
+        return frozenset(assets)
 
 
 components = ComponentRegistry()
