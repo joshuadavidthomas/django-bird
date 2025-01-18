@@ -96,10 +96,22 @@ class TestTemplateTag:
 
         rendered = template.render({})
 
-        assert f'<link rel="stylesheet" href="{alert_css.file}">' in rendered
-        assert f'<link rel="stylesheet" href="{button_css.file}">' in rendered
-        assert f'<script src="{alert_js.file}"></script>' in rendered
-        assert f'<script src="{button_js.file}"></script>' in rendered
+        assert (
+            f'<link rel="stylesheet" href="/__bird__/assets/{alert.name}/{alert_css.file.name}">'
+            in rendered
+        )
+        assert (
+            f'<link rel="stylesheet" href="/__bird__/assets/{button.name}/{button_css.file.name}">'
+            in rendered
+        )
+        assert (
+            f'<script src="/__bird__/assets/{alert.name}/{alert_js.file.name}"></script>'
+            in rendered
+        )
+        assert (
+            f'<script src="/__bird__/assets/{button.name}/{button_js.file.name}"></script>'
+            in rendered
+        )
 
     def test_with_no_assets(self, create_template, templates_dir):
         TestComponent(
@@ -173,14 +185,24 @@ class TestTemplateTag:
         rendered = template.render({})
 
         head_end = rendered.find("</head>")
-        assert f'<link rel="stylesheet" href="{first_css.file}">' in rendered[:head_end]
         assert (
-            f'<link rel="stylesheet" href="{second_css.file}">' in rendered[:head_end]
+            f'<link rel="stylesheet" href="/__bird__/assets/{first.name}/{first_css.file.name}">'
+            in rendered[:head_end]
+        )
+        assert (
+            f'<link rel="stylesheet" href="/__bird__/assets/{second.name}/{second_css.file.name}">'
+            in rendered[:head_end]
         )
 
         body_start = rendered.find("<body")
-        assert f'<script src="{first_js.file}"></script>' in rendered[body_start:]
-        assert f'<script src="{second_js.file}"></script>' in rendered[body_start:]
+        assert (
+            f'<script src="/__bird__/assets/{first.name}/{first_js.file.name}"></script>'
+            in rendered[body_start:]
+        )
+        assert (
+            f'<script src="/__bird__/assets/{second.name}/{second_js.file.name}"></script>'
+            in rendered[body_start:]
+        )
 
 
 class TestNode:

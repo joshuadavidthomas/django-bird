@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from django.contrib.staticfiles import finders
+from django.urls import reverse
+
 from ._typing import override
 
 
@@ -35,6 +38,21 @@ class Asset:
 
     def exists(self) -> bool:
         return self.path.exists()
+
+    @property
+    def url(self) -> str:
+        component_name = self.path.stem
+        asset_filename = self.path.name
+
+        path = finders.find(f"django_bird/assets/{component_name}/{asset_filename}")
+
+        return path or reverse(
+            "django_bird:asset",
+            kwargs={
+                "component_name": component_name,
+                "asset_filename": asset_filename,
+            },
+        )
 
     @classmethod
     def from_path(cls, path: Path) -> Asset:

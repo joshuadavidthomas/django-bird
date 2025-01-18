@@ -11,6 +11,9 @@ from django.template.backends.django import DjangoTemplates
 from django.template.backends.django import Template as DjangoTemplate
 from django.template.engine import Engine
 from django.test import override_settings
+from django.urls import clear_url_caches
+from django.urls import include
+from django.urls import path
 
 from .settings import DEFAULT_SETTINGS
 
@@ -47,6 +50,26 @@ TEST_SETTINGS = {
         }
     ],
 }
+
+
+@pytest.fixture(autouse=True)
+def setup_urls():
+    urlpatterns = [
+        path("__bird__/", include("django_bird.urls")),
+    ]
+
+    clear_url_caches()
+
+    with override_settings(
+        ROOT_URLCONF=type(
+            "urls",
+            (),
+            {"urlpatterns": urlpatterns},
+        ),
+    ):
+        yield
+
+    clear_url_caches()
 
 
 @pytest.fixture

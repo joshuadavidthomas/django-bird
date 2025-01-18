@@ -57,5 +57,5 @@ def test_template_inheritance_assets(create_template, templates_dir):
     """)
     rendered = template.render(Context({}))
 
-    assert str(parent_css.file) in rendered
-    assert str(child_css.file) in rendered
+    assert str(parent_css.file.name) in rendered
+    assert str(child_css.file.name) in rendered
