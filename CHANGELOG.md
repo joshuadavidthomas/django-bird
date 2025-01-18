@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added `ENABLE_BIRD_ID_ATTR` setting (default: `True`) to control whether components receive an automatic `data-bird-id` attribute. This is to help with component identification in the DOM and for a future planned feature around JS/CSS asset scoping.
+
 ## [0.10.3]
 
 ### Fixed
