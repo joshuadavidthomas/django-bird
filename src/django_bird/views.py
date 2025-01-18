@@ -29,4 +29,6 @@ def asset_view(request: HttpRequest, component_name: str, asset_filename: str):
         raise Http404("Asset not found")
 
     with open(asset.path, "rb") as f:
-        return FileResponse(f.read(), content_type=asset.type.content_type)
+        content = f.read()
+
+    return FileResponse(content, content_type=asset.type.content_type)
