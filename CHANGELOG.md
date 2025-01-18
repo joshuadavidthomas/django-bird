@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- Changed asset URLs to use django-bird's asset view instead of file paths.
+
 ## [0.10.1]
 
 ### Fixed
