@@ -26,6 +26,20 @@ class AssetType(Enum):
     def ext(self):
         return f".{self.value}"
 
+    @classmethod
+    def from_tag_name(cls, tag_name: str):
+        try:
+            asset_type = tag_name.split(":")[1]
+            match asset_type:
+                case "css":
+                    return cls.CSS
+                case "js":
+                    return cls.JS
+                case _:
+                    raise ValueError(f"Unknown asset type: {asset_type}")
+        except IndexError as e:
+            raise ValueError(f"Invalid tag name: {tag_name}") from e
+
 
 @dataclass(frozen=True, slots=True)
 class Asset:
@@ -38,6 +52,13 @@ class Asset:
 
     def exists(self) -> bool:
         return self.path.exists()
+
+    def render(self):
+        match self.type:
+            case AssetType.CSS:
+                return f'<link rel="stylesheet" href="{self.url}">'
+            case AssetType.JS:
+                return f'<script src="{self.url}"></script>'
 
     @property
     def url(self) -> str:

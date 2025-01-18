@@ -33,6 +33,18 @@ class TestAsset:
         assert missing_asset.exists() is False
 
     @pytest.mark.parametrize(
+        "asset,expected_html_tag_bits",
+        [
+            (Asset(Path("static.css"), AssetType.CSS), 'link rel="stylesheet" href='),
+            (Asset(Path("static.js"), AssetType.JS), "script src="),
+        ],
+    )
+    def test_render(self, asset, expected_html_tag_bits):
+        rendered = asset.render()
+        assert expected_html_tag_bits in rendered
+        assert asset.url in rendered
+
+    @pytest.mark.parametrize(
         "path,expected",
         [
             (Path("static.css"), Asset(Path("static.css"), AssetType.CSS)),
