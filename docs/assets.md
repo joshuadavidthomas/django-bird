@@ -122,6 +122,7 @@ from django.conf import settings
 from django.urls import include
 from django.urls import path
 
+
 if settings.DEBUG:
     urlpatterns = [
         path("__bird__/", include("django_bird.urls")),
