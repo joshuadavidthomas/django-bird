@@ -154,3 +154,26 @@ def test_asset_view_nonexistent_asset(templates_dir, client):
     response = client.get(url)
 
     assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_get_css_warns_in_production(templates_dir, client):
+    button = TestComponent(name="button", content="<button>Click me</button>").create(
+        templates_dir
+    )
+    button_css = TestAsset(
+        component=button,
+        content=".button { color: blue; }",
+        asset_type=AssetType.CSS,
+    ).create()
+
+    url = reverse(
+        "django_bird:asset",
+        kwargs={"component_name": button.name, "asset_filename": button_css.file.name},
+    )
+
+    with override_settings(DEBUG=False):
+        with pytest.warns(RuntimeWarning, match="Serving assets through this view in production is not recommended"):
+            response = client.get(url)
+
+    assert response.status_code == HTTPStatus.OK
+    assert response["Content-Type"] == "text/css"

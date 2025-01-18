@@ -87,3 +87,23 @@ def test_asset_view_nonexistent_asset(templates_dir, rf):
 
     with pytest.raises(Http404):
         asset_view(request, button.name, "button.css")
+
+
+def test_asset_view_warns_in_production(templates_dir, rf):
+    button = TestComponent(name="button", content="<button>Click me</button>").create(
+        templates_dir
+    )
+    button_css = TestAsset(
+        component=button,
+        content=".button { color: blue; }",
+        asset_type=AssetType.CSS,
+    ).create()
+
+    request = rf.get("/assets/")
+    
+    with override_settings(DEBUG=False):
+        with pytest.warns(RuntimeWarning, match="Serving assets through this view in production is not recommended"):
+            response = asset_view(request, button.name, button_css.file.name)
+
+    assert response.status_code == HTTPStatus.OK
+    assert response["Content-Type"] == "text/css"
