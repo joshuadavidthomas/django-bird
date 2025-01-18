@@ -259,9 +259,6 @@ class TestTemplateTag:
             == 1
         )
 
-        print(f"{rendered=}")
-        raise AssertionError
-
 
 class TestNode:
     def test_no_template(self):
