@@ -57,12 +57,12 @@ class AssetNode(template.Node):
 
         if self.asset_type == AssetType.CSS:
             tags = (
-                f'<link rel="stylesheet" href="{asset.path}">'
+                f'<link rel="stylesheet" href="{asset.url}">'
                 for asset in sorted(assets, key=lambda a: a.path)
             )
         else:  # JS
             tags = (
-                f'<script src="{asset.path}"></script>'
+                f'<script src="{asset.url}"></script>'
                 for asset in sorted(assets, key=lambda a: a.path)
             )
 

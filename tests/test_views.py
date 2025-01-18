@@ -4,9 +4,6 @@ from http import HTTPStatus
 
 import pytest
 from django.test import override_settings
-from django.urls import clear_url_caches
-from django.urls import include
-from django.urls import path
 from django.urls import reverse
 
 from django_bird.staticfiles import AssetType
@@ -19,26 +16,6 @@ from .utils import TestComponent
 def debug_mode():
     with override_settings(DEBUG=True):
         yield
-
-
-@pytest.fixture(autouse=True)
-def setup_urls():
-    urlpatterns = [
-        path("__bird__/", include("django_bird.urls")),
-    ]
-
-    clear_url_caches()
-
-    with override_settings(
-        ROOT_URLCONF=type(
-            "urls",
-            (),
-            {"urlpatterns": urlpatterns},
-        ),
-    ):
-        yield
-
-    clear_url_caches()
 
 
 def test_url_reverse(templates_dir):
