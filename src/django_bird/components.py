@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from hashlib import md5
 from pathlib import Path
 from typing import Any
 
@@ -37,13 +38,19 @@ class Component:
 
     @property
     def id(self):
-        whitespace_normalized_source = "".join(self.source.split())
-        hashed = hash((self.name, whitespace_normalized_source))
-        return f"{hashed & 0xFFFFFFF:07x}"
+        normalized_source = "".join(self.source.split())
+        hashed = md5(
+            f"{self.name}:{self.path}:{normalized_source}".encode()
+        ).hexdigest()
+        return hashed[:7]
 
     @property
     def nodelist(self):
         return self.template.template.nodelist
+
+    @property
+    def path(self):
+        return self.template.template.origin.name
 
     @property
     def source(self):
