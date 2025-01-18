@@ -16,6 +16,12 @@ from .utils import TestComponent
 
 
 @pytest.fixture(autouse=True)
+def debug_mode():
+    with override_settings(DEBUG=True):
+        yield
+
+
+@pytest.fixture(autouse=True)
 def setup_urls():
     urlpatterns = [
         path("__bird__/", include("django_bird.urls")),

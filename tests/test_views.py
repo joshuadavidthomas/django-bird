@@ -4,12 +4,19 @@ from http import HTTPStatus
 
 import pytest
 from django.http.response import Http404
+from django.test import override_settings
 
 from django_bird.staticfiles import AssetType
 from django_bird.views import asset_view
 
 from .utils import TestAsset
 from .utils import TestComponent
+
+
+@pytest.fixture(autouse=True)
+def debug_mode():
+    with override_settings(DEBUG=True):
+        yield
 
 
 def test_asset_view_css(templates_dir, rf):
