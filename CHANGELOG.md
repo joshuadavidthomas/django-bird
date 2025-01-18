@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.10.2]
+
 ### Changed
 
 - Changed asset URLs to use django-bird's asset view instead of file paths.
@@ -206,7 +208,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.10.1...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.10.2...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -227,3 +229,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.9.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.9.2
 [0.10.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.10.0
 [0.10.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.10.1
+[0.10.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.10.2
