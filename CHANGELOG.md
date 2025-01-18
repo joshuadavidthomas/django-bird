@@ -18,6 +18,14 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed the potential for duplicate asset tags in the `{% bird:css %}` and `{% bird:js %}` templatetags by using a `set` instead of a `list` when collecting a template's component assets.
+
+### Changed
+
+- **Internal**: Refactored asset rendering logic by centralizing tag name parsing and HTML tag generation to the `django_bird.staticfiles` module.
+
 ## [0.10.2]
 
 ### Changed

@@ -204,6 +204,61 @@ class TestTemplateTag:
             in rendered[body_start:]
         )
 
+    def test_asset_duplication(self, create_template, templates_dir):
+        alert = TestComponent(
+            name="alert", content='<div class="alert">{{ slot }}</div>'
+        ).create(templates_dir)
+        alert_css = TestAsset(
+            component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+        ).create()
+        alert_js = TestAsset(
+            component=alert, content="console.log('alert');", asset_type=AssetType.JS
+        ).create()
+
+        base_path = templates_dir / "base.html"
+        base_path.write_text("""
+            <html>
+            <head>
+                <title>Test</title>
+                {% bird:css %}
+            </head>
+            <body>
+                {% bird alert %}Base Alert{% endbird %}
+                {% bird alert %}Base Alert{% endbird %}
+                {% bird alert %}Base Alert{% endbird %}
+                {% block content %}{% endblock %}
+                {% bird:js %}
+            </body>
+            </html>
+        """)
+
+        child_path = templates_dir / "child.html"
+        child_path.write_text("""
+            {% extends 'base.html' %}
+            {% block content %}
+                {% bird alert %}Base Alert{% endbird %}
+                {% bird alert %}Base Alert{% endbird %}
+                {% bird alert %}Base Alert{% endbird %}
+            {% endblock %}
+        """)
+
+        template = create_template(child_path)
+
+        rendered = template.render({})
+
+        assert (
+            rendered.count(
+                f'<link rel="stylesheet" href="/__bird__/assets/{alert.name}/{alert_css.file.name}">'
+            )
+            == 1
+        )
+        assert (
+            rendered.count(
+                f'<script src="/__bird__/assets/{alert.name}/{alert_js.file.name}"></script>'
+            )
+            == 1
+        )
+
 
 class TestNode:
     def test_no_template(self):
