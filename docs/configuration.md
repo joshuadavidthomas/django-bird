@@ -12,7 +12,7 @@ from pathlib import Path
 DJANGO_BIRD = {
     "COMPONENT_DIRS": list[Path | str] = [],
     "ENABLE_AUTO_CONFIG": bool = True,
-    "ENABLE_BIRD_ID_ATTR": bool = True,  
+    "ENABLE_BIRD_ID_ATTR": bool = True,
 }
 ```
 
