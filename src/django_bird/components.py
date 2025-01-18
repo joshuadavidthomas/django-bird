@@ -36,8 +36,18 @@ class Component:
         return self.template.render(context)
 
     @property
+    def id(self):
+        whitespace_normalized_source = "".join(self.source.split())
+        hashed = hash((self.name, whitespace_normalized_source))
+        return f"{hashed & 0xFFFFFFF:07x}"
+
+    @property
     def nodelist(self):
         return self.template.template.nodelist
+
+    @property
+    def source(self):
+        return self.template.template.source
 
     @classmethod
     def from_name(cls, name: str):
