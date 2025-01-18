@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- **Internal**: Changed component ID generation to use MD5 hash of name, path, and normalized source instead of Python's built-in hash function. This provides more consistent IDs across different Python processes.
+
 ## [0.11.0]
 
 ### Added
