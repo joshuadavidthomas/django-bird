@@ -3,11 +3,13 @@ from __future__ import annotations
 from http import HTTPStatus
 
 import pytest
-from django.http.response import Http404
 from django.test import override_settings
+from django.urls import clear_url_caches
+from django.urls import include
+from django.urls import path
+from django.urls import reverse
 
 from django_bird.staticfiles import AssetType
-from django_bird.views import asset_view
 
 from .utils import TestAsset
 from .utils import TestComponent
@@ -19,7 +21,27 @@ def debug_mode():
         yield
 
 
-def test_asset_view_css(templates_dir, rf):
+@pytest.fixture(autouse=True)
+def setup_urls():
+    urlpatterns = [
+        path("__bird__/", include("django_bird.urls")),
+    ]
+
+    clear_url_caches()
+
+    with override_settings(
+        ROOT_URLCONF=type(
+            "urls",
+            (),
+            {"urlpatterns": urlpatterns},
+        ),
+    ):
+        yield
+
+    clear_url_caches()
+
+
+def test_url_reverse(templates_dir):
     button = TestComponent(name="button", content="<button>Click me</button>").create(
         templates_dir
     )
@@ -29,14 +51,34 @@ def test_asset_view_css(templates_dir, rf):
         asset_type=AssetType.CSS,
     ).create()
 
-    request = rf.get("/assets/")
-    response = asset_view(request, button.name, button_css.file.name)
+    assert reverse(
+        "django_bird:asset",
+        kwargs={"component_name": button.name, "asset_filename": button_css.file.name},
+    )
+
+
+def test_get_css(templates_dir, client):
+    button = TestComponent(name="button", content="<button>Click me</button>").create(
+        templates_dir
+    )
+    button_css = TestAsset(
+        component=button,
+        content=".button { color: blue; }",
+        asset_type=AssetType.CSS,
+    ).create()
+
+    url = reverse(
+        "django_bird:asset",
+        kwargs={"component_name": button.name, "asset_filename": button_css.file.name},
+    )
+
+    response = client.get(url)
 
     assert response.status_code == HTTPStatus.OK
     assert response["Content-Type"] == "text/css"
 
 
-def test_asset_view_js(templates_dir, rf):
+def test_get_js(templates_dir, client):
     button = TestComponent(name="button", content="<button>Click me</button>").create(
         templates_dir
     )
@@ -44,14 +86,18 @@ def test_asset_view_js(templates_dir, rf):
         component=button, content="console.log('button');", asset_type=AssetType.JS
     ).create()
 
-    request = rf.get("/assets/")
-    response = asset_view(request, button.name, button_js.file.name)
+    url = reverse(
+        "django_bird:asset",
+        kwargs={"component_name": button.name, "asset_filename": button_js.file.name},
+    )
+
+    response = client.get(url)
 
     assert response.status_code == HTTPStatus.OK
     assert response["Content-Type"] == "application/javascript"
 
 
-def test_asset_view_invalid_type(templates_dir, rf):
+def test_get_invalid_type(templates_dir, client):
     button = TestComponent(name="button", content="<button>Click me</button>").create(
         templates_dir
     )
@@ -59,37 +105,58 @@ def test_asset_view_invalid_type(templates_dir, rf):
     button_txt_file = button.file.parent / f"{button.file.stem}.txt"
     button_txt_file.write_text("hello from a text file")
 
-    request = rf.get("/assets/")
+    url = reverse(
+        "django_bird:asset",
+        kwargs={
+            "component_name": button.name,
+            "asset_filename": button_txt_file.name,
+        },
+    )
 
-    with pytest.raises(Http404):
-        asset_view(request, button.name, button_txt_file.name)
+    response = client.get(url)
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_asset_view_nonexistent_component(templates_dir, rf):
+def test_get_nonexistent_component(templates_dir, client):
     bird_dir = templates_dir / "bird"
     bird_dir.mkdir(exist_ok=True)
 
     nonexistent_css_file = bird_dir / "nonexistent.css"
     nonexistent_css_file.write_text(".button { color: blue; }")
 
-    request = rf.get("/assets/")
+    url = reverse(
+        "django_bird:asset",
+        kwargs={
+            "component_name": "nonexistent",
+            "asset_filename": nonexistent_css_file.name,
+        },
+    )
 
-    with pytest.raises(Http404):
-        asset_view(request, "nonexistent", nonexistent_css_file.name)
+    response = client.get(url)
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_asset_view_nonexistent_asset(templates_dir, rf):
+def test_asset_view_nonexistent_asset(templates_dir, client):
     button = TestComponent(name="button", content="<button>Click me</button>").create(
         templates_dir
     )
 
-    request = rf.get("/assets/")
+    url = reverse(
+        "django_bird:asset",
+        kwargs={
+            "component_name": button.name,
+            "asset_filename": "button.css",
+        },
+    )
 
-    with pytest.raises(Http404):
-        asset_view(request, button.name, "button.css")
+    response = client.get(url)
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_asset_view_warns_in_production(templates_dir, rf):
+def test_get_css_warns_in_production(templates_dir, client):
     button = TestComponent(name="button", content="<button>Click me</button>").create(
         templates_dir
     )
@@ -99,11 +166,14 @@ def test_asset_view_warns_in_production(templates_dir, rf):
         asset_type=AssetType.CSS,
     ).create()
 
-    request = rf.get("/assets/")
-    
+    url = reverse(
+        "django_bird:asset",
+        kwargs={"component_name": button.name, "asset_filename": button_css.file.name},
+    )
+
     with override_settings(DEBUG=False):
-        with pytest.warns(RuntimeWarning, match="Serving assets through this view in production is not recommended"):
-            response = asset_view(request, button.name, button_css.file.name)
+        with pytest.warns(RuntimeWarning):
+            response = client.get(url)
 
     assert response.status_code == HTTPStatus.OK
     assert response["Content-Type"] == "text/css"
