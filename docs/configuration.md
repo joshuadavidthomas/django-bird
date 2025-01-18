@@ -116,4 +116,4 @@ This configuration ensures that django-bird's templatetags are available globall
 
 Controls whether components automatically receive a `data-bird-id` attribute containing a unique identifier. Defaults to `True`.
 
-See [Component Identification](params.md#component-identification) for more details on how this works.
+See [Component ID Attribute](params.md#component-id-attribute) for more details on how this works.
