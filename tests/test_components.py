@@ -105,6 +105,63 @@ class TestComponentClass:
         assert isinstance(comp.template, Template)
         assert comp.render({}) == "<button>Click me</button>"
 
+    def test_id_is_consistent(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        comp1 = Component.from_name(button.name)
+        comp2 = Component.from_name(button.name)
+
+        assert comp1.id == comp2.id
+
+    def test_id_content_changes(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        comp1 = Component.from_name(button.name)
+
+        button.file.write_text("<button>Don't click me</button>")
+        comp2 = Component.from_name(button.name)
+
+        assert comp1.id != comp2.id
+
+    def test_id_whitespace_changes(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        comp1 = Component.from_name(button.name)
+
+        button.file.write_text("<button>\n  Click me\n</button>")
+        comp2 = Component.from_name(button.name)
+
+        assert comp1.id == comp2.id
+
+    def test_id_name_changes(self, templates_dir):
+        button1 = TestComponent(
+            name="button1", content="<button>Click me</button>"
+        ).create(templates_dir)
+        button2 = TestComponent(
+            name="button2", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        comp1 = Component.from_name(button1.name)
+        comp2 = Component.from_name(button2.name)
+
+        assert comp1.id != comp2.id
+
+    def test_id_formatting(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        comp = Component.from_name(button.name)
+
+        assert len(comp.id) == 7
+        assert all(c in "0123456789abcdef" for c in comp.id)
+
 
 class TestComponentRegistryProject:
     def test_discover_components(self, templates_dir):
