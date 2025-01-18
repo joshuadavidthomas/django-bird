@@ -108,3 +108,25 @@ Assets are collected from all components used in your template hierarchy:
 ```
 
 The `{% bird:css %}` tag will include CSS and the `[% bird:js %}` tag will include JavaScript from both the `nav` and `content` components.
+
+## Serving Assets
+
+### Development Server
+
+For development, django-bird includes a built-in view to serve component assets directly through Django. To enable this, add django-bird's URLs to your project's URL configuration:
+
+```python
+# urls.py
+from django.urls import include, path
+
+urlpatterns = [
+    # ... your other URL patterns ...
+    path("__bird__/", include("django_bird.urls")),
+]
+```
+
+This will make component assets available at `/__bird__/assets/<component_name>/<asset_filename>`.
+
+```{warning}
+The built-in asset serving is intended for development only. In production, you should serve assets through your web server or a CDN using Django's static files system.
+```
