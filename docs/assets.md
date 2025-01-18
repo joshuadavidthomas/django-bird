@@ -111,7 +111,7 @@ The `{% bird:css %}` tag will include CSS and the `[% bird:js %}` tag will inclu
 
 ## Serving Assets
 
-### Development
+### In Development
 
 For development, django-bird includes a built-in view to serve component assets directly through Django. To enable this, add django-bird's URLs to your project's URL configuration:
 
