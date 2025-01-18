@@ -13,8 +13,10 @@ from django_bird._typing import TagBits
 from django_bird._typing import override
 from django_bird.components import Component
 from django_bird.components import components
+from django_bird.conf import app_settings
 from django_bird.params import Param
 from django_bird.params import Params
+from django_bird.params import Value
 from django_bird.slots import DEFAULT_SLOT
 from django_bird.slots import Slots
 
@@ -27,6 +29,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
     if len(bits) == 1:
         msg = f"{TAG} tag requires at least one argument"
         raise template.TemplateSyntaxError(msg)
+
     name = bits[1]
     attrs = []
     only = False
@@ -87,9 +90,13 @@ class BirdNode(template.Node):
         self, component: Component, context: Context
     ) -> dict[str, Any]:
         context_data: dict[str, Any] = {}
+
         if not self.only:
             flattened = context.flatten()
             context_data = {str(k): v for k, v in flattened.items()}
+
+        if app_settings.ENABLE_BIRD_ID_ATTR:
+            self.attrs.append(Param("data_bird_id", Value(component.id, True)))
 
         params = Params.with_attrs(self.attrs)
         props = params.render_props(component.nodelist, context)

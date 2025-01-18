@@ -9,8 +9,11 @@ from django_bird.conf import TemplateConfigurator
 from django_bird.conf import app_settings
 
 
+@pytest.mark.default_app_settings
 def test_app_settings():
+    assert app_settings.COMPONENT_DIRS == []
     assert app_settings.ENABLE_AUTO_CONFIG is True
+    assert app_settings.ENABLE_BIRD_ID_ATTR is True
 
 
 @override_settings(

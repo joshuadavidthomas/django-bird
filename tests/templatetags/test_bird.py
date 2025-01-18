@@ -12,6 +12,7 @@ from django.template.base import TokenType
 from django.template.exceptions import TemplateDoesNotExist
 from django.template.exceptions import TemplateSyntaxError
 
+from django_bird.components import Component
 from django_bird.params import Param
 from django_bird.params import Value
 from django_bird.templatetags.tags.bird import END_TAG
@@ -632,6 +633,27 @@ class TestAttributes:
         rendered = template.render(Context(test_case.template_context))
 
         assert normalize_whitespace(rendered) == test_case.expected
+
+    def test_data_bird_id(
+        self, override_app_settings, templates_dir, normalize_whitespace
+    ):
+        button = TestComponent(
+            name="button",
+            content="""
+                <button {{ attrs }}>
+                    {{ slot }}
+                </button>
+            """,
+        ).create(templates_dir)
+
+        template = Template("{% bird 'button' %}Click me{% endbird %}")
+
+        with override_app_settings(ENABLE_BIRD_ID_ATTR=True):
+            rendered = template.render(Context({}))
+
+        comp = Component.from_name(button.name)
+
+        assert comp.id in rendered
 
 
 class TestProperties:
