@@ -20,7 +20,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Added
 
-- Added built-in view and URLs for serving component assets in development. Assets can now be accessed at `/__bird__/assets/<component_name>/<asset_filename>`. Note: This is not recommended for production use.
+- Added built-in view and URLs for serving component assets in development. Note: This is not recommended for production use.
 
 ## [0.9.2]
 
