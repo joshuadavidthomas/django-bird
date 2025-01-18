@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed asset serving view to properly stream files using `FileResponse` instead of reading file contents directly.
+
 ## [0.10.0]
 
 ### Added

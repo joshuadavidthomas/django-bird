@@ -72,6 +72,10 @@ def test_get_css(templates_dir, client):
     assert response.status_code == HTTPStatus.OK
     assert response["Content-Type"] == "text/css"
 
+    content = b"".join(response.streaming_content).decode()
+
+    assert content == ".button { color: blue; }"
+
 
 def test_get_js(templates_dir, client):
     button = TestComponent(name="button", content="<button>Click me</button>").create(
@@ -85,6 +89,10 @@ def test_get_js(templates_dir, client):
 
     assert response.status_code == HTTPStatus.OK
     assert response["Content-Type"] == "application/javascript"
+
+    content = b"".join(response.streaming_content).decode()
+
+    assert content == "console.log('button');"
 
 
 def test_get_invalid_type(templates_dir, client):
