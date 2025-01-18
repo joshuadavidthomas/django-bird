@@ -17,7 +17,6 @@ from .utils import TestComponent
 
 @pytest.fixture(autouse=True)
 def setup_urls():
-    """Set up admin URLs for testing."""
     urlpatterns = [
         path("__bird__/", include("django_bird.urls")),
     ]
