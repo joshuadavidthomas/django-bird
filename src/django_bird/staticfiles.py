@@ -12,6 +12,14 @@ class AssetType(Enum):
     JS = "js"
 
     @property
+    def content_type(self):
+        match self:
+            case AssetType.CSS:
+                return "text/css"
+            case AssetType.JS:
+                return "application/javascript"
+
+    @property
     def ext(self):
         return f".{self.value}"
 

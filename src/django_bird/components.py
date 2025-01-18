@@ -26,6 +26,12 @@ class Component:
     template: DjangoTemplate
     assets: frozenset[Asset] = field(default_factory=frozenset)
 
+    def get_asset(self, asset_filename: str) -> Asset | None:
+        for asset in self.assets:
+            if asset.path.name == asset_filename:
+                return asset
+        return None
+
     def render(self, context: dict[str, Any]):
         return self.template.render(context)
 

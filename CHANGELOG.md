@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added built-in view and URLs for serving component assets in development. Note: This is not recommended for production use.
+
 ## [0.9.2]
 
 ### Changed
