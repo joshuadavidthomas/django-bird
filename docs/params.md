@@ -85,6 +85,46 @@ This will render as:
 </button>
 ```
 
+### Component ID Attribute
+
+When the [`ENABLE_BIRD_ID_ATTR` setting](configuration.md#enable_bird_id_attr) is enabled (the default), django-bird automatically adds a `data-bird-id` attribute to your components, available via the `{{ attrs }}` context variable. This attribute contains a unique identifier that helps identify specific component instances in the DOM.
+
+For example, for a component template like this:
+
+```htmldjango
+<button {{ attrs }}>
+    {{ slot }}
+</button>
+```
+
+And used like this:
+
+```htmldjango
+{% bird button class="btn" %}
+    Click me
+{% endbird %}
+```
+
+It will be rendered as:
+
+```html
+<button data-bird-id="abc1234" class="btn">
+    Click me
+</button>
+```
+
+The ID is automatically generated from a hash of the component's name and template content.
+
+You can disable this feature globally by setting `ENABLE_BIRD_ID_ATTR = False` in your Django settings:
+
+```python
+DJANGO_BIRD = {
+    "ENABLE_BIRD_ID_ATTR": False,
+}
+```
+
+When disabled, no `data-bird-id` attribute will be added to your components.
+
 ## Properties
 
 Properties (i.e. `props`) allow you to define parameters that your component expects, with optional default values. Unlike attributes which are provided as a flattened string via `{{ attrs }}`, props are processed by the component and made available as individual values (e.g. `{{ props.variant }}`) that can be used to control rendering logic.

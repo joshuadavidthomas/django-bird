@@ -12,6 +12,7 @@ from pathlib import Path
 DJANGO_BIRD = {
     "COMPONENT_DIRS": list[Path | str] = [],
     "ENABLE_AUTO_CONFIG": bool = True,
+    "ENABLE_BIRD_ID_ATTR": bool = True,
 }
 ```
 
@@ -110,3 +111,9 @@ TEMPLATES = [
 ```
 
 This configuration ensures that django-bird's templatetags are available globally and that its loader is used to compile bird component templates before the standard Django loaders.
+
+## `ENABLE_BIRD_ID_ATTR`
+
+Controls whether components automatically receive a `data-bird-id` attribute containing a unique identifier. Defaults to `True`.
+
+See [Component ID Attribute](params.md#component-id-attribute) for more details on how this works.

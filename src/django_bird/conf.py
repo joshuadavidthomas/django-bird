@@ -18,6 +18,7 @@ DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 class AppSettings:
     COMPONENT_DIRS: list[Path | str] = field(default_factory=list)
     ENABLE_AUTO_CONFIG: bool = True
+    ENABLE_BIRD_ID_ATTR: bool = True
     _template_configurator: TemplateConfigurator = field(init=False)
 
     def __post_init__(self):

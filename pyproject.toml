@@ -36,9 +36,7 @@ types = [
 ]
 
 [project]
-authors = [
-  {name = "Josh Thomas", email = "josh@joshthomas.dev"}
-]
+authors = [{name = "Josh Thomas", email = "josh@joshthomas.dev"}]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Framework :: Django",
@@ -56,10 +54,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython"
 ]
-dependencies = [
-  "cachetools>=5.5.0",
-  "django>=4.2"
-]
+dependencies = ["cachetools>=5.5.0", "django>=4.2"]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
 keywords = []
@@ -74,9 +69,7 @@ Issues = "https://github.com/joshuadavidthomas/django-bird/issues"
 Source = "https://github.com/joshuadavidthomas/django-bird"
 
 [tool.basedpyright]
-exclude = [
-  "**/__pycache__"
-]
+exclude = ["**/__pycache__"]
 include = ["src"]
 
 [[tool.basedpyright.executionEnvironments]]
@@ -102,15 +95,9 @@ tag = false
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 
 [tool.bumpver.file_patterns]
-".copier/package.yml" = [
-  'current_version: {version}'
-]
-"src/django_bird/__init__.py" = [
-  '__version__ = "{version}"'
-]
-"tests/test_version.py" = [
-  'assert __version__ == "{version}"'
-]
+".copier/package.yml" = ['current_version: {version}']
+"src/django_bird/__init__.py" = ['__version__ = "{version}"']
+"tests/test_version.py" = ['assert __version__ == "{version}"']
 
 [tool.coverage.paths]
 source = ["src"]
@@ -127,11 +114,7 @@ exclude_lines = [
 fail_under = 98
 
 [tool.coverage.run]
-omit = [
-  "src/django_bird/migrations/*",
-  "src/django_bird/_typing.py",
-  "tests/*"
-]
+omit = ["src/django_bird/migrations/*", "src/django_bird/_typing.py", "tests/*"]
 source = ["src/django_bird"]
 
 [tool.django-stubs]
@@ -147,10 +130,7 @@ indent = 2
 profile = "django"
 
 [tool.hatch.build]
-exclude = [
-  ".*",
-  "Justfile"
-]
+exclude = [".*", "Justfile"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/django_bird"]
@@ -160,18 +140,10 @@ path = "src/django_bird/__init__.py"
 
 [tool.mypy]
 check_untyped_defs = true
-exclude = [
-  "docs",
-  "tests",
-  "migrations",
-  "venv",
-  ".venv"
-]
+exclude = ["docs", "tests", "migrations", "venv", ".venv"]
 mypy_path = "src/"
 no_implicit_optional = true
-plugins = [
-  "mypy_django_plugin.main"
-]
+plugins = ["mypy_django_plugin.main"]
 warn_redundant_casts = true
 warn_unused_configs = true
 warn_unused_ignores = true
@@ -179,11 +151,7 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 ignore_errors = true
 ignore_missing_imports = true
-module = [
-  "*.migrations.*",
-  "docs.*",
-  "tests.*"
-]
+module = ["*.migrations.*", "docs.*", "tests.*"]
 
 [tool.mypy_django_plugin]
 ignore_missing_model_attributes = true
@@ -191,6 +159,7 @@ ignore_missing_model_attributes = true
 [tool.pytest.ini_options]
 addopts = "--create-db -n auto --dist loadfile --doctest-modules"
 django_find_project = false
+markers = ["default_app_settings"]
 norecursedirs = ".* bin build dist *.egg htmlcov logs node_modules templates venv"
 python_files = "tests.py test_*.py *_tests.py"
 pythonpath = "src"
