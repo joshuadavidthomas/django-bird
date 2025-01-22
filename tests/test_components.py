@@ -218,7 +218,7 @@ class TestComponentRegistryProject:
 
         components.discover_components()
 
-        assert "nested/button" in components._components
+        assert "nested.button" in components._components
 
     def test_component_name_collision(self, templates_dir, override_app_settings):
         TestComponent(

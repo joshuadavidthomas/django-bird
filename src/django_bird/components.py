@@ -112,7 +112,7 @@ class ComponentRegistry:
             for component_path in component_dir.rglob("*.html"):
                 component_name = str(
                     component_path.relative_to(component_dir).with_suffix("")
-                )
+                ).replace("/", ".")
                 try:
                     component = Component.from_name(component_name)
                     self._components[component_name] = component
