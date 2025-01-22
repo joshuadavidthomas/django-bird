@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.11.2]
+
 ### Changed
 
 - Improved component context handling by using `Context` objects directly when a component uses the outside template context, instead of flattening the context `dict`.
@@ -236,7 +238,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.11.1...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.11.2...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -261,3 +263,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.10.3]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.10.3
 [0.11.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.11.0
 [0.11.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.11.1
+[0.11.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.11.2
