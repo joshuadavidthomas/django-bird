@@ -1,0 +1,18 @@
+:root {
+  font-family: Inter, sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+}
+@supports (font-variation-settings: normal) {
+  :root { font-family: InterVariable, sans-serif; }
+}
+
+*:has(> [data-slot="main"]) {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: min-content minmax(0, 1fr) min-content;
+  grid-template-areas:
+    "banner  banner banner"
+    "header  header header"
+    "sidebar main   aside"
+    "footer  footer footer";
+}
