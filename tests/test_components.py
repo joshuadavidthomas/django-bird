@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 from django.template.backends.django import Template
+from django.template.context import Context
 from django.template.exceptions import TemplateDoesNotExist
 from django.test import override_settings
 
@@ -33,7 +34,7 @@ class TestComponentClass:
 
         assert comp.name == "button"
         assert isinstance(comp.template, Template)
-        assert comp.render({}) == "<button>Click me</button>"
+        assert comp.render(Context({})) == "<button>Click me</button>"
 
     def test_from_name_with_assets(self, templates_dir):
         button = TestComponent(
@@ -103,7 +104,7 @@ class TestComponentClass:
 
         assert comp.name == "button"
         assert isinstance(comp.template, Template)
-        assert comp.render({}) == "<button>Click me</button>"
+        assert comp.render(Context({})) == "<button>Click me</button>"
 
     def test_id_is_consistent(self, templates_dir):
         button = TestComponent(

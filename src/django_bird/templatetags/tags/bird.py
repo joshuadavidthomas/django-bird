@@ -32,12 +32,12 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
 
     name = bits[1]
     attrs = []
-    only = False
+    isolated_context = False
 
     for bit in bits[2:]:
         match bit:
             case "only":
-                only = True
+                isolated_context = True
             case "/":
                 continue
             case _:
@@ -45,7 +45,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
                 attrs.append(param)
 
     nodelist = parse_nodelist(bits, parser)
-    return BirdNode(name, attrs, nodelist, only)
+    return BirdNode(name, attrs, nodelist, isolated_context)
 
 
 def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:
@@ -65,19 +65,23 @@ class BirdNode(template.Node):
         name: str,
         attrs: list[Param],
         nodelist: NodeList | None,
-        only: bool = False,
+        isolated_context: bool = False,
     ) -> None:
         self.name = name
         self.attrs = attrs
         self.nodelist = nodelist
-        self.only = only
+        self.isolated_context = isolated_context
 
     @override
     def render(self, context: Context) -> str:
         component_name = self.get_component_name(context)
         component = components.get_component(component_name)
         component_context = self.get_component_context_data(component, context)
-        return component.render(component_context)
+
+        if self.isolated_context:
+            return component.render(context.new(component_context))
+        with context.push(**component_context):
+            return component.render(context)
 
     def get_component_name(self, context: Context) -> str:
         try:
@@ -89,12 +93,6 @@ class BirdNode(template.Node):
     def get_component_context_data(
         self, component: Component, context: Context
     ) -> dict[str, Any]:
-        context_data: dict[str, Any] = {}
-
-        if not self.only:
-            flattened = context.flatten()
-            context_data = {str(k): v for k, v in flattened.items()}
-
         if app_settings.ENABLE_BIRD_ID_ATTR:
             self.attrs.append(Param("data_bird_id", Value(component.id, True)))
 
@@ -104,13 +102,9 @@ class BirdNode(template.Node):
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
 
-        context_data.update(
-            {
-                "attrs": attrs,
-                "props": props,
-                "slot": default_slot,
-                "slots": slots,
-            }
-        )
-
-        return context_data
+        return {
+            "attrs": attrs,
+            "props": props,
+            "slot": default_slot,
+            "slots": slots,
+        }

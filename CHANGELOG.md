@@ -18,6 +18,11 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- Improved component context handling by using `Context` objects directly when a component uses the outside template context, instead of flattening the context `dict`.
+- **Internal**: Renamed `only` argument for `BirdNode` to `isolated_context`. This doesn't affect the public API of passing `only` to the template tag.
+
 ## [0.11.1]
 
 ### Changed

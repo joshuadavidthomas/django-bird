@@ -4,12 +4,12 @@ from dataclasses import dataclass
 from dataclasses import field
 from hashlib import md5
 from pathlib import Path
-from typing import Any
 
 from cachetools import LRUCache
 from django.apps import apps
 from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
+from django.template.context import Context
 from django.template.engine import Engine
 from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import select_template
@@ -33,8 +33,8 @@ class Component:
                 return asset
         return None
 
-    def render(self, context: dict[str, Any]):
-        return self.template.render(context)
+    def render(self, context: Context):
+        return self.template.template.render(context)
 
     @property
     def id(self):
