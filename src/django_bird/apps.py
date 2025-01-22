@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from importlib.util import find_spec
+
 from django.apps import AppConfig
 
 from ._typing import override
@@ -16,4 +18,6 @@ class DjangoBirdAppConfig(AppConfig):
         from django_bird.conf import app_settings
 
         app_settings.autoconfigure()
-        components.discover_components()
+
+        if not find_spec("nanodjango"):
+            components.discover_components()
