@@ -18,9 +18,19 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added `data-bird-<component_name>` data attribute to the `attrs` template context variable for components when `ENABLE_BIRD_ATTRS` is enabled.
+
 ### Changed
 
 - **Internal**: Refactored component rendering by introducing a new `BoundComponent` class and moving some of the rendering logic from `Component` and `BirdNode` to this new class.
+- Renamed `ENABLE_BIRD_ID_ATTR` setting to `ENABLE_BIRD_ATTRS` to reflect its expanded functionality.
+- Moved setting the `data-bird-id` data attribute in the `attrs` template context variable to `BoundComponent` and added a sequence number to better uniquely identify multiple instances of the same component.
+
+### Deprecated
+
+- The `ENABLE_BIRD_ID_ATTR` setting is deprecated and will be removed in the next minor version (v0.13.0). Use `ENABLE_BIRD_ATTRS` instead.
 
 ### Removed
 

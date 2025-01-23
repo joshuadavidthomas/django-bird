@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from hashlib import md5
 from pathlib import Path
+from threading import Lock
 
 from cachetools import LRUCache
 from django.apps import apps
@@ -41,6 +42,10 @@ class Component:
         return BoundComponent(component=self, params=params)
 
     @property
+    def data_attribute_name(self):
+        return self.name.replace(".", "-")
+
+    @property
     def id(self):
         normalized_source = "".join(self.source.split())
         hashed = md5(
@@ -76,16 +81,45 @@ class Component:
         return cls(name=name, template=template, assets=frozenset(assets))
 
 
+class SequenceGenerator:
+    _instance: SequenceGenerator | None = None
+    _lock: Lock = Lock()
+    _counters: dict[str, int]
+
+    def __init__(self) -> None:
+        if not hasattr(self, "_counters"):
+            self._counters = {}
+
+    def __new__(cls) -> SequenceGenerator:
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def next(self, component: Component) -> int:
+        with self._lock:
+            current = self._counters.get(component.id, 0) + 1
+            self._counters[component.id] = current
+        return current
+
+
 @dataclass
 class BoundComponent:
     component: Component
     params: Params
+    _sequence: SequenceGenerator = field(default_factory=SequenceGenerator)
 
     def render(self, context: Context):
-        if app_settings.ENABLE_BIRD_ID_ATTR:
-            self.params.attrs.append(
-                Param("data_bird_id", Value(self.component.id, True))
-            )
+        if app_settings.ENABLE_BIRD_ATTRS:
+            data_attrs = [
+                Param(
+                    f"data-bird-{self.component.data_attribute_name}",
+                    Value(True, False),
+                ),
+                Param("data-bird-id", Value(f"{self.component.id}-{self.id}", True)),
+            ]
+            self.params.attrs.extend(data_attrs)
 
         props = self.params.render_props(self.component.nodelist, context)
         attrs = self.params.render_attrs(context)
@@ -97,6 +131,10 @@ class BoundComponent:
             }
         ):
             return self.component.template.template.render(context)
+
+    @property
+    def id(self):
+        return str(self._sequence.next(self.component))
 
 
 class ComponentRegistry:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from contextlib import suppress
 from dataclasses import dataclass
 from dataclasses import field
@@ -18,10 +19,17 @@ DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 class AppSettings:
     COMPONENT_DIRS: list[Path | str] = field(default_factory=list)
     ENABLE_AUTO_CONFIG: bool = True
-    ENABLE_BIRD_ID_ATTR: bool = True
+    ENABLE_BIRD_ATTRS: bool = True
+    ENABLE_BIRD_ID_ATTR: bool | None = None
     _template_configurator: TemplateConfigurator = field(init=False)
 
     def __post_init__(self):
+        if self.ENABLE_BIRD_ID_ATTR is not None:
+            warnings.warn(
+                "ENABLE_BIRD_ID_ATTR is deprecated and will be removed in v0.13.0. Use ENABLE_BIRD_ATTRS instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         self._template_configurator = TemplateConfigurator(self)
 
     @override

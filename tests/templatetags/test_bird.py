@@ -634,8 +634,22 @@ class TestAttributes:
 
         assert normalize_whitespace(rendered) == test_case.expected
 
-    def test_data_bird_id(
-        self, override_app_settings, templates_dir, normalize_whitespace
+    @pytest.mark.parametrize(
+        "attr_app_setting,expected",
+        [
+            ({"ENABLE_BIRD_ATTRS": True, "ENABLE_BIRD_ID_ATTR": True}, True),
+            ({"ENABLE_BIRD_ATTRS": True, "ENABLE_BIRD_ID_ATTR": False}, True),
+            ({"ENABLE_BIRD_ATTRS": False, "ENABLE_BIRD_ID_ATTR": True}, False),
+            ({"ENABLE_BIRD_ATTRS": False, "ENABLE_BIRD_ID_ATTR": False}, False),
+        ],
+    )
+    def test_data_bird_attributes(
+        self,
+        attr_app_setting,
+        expected,
+        override_app_settings,
+        templates_dir,
+        normalize_whitespace,
     ):
         button = TestComponent(
             name="button",
@@ -648,12 +662,13 @@ class TestAttributes:
 
         template = Template("{% bird 'button' %}Click me{% endbird %}")
 
-        with override_app_settings(ENABLE_BIRD_ID_ATTR=True):
+        with override_app_settings(**attr_app_setting):
             rendered = template.render(Context({}))
 
         comp = Component.from_name(button.name)
 
-        assert comp.id in rendered
+        assert (f'data-bird-id="{comp.id}' in rendered) is expected
+        assert (f"data-bird-{comp.data_attribute_name}" in rendered) is expected
 
 
 class TestProperties:
