@@ -87,7 +87,12 @@ This will render as:
 
 ### Component ID Attribute
 
-When the [`ENABLE_BIRD_ID_ATTR` setting](configuration.md#enable_bird_id_attr) is enabled (the default), django-bird automatically adds a `data-bird-id` attribute to your components, available via the `{{ attrs }}` context variable. This attribute contains a unique identifier that helps identify specific component instances in the DOM.
+When the [`ENABLE_BIRD_ATTRS` setting](configuration.md#enable_bird_attrs) is enabled (the default), django-bird automatically adds data attributes to your components, available via the `{{ attrs }}` context variable.
+
+The following attributes are included:
+
+- `data-bird-<component_name>`: This attribute will contain the name of the component. This is not unique across component instances in the DOM.
+- `data-bird-id`: This attribute contains a unique identifier that helps identify specific component instances in the DOM.
 
 For example, for a component template like this:
 
@@ -108,22 +113,50 @@ And used like this:
 It will be rendered as:
 
 ```html
-<button data-bird-id="abc1234" class="btn">
+<button class="btn" data-bird-button data-bird-id="abc1234-1">
     Click me
 </button>
 ```
 
-The ID is automatically generated from a hash of the component's name and template content.
+The ID is automatically generated from a hash of the component's name and template content. It also contains a sequence counter that will increment for any uses of a component across a single template.
 
-You can disable this feature globally by setting `ENABLE_BIRD_ID_ATTR = False` in your Django settings:
+The above example button component template, used like this:
+
+```htmldjango
+{% bird button class="btn" %}
+    Click me once
+{% endbird %}
+{% bird button class="btn" %}
+    Click me twice
+{% endbird %}
+{% bird button class="btn" %}
+    Click me three times a lady
+{% endbird %}
+```
+
+Will be rendered like this, with the unique sequence numbers added to the component's hashed ID:
+
+```html
+<button class="btn" data-bird-button data-bird-id="abc1234-1">
+    Click me once
+</button>
+<button class="btn" data-bird-button data-bird-id="abc1234-2">
+    Click me twice
+</button>
+<button class="btn" data-bird-button data-bird-id="abc1234-3">
+    Click me three times a lady
+</button>
+```
+
+You can disable this feature globally by setting `ENABLE_BIRD_ATTRS = False` in your Django settings:
 
 ```python
 DJANGO_BIRD = {
-    "ENABLE_BIRD_ID_ATTR": False,
+    "ENABLE_BIRD_ATTRS": False,
 }
 ```
 
-When disabled, no `data-bird-id` attribute will be added to your components.
+When disabled, no data attributes will be added to your components' `attrs` template context variable.
 
 ## Properties
 

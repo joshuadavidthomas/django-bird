@@ -12,7 +12,7 @@ from pathlib import Path
 DJANGO_BIRD = {
     "COMPONENT_DIRS": list[Path | str] = [],
     "ENABLE_AUTO_CONFIG": bool = True,
-    "ENABLE_BIRD_ID_ATTR": bool = True,
+    "ENABLE_BIRD_ATTRS": bool = True,
 }
 ```
 
@@ -112,8 +112,12 @@ TEMPLATES = [
 
 This configuration ensures that django-bird's templatetags are available globally and that its loader is used to compile bird component templates before the standard Django loaders.
 
-## `ENABLE_BIRD_ID_ATTR`
+## `ENABLE_BIRD_ATTRS`
 
-Controls whether components automatically receive a `data-bird-id` attribute containing a unique identifier. Defaults to `True`.
+Controls whether components automatically receive data attributes related to django-bird in its `attrs` template context variable. Defaults to `True`.
 
 See [Component ID Attribute](params.md#component-id-attribute) for more details on how this works.
+
+```{important}
+This setting was previously named `ENABLE_BIRD_ID_ATTRS`. It was renamed to reflect the expansion of the data attributes for a component, from just `data-bird-id` to include `data-bird-<component_name>`, as well as to allow for future expansion. As of v0.12.0, the `ENABLE_BIRD_ID_ATTRS` setting is deprecated and will be removed in v0.13.0.
+```

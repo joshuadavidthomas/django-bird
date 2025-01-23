@@ -109,15 +109,9 @@ def override_app_settings():
 
 @pytest.fixture(autouse=True)
 def data_bird_attr_app_setting(override_app_settings, request):
-    from django_bird.conf import app_settings
+    enable = "default_app_settings" in request.keywords
 
-    enable = (
-        app_settings.ENABLE_BIRD_ID_ATTR
-        if "default_app_settings" in request.keywords
-        else False
-    )
-
-    with override_app_settings(ENABLE_BIRD_ID_ATTR=enable):
+    with override_app_settings(ENABLE_BIRD_ATTRS=enable, ENABLE_BIRD_ID_ATTR=enable):
         yield
 
 

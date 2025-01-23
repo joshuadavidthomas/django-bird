@@ -9,7 +9,8 @@ import time
 from pathlib import Path
 
 import pytest
-from django.template.backends.django import Template
+from django.template import Template
+from django.template.backends.django import Template as DjangoTemplate
 from django.template.context import Context
 from django.template.exceptions import TemplateDoesNotExist
 from django.test import override_settings
@@ -33,7 +34,7 @@ class TestComponentClass:
         comp = Component.from_name("button")
 
         assert comp.name == "button"
-        assert isinstance(comp.template, Template)
+        assert isinstance(comp.template, DjangoTemplate)
 
         bound = comp.get_bound_component([])
 
@@ -106,7 +107,7 @@ class TestComponentClass:
             comp = Component.from_name("button")
 
         assert comp.name == "button"
-        assert isinstance(comp.template, Template)
+        assert isinstance(comp.template, DjangoTemplate)
 
         bound = comp.get_bound_component([])
 
@@ -168,6 +169,80 @@ class TestComponentClass:
 
         assert len(comp.id) == 7
         assert all(c in "0123456789abcdef" for c in comp.id)
+
+    def test_data_attribute_name_basic(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        comp = Component.from_name(button.name)
+
+        assert comp.data_attribute_name == "button"
+
+    def test_data_attribute_name_nested(self, templates_dir):
+        button = TestComponent(
+            name="button",
+            content="<button>Nested</button>",
+            sub_dir="nested",
+        ).create(templates_dir)
+
+        comp = Component.from_name(f"{button.sub_dir}.{button.name}")
+
+        assert comp.data_attribute_name == "nested-button"
+
+
+class TestBoundComponent:
+    @pytest.mark.parametrize(
+        "attr_app_setting,expected",
+        [
+            ({"ENABLE_BIRD_ATTRS": True, "ENABLE_BIRD_ID_ATTR": True}, True),
+            ({"ENABLE_BIRD_ATTRS": True, "ENABLE_BIRD_ID_ATTR": False}, True),
+            ({"ENABLE_BIRD_ATTRS": False, "ENABLE_BIRD_ID_ATTR": True}, False),
+            ({"ENABLE_BIRD_ATTRS": False, "ENABLE_BIRD_ID_ATTR": False}, False),
+        ],
+    )
+    def test_id_sequence(
+        self,
+        attr_app_setting,
+        expected,
+        override_app_settings,
+        templates_dir,
+        normalize_whitespace,
+    ):
+        button = TestComponent(
+            name="button", content="<button {{ attrs }}>{{ slot }}</button>"
+        ).create(templates_dir)
+        comp = Component.from_name(button.name)
+
+        template = Template("""
+            {% bird button class="btn" %}
+                Click me once
+            {% endbird %}
+            {% bird button class="btn" %}
+                Click me twice
+            {% endbird %}
+            {% bird button class="btn" %}
+                Click me three times a lady
+            {% endbird %}
+        """)
+
+        with override_app_settings(**attr_app_setting):
+            rendered = template.render(Context({}))
+
+        assert (
+            normalize_whitespace(rendered)
+            == normalize_whitespace(f"""
+                <button class="btn" data-bird-button data-bird-id="{comp.id}-1">
+                    Click me once
+                </button>
+                <button class="btn" data-bird-button data-bird-id="{comp.id}-2">
+                    Click me twice
+                </button>
+                <button class="btn" data-bird-button data-bird-id="{comp.id}-3">
+                    Click me three times a lady
+                </button>
+            """)
+        ) is expected
 
 
 class TestComponentRegistryProject:
