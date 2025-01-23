@@ -13,10 +13,7 @@ from django_bird._typing import TagBits
 from django_bird._typing import override
 from django_bird.components import Component
 from django_bird.components import components
-from django_bird.conf import app_settings
 from django_bird.params import Param
-from django_bird.params import Params
-from django_bird.params import Value
 from django_bird.slots import DEFAULT_SLOT
 from django_bird.slots import Slots
 
@@ -77,11 +74,12 @@ class BirdNode(template.Node):
         component_name = self.get_component_name(context)
         component = components.get_component(component_name)
         component_context = self.get_component_context_data(component, context)
+        bound_component = component.get_bound_component(attrs=self.attrs)
 
         if self.isolated_context:
-            return component.render(context.new(component_context))
+            return bound_component.render(context.new(component_context))
         with context.push(**component_context):
-            return component.render(context)
+            return bound_component.render(context)
 
     def get_component_name(self, context: Context) -> str:
         try:
@@ -93,18 +91,10 @@ class BirdNode(template.Node):
     def get_component_context_data(
         self, component: Component, context: Context
     ) -> dict[str, Any]:
-        if app_settings.ENABLE_BIRD_ID_ATTR:
-            self.attrs.append(Param("data_bird_id", Value(component.id, True)))
-
-        params = Params.with_attrs(self.attrs)
-        props = params.render_props(component.nodelist, context)
-        attrs = params.render_attrs(context)
         slots = Slots.collect(self.nodelist, context).render()
         default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
 
         return {
-            "attrs": attrs,
-            "props": props,
             "slot": default_slot,
             "slots": slots,
         }
