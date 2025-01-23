@@ -120,7 +120,7 @@ It will be rendered as:
 
 The ID is automatically generated from a hash of the component's name and template content. It also contains a sequence counter that will increment for any uses of a component across a single template.
 
-Using the above example button component template, used like this:
+The above example button component template, used like this:
 
 ```htmldjango
 {% bird button class="btn" %}
@@ -133,6 +133,8 @@ Using the above example button component template, used like this:
     Click me three times a lady
 {% endbird %}
 ```
+
+Will be rendered like this, with the unique sequence numbers added to the component's hashed ID:
 
 ```html
 <button class="btn" data-bird-button data-bird-id="abc1234-1">
