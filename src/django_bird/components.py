@@ -14,6 +14,9 @@ from django.template.engine import Engine
 from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import select_template
 
+from django_bird.params import Param
+from django_bird.params import Params
+from django_bird.params import Value
 from django_bird.staticfiles import Asset
 
 from .conf import app_settings
@@ -33,8 +36,9 @@ class Component:
                 return asset
         return None
 
-    def render(self, context: Context):
-        return self.template.template.render(context)
+    def get_bound_component(self, attrs: list[Param]):
+        params = Params.with_attrs(attrs)
+        return BoundComponent(component=self, params=params)
 
     @property
     def id(self):
@@ -70,6 +74,29 @@ class Component:
                 assets.add(asset)
 
         return cls(name=name, template=template, assets=frozenset(assets))
+
+
+@dataclass
+class BoundComponent:
+    component: Component
+    params: Params
+
+    def render(self, context: Context):
+        if app_settings.ENABLE_BIRD_ID_ATTR:
+            self.params.attrs.append(
+                Param("data_bird_id", Value(self.component.id, True))
+            )
+
+        props = self.params.render_props(self.component.nodelist, context)
+        attrs = self.params.render_attrs(context)
+
+        with context.push(
+            **{
+                "attrs": attrs,
+                "props": props,
+            }
+        ):
+            return self.component.template.template.render(context)
 
 
 class ComponentRegistry:

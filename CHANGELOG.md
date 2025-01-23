@@ -18,6 +18,14 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- **Internal**: Refactored component rendering by introducing a new `BoundComponent` class and moving some of the rendering logic from `Component` and `BirdNode` to this new class.
+
+### Removed
+
+- **Internal**: Removed `Component.render` method in favor of new `BoundComponent.render` method.
+
 ## [0.11.2]
 
 ### Changed
