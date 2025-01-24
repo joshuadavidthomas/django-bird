@@ -18,7 +18,7 @@ class Value:
     raw: str | bool | None
     quoted: bool = False
 
-    def resolve(self, context: Context | dict[str, Any]) -> Any:
+    def resolve(self, context: Context | dict[str, Any]) -> str | bool | None | Any:
         match (self.raw, self.quoted):
             # Handle special string values and None
             case (None, _) | ("False", _):
