@@ -5,11 +5,13 @@ from dataclasses import field
 from hashlib import md5
 from pathlib import Path
 from threading import Lock
+from typing import TYPE_CHECKING
 
 from cachetools import LRUCache
 from django.apps import apps
 from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
+from django.template.base import NodeList
 from django.template.context import Context
 from django.template.engine import Engine
 from django.template.exceptions import TemplateDoesNotExist
@@ -18,17 +20,23 @@ from django.template.loader import select_template
 from django_bird.params import Param
 from django_bird.params import Params
 from django_bird.params import Value
+from django_bird.slots import Slots
 from django_bird.staticfiles import Asset
+from django_bird.templatetags.tags.slot import DEFAULT_SLOT
 
 from .conf import app_settings
 from .staticfiles import AssetType
 from .templates import get_template_names
+
+if TYPE_CHECKING:
+    from django_bird.templatetags.tags.bird import BirdNode
 
 
 @dataclass(frozen=True, slots=True)
 class Component:
     name: str
     template: DjangoTemplate
+    slots: Slots
     assets: frozenset[Asset] = field(default_factory=frozenset)
 
     def get_asset(self, asset_filename: str) -> Asset | None:
@@ -37,9 +45,9 @@ class Component:
                 return asset
         return None
 
-    def get_bound_component(self, attrs: list[Param]):
-        params = Params.with_attrs(attrs)
-        return BoundComponent(component=self, params=params)
+    def get_bound_component(self, node: BirdNode):
+        params = Params.with_attrs(node.attrs)
+        return BoundComponent(component=self, params=params, nodelist=node.nodelist)
 
     @property
     def data_attribute_name(self):
@@ -78,7 +86,9 @@ class Component:
                 asset = Asset.from_path(asset_path)
                 assets.add(asset)
 
-        return cls(name=name, template=template, assets=frozenset(assets))
+        slots = Slots.collect(template.template.nodelist)
+
+        return cls(name=name, template=template, slots=slots, assets=frozenset(assets))
 
 
 class SequenceGenerator:
@@ -108,6 +118,7 @@ class SequenceGenerator:
 class BoundComponent:
     component: Component
     params: Params
+    nodelist: NodeList | None
     _sequence: SequenceGenerator = field(default_factory=SequenceGenerator)
 
     def render(self, context: Context):
@@ -123,11 +134,14 @@ class BoundComponent:
 
         props = self.params.render_props(self.component.nodelist, context)
         attrs = self.params.render_attrs(context)
+        slots = self.component.slots.render(self, context)
 
         with context.push(
             **{
                 "attrs": attrs,
                 "props": props,
+                "slot": slots.get(DEFAULT_SLOT),
+                "slots": slots,
             }
         ):
             return self.component.template.template.render(context)
