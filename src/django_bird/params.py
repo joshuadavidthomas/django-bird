@@ -18,19 +18,29 @@ class Value:
     raw: str | bool | None
     quoted: bool = False
 
-    def resolve(self, context: Context | dict[str, Any]) -> Any:
-        if self.raw is None or (isinstance(self.raw, str) and self.raw == "False"):
-            return None
-        if (isinstance(self.raw, bool) and self.raw) or (
-            isinstance(self.raw, str) and self.raw == "True"
-        ):
-            return True
-        if isinstance(self.raw, str) and not self.quoted:
-            try:
-                return template.Variable(str(self.raw)).resolve(context)
-            except template.VariableDoesNotExist:
-                return self.raw
-        return self.raw
+    def resolve(self, context: Context | dict[str, Any]) -> str | bool | None | Any:
+        match (self.raw, self.quoted):
+            # Handle special string values and None
+            case (None, _) | ("False", _):
+                return None
+            case ("True", _):
+                return True
+
+            # Handle boolean values
+            case (bool(boolean), _):
+                return boolean
+
+            # Handle quoted strings as literals
+            case (str(quoted_string), True):
+                return quoted_string
+
+            # Handle everything else as template variables, falling back to raw
+            case _:
+                raw_string = str(self.raw)
+                try:
+                    return template.Variable(raw_string).resolve(context)
+                except template.VariableDoesNotExist:
+                    return raw_string
 
 
 @dataclass
