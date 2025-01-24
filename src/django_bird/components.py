@@ -11,7 +11,9 @@ from cachetools import LRUCache
 from django.apps import apps
 from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
+from django.template.base import Node
 from django.template.base import NodeList
+from django.template.base import TextNode
 from django.template.context import Context
 from django.template.engine import Engine
 from django.template.exceptions import TemplateDoesNotExist
@@ -20,9 +22,9 @@ from django.template.loader import select_template
 from django_bird.params import Param
 from django_bird.params import Params
 from django_bird.params import Value
-from django_bird.slots import Slots
 from django_bird.staticfiles import Asset
 from django_bird.templatetags.tags.slot import DEFAULT_SLOT
+from django_bird.templatetags.tags.slot import SlotNode
 
 from .conf import app_settings
 from .staticfiles import AssetType
@@ -36,7 +38,6 @@ if TYPE_CHECKING:
 class Component:
     name: str
     template: DjangoTemplate
-    slots: Slots
     assets: frozenset[Asset] = field(default_factory=frozenset)
 
     def get_asset(self, asset_filename: str) -> Asset | None:
@@ -86,9 +87,7 @@ class Component:
                 asset = Asset.from_path(asset_path)
                 assets.add(asset)
 
-        slots = Slots.collect(template.template.nodelist)
-
-        return cls(name=name, template=template, slots=slots, assets=frozenset(assets))
+        return cls(name=name, template=template, assets=frozenset(assets))
 
 
 class SequenceGenerator:
@@ -134,7 +133,7 @@ class BoundComponent:
 
         props = self.params.render_props(self.component.nodelist, context)
         attrs = self.params.render_attrs(context)
-        slots = self.component.slots.render(self, context)
+        slots = self.fill_slots(context)
 
         with context.push(
             **{
@@ -145,6 +144,34 @@ class BoundComponent:
             }
         ):
             return self.component.template.template.render(context)
+
+    def fill_slots(self, context: Context):
+        if self.nodelist is None:
+            return {
+                DEFAULT_SLOT: None,
+            }
+
+        slot_nodes = {
+            node.name: node for node in self.nodelist if isinstance(node, SlotNode)
+        }
+        default_nodes = NodeList(
+            [node for node in self.nodelist if not isinstance(node, SlotNode)]
+        )
+
+        slots: dict[str, Node | NodeList] = {
+            DEFAULT_SLOT: default_nodes,
+            **slot_nodes,
+        }
+
+        if context.get("slots"):
+            for name, content in context["slots"].items():
+                if name not in slots or not slots.get(name):
+                    slots[name] = TextNode(str(content))
+
+        if not slots[DEFAULT_SLOT] and "slot" in context:
+            slots[DEFAULT_SLOT] = TextNode(context["slot"])
+
+        return {name: node.render(context) for name, node in slots.items() if node}
 
     @property
     def id(self):

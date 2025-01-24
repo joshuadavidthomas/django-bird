@@ -36,10 +36,6 @@ class TestComponentClass:
         assert comp.name == "button"
         assert isinstance(comp.template, DjangoTemplate)
 
-        bound = comp.get_bound_component([])
-
-        assert bound.render(Context({})) == "<button>Click me</button>"
-
     def test_from_name_with_assets(self, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
@@ -108,10 +104,6 @@ class TestComponentClass:
 
         assert comp.name == "button"
         assert isinstance(comp.template, DjangoTemplate)
-
-        bound = comp.get_bound_component([])
-
-        assert bound.render(Context({})) == "<button>Click me</button>"
 
     def test_id_is_consistent(self, templates_dir):
         button = TestComponent(

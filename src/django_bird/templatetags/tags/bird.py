@@ -1,8 +1,6 @@
 # pyright: reportAny=false
 from __future__ import annotations
 
-from typing import Any
-
 from django import template
 from django.template.base import NodeList
 from django.template.base import Parser
@@ -11,11 +9,8 @@ from django.template.context import Context
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
-from django_bird.components import Component
 from django_bird.components import components
 from django_bird.params import Param
-from django_bird.slots import DEFAULT_SLOT
-from django_bird.slots import Slots
 
 TAG = "bird"
 END_TAG = "endbird"
@@ -73,12 +68,11 @@ class BirdNode(template.Node):
     def render(self, context: Context) -> str:
         component_name = self.get_component_name(context)
         component = components.get_component(component_name)
-        component_context = self.get_component_context_data(component, context)
-        bound_component = component.get_bound_component(attrs=self.attrs)
+        bound_component = component.get_bound_component(node=self)
 
         if self.isolated_context:
-            return bound_component.render(context.new(component_context))
-        with context.push(**component_context):
+            return bound_component.render(context.new())
+        else:
             return bound_component.render(context)
 
     def get_component_name(self, context: Context) -> str:
@@ -87,14 +81,3 @@ class BirdNode(template.Node):
         except template.VariableDoesNotExist:
             name = self.name
         return name
-
-    def get_component_context_data(
-        self, component: Component, context: Context
-    ) -> dict[str, Any]:
-        slots = Slots.collect(self.nodelist, context).render()
-        default_slot = slots.get(DEFAULT_SLOT) or context.get("slot")
-
-        return {
-            "slot": default_slot,
-            "slots": slots,
-        }
