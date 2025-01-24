@@ -36,10 +36,11 @@ class Value:
 
             # Handle everything else as template variables, falling back to raw
             case _:
+                raw_string = str(self.raw)
                 try:
-                    return template.Variable(self.raw).resolve(context)
+                    return template.Variable(raw_string).resolve(context)
                 except template.VariableDoesNotExist:
-                    return self.raw
+                    return raw_string
 
 
 @dataclass
