@@ -22,6 +22,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - **Internal**: Refactored slot handling logic by moving slot processing from `BirdNode` to `BoundComponent`.
 - **Internal**: Simplified component context management in `BirdNode` by offloading context prep to `BoundComponent`.
+- **Internal**: Refactored prop rendering in `Params` to take a `Component` instance instead of the raw `NodeList`.
 
 ### Removed
 
