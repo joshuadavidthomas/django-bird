@@ -5,11 +5,15 @@ from dataclasses import field
 from hashlib import md5
 from pathlib import Path
 from threading import Lock
+from typing import TYPE_CHECKING
 
 from cachetools import LRUCache
 from django.apps import apps
 from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
+from django.template.base import Node
+from django.template.base import NodeList
+from django.template.base import TextNode
 from django.template.context import Context
 from django.template.engine import Engine
 from django.template.exceptions import TemplateDoesNotExist
@@ -19,10 +23,15 @@ from django_bird.params import Param
 from django_bird.params import Params
 from django_bird.params import Value
 from django_bird.staticfiles import Asset
+from django_bird.templatetags.tags.slot import DEFAULT_SLOT
+from django_bird.templatetags.tags.slot import SlotNode
 
 from .conf import app_settings
 from .staticfiles import AssetType
 from .templates import get_template_names
+
+if TYPE_CHECKING:
+    from django_bird.templatetags.tags.bird import BirdNode
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,9 +46,9 @@ class Component:
                 return asset
         return None
 
-    def get_bound_component(self, attrs: list[Param]):
-        params = Params.with_attrs(attrs)
-        return BoundComponent(component=self, params=params)
+    def get_bound_component(self, node: BirdNode):
+        params = Params.with_attrs(node.attrs)
+        return BoundComponent(component=self, params=params, nodelist=node.nodelist)
 
     @property
     def data_attribute_name(self):
@@ -108,6 +117,7 @@ class SequenceGenerator:
 class BoundComponent:
     component: Component
     params: Params
+    nodelist: NodeList | None
     _sequence: SequenceGenerator = field(default_factory=SequenceGenerator)
 
     def render(self, context: Context):
@@ -123,14 +133,45 @@ class BoundComponent:
 
         props = self.params.render_props(self.component.nodelist, context)
         attrs = self.params.render_attrs(context)
+        slots = self.fill_slots(context)
 
         with context.push(
             **{
                 "attrs": attrs,
                 "props": props,
+                "slot": slots.get(DEFAULT_SLOT),
+                "slots": slots,
             }
         ):
             return self.component.template.template.render(context)
+
+    def fill_slots(self, context: Context):
+        if self.nodelist is None:
+            return {
+                DEFAULT_SLOT: None,
+            }
+
+        slot_nodes = {
+            node.name: node for node in self.nodelist if isinstance(node, SlotNode)
+        }
+        default_nodes = NodeList(
+            [node for node in self.nodelist if not isinstance(node, SlotNode)]
+        )
+
+        slots: dict[str, Node | NodeList] = {
+            DEFAULT_SLOT: default_nodes,
+            **slot_nodes,
+        }
+
+        if context.get("slots"):
+            for name, content in context["slots"].items():
+                if name not in slots or not slots.get(name):
+                    slots[name] = TextNode(str(content))
+
+        if not slots[DEFAULT_SLOT] and "slot" in context:
+            slots[DEFAULT_SLOT] = TextNode(context["slot"])
+
+        return {name: node.render(context) for name, node in slots.items() if node}
 
     @property
     def id(self):

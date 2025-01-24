@@ -18,6 +18,19 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- **Internal**: Refactored slot handling logic by moving slot processing from `BirdNode` to `BoundComponent`.
+- **Internal**: Simplified component context management in `BirdNode` by offloading context prep to `BoundComponent`.
+
+### Removed
+
+- **Internal**: Removed standalone `Slots` dataclass abstraction in favor of handling in `BoundComponent`.
+
+### Fixed
+
+- Fixed default slot content handling when using `only` keyword for component context isolation.
+
 ## [0.12.0]
 
 ### Added

@@ -1374,11 +1374,11 @@ def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
             ),
             template_content="""
                 {% bird button only %}
-                    {% bird:slot prefix %}{{ user.role }}{% endbird:slot %}
+                    {% bird:slot prefix %}{{ user.role|default:"User" }}{% endbird:slot %}
                 {% endbird %}
             """,
             template_context={"user": {"name": "John", "role": "Admin"}},
-            expected="<button>Admin Anonymous</button>",
+            expected="<button>User Anonymous</button>",
         ),
         TestComponentCase(
             description="Only flag with self-closing tag",

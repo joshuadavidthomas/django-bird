@@ -17,6 +17,8 @@ from django_bird._typing import override
 TAG = "bird:slot"
 END_TAG = "endbird:slot"
 
+DEFAULT_SLOT = "default"
+
 
 def do_slot(parser: Parser, token: Token) -> SlotNode:
     bits = token.split_contents()
@@ -27,7 +29,7 @@ def do_slot(parser: Parser, token: Token) -> SlotNode:
 
 def parse_slot_name(bits: TagBits) -> str:
     if len(bits) == 1:
-        return "default"
+        return DEFAULT_SLOT
     elif len(bits) == 2:
         name = bits[1]
         if name.startswith("name="):
