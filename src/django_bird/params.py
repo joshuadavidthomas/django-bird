@@ -14,67 +14,6 @@ from .templatetags.tags.prop import PropNode
 
 
 @dataclass
-class Value:
-    raw: str | bool | None
-    quoted: bool = False
-
-    def resolve(self, context: Context | dict[str, Any]) -> str | bool | None | Any:
-        match (self.raw, self.quoted):
-            # Handle special string values and None
-            case (None, _) | ("False", _):
-                return None
-            case ("True", _):
-                return True
-
-            # Handle boolean values
-            case (bool(boolean), _):
-                return boolean
-
-            # Handle quoted strings as literals
-            case (str(quoted_string), True):
-                return quoted_string
-
-            # Handle everything else as template variables, falling back to raw
-            case _:
-                raw_string = str(self.raw)
-                try:
-                    return template.Variable(raw_string).resolve(context)
-                except template.VariableDoesNotExist:
-                    return raw_string
-
-
-@dataclass
-class Param:
-    name: str
-    value: Value
-
-    def render_attr(self, context: Context) -> str:
-        value = self.value.resolve(context)
-        name = self.name.replace("_", "-")
-        if value is None:
-            return ""
-        if value is True:
-            return name
-        return f'{name}="{value}"'
-
-    def render_prop(self, context: Context) -> str | bool | None:
-        return self.value.resolve(context)
-
-    @classmethod
-    def from_bit(cls, bit: str) -> Param:
-        if "=" in bit:
-            name, raw_value = bit.split("=", 1)
-            # Check if the value is quoted
-            if raw_value.startswith(("'", '"')) and raw_value.endswith(raw_value[0]):
-                value = Value(raw_value[1:-1], quoted=True)
-            else:
-                value = Value(raw_value.strip(), quoted=False)
-        else:
-            name, value = bit, Value(True)
-        return cls(name, value)
-
-
-@dataclass
 class Params:
     attrs: list[Param] = field(default_factory=list)
     props: list[Param] = field(default_factory=list)
@@ -113,3 +52,54 @@ class Params:
     def render_attrs(self, context: Context) -> SafeString:
         rendered = " ".join(attr.render_attr(context) for attr in self.attrs)
         return mark_safe(rendered)
+
+
+@dataclass
+class Param:
+    name: str
+    value: Value
+
+    def render_attr(self, context: Context) -> str:
+        value = self.value.resolve(context)
+        name = self.name.replace("_", "-")
+        if value is None:
+            return ""
+        if value is True:
+            return name
+        return f'{name}="{value}"'
+
+    def render_prop(self, context: Context) -> str | bool | None:
+        return self.value.resolve(context)
+
+    @classmethod
+    def from_bit(cls, bit: str) -> Param:
+        if "=" in bit:
+            name, raw_value = bit.split("=", 1)
+            # Check if the value is quoted
+            if raw_value.startswith(("'", '"')) and raw_value.endswith(raw_value[0]):
+                value = Value(raw_value[1:-1], quoted=True)
+            else:
+                value = Value(raw_value.strip(), quoted=False)
+        else:
+            name, value = bit, Value(True)
+        return cls(name, value)
+
+
+@dataclass
+class Value:
+    raw: str | bool | None
+    quoted: bool = False
+
+    def resolve(self, context: Context | dict[str, Any]) -> Any:
+        if self.raw is None or (isinstance(self.raw, str) and self.raw == "False"):
+            return None
+        if (isinstance(self.raw, bool) and self.raw) or (
+            isinstance(self.raw, str) and self.raw == "True"
+        ):
+            return True
+        if isinstance(self.raw, str) and not self.quoted:
+            try:
+                return template.Variable(str(self.raw)).resolve(context)
+            except template.VariableDoesNotExist:
+                return self.raw
+        return self.raw
