@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import pytest
 
+from django_bird.components import Component
 from django_bird.params import Param
 from django_bird.params import Params
 from django_bird.params import Value
-from django_bird.templatetags.tags.prop import PropNode
+
+from .utils import TestComponent
 
 
 class TestValue:
@@ -141,39 +143,39 @@ class TestParam:
 
 class TestParams:
     @pytest.mark.parametrize(
-        "params,nodelist,context,expected_props,expected_attrs",
+        "params,test_component,context,expected_props,expected_attrs",
         [
             (
                 Params(attrs=[Param(name="class", value=Value(None))]),
-                [PropNode(name="class", default="btn", attrs=[])],
+                TestComponent(name="test", content="{% bird:prop class='btn' %}"),
                 {},
                 {"class": "btn"},
                 [],
             ),
             (
                 Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
-                [PropNode(name="class", default=None, attrs=[])],
+                TestComponent(name="test", content="{% bird:prop class %}"),
                 {},
                 {"class": "btn"},
                 [],
             ),
             (
                 Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
-                None,
+                TestComponent(name="test", content=""),
                 {},
-                None,
+                {},
                 [Param(name="class", value=Value("btn", quoted=False))],
             ),
             (
                 Params(attrs=[Param(name="class", value=Value("static", quoted=True))]),
-                [PropNode(name="class", default=None, attrs=[])],
+                TestComponent(name="test", content="{% bird:prop class %}"),
                 {"static": "dynamic"},
                 {"class": "static"},
                 [],
             ),
             (
                 Params(attrs=[Param(name="class", value=Value("var", quoted=False))]),
-                [PropNode(name="class", default=None, attrs=[])],
+                TestComponent(name="test", content="{% bird:prop class %}"),
                 {"var": "dynamic"},
                 {"class": "dynamic"},
                 [],
@@ -182,7 +184,7 @@ class TestParams:
                 Params(
                     attrs=[Param(name="class", value=Value("undefined", quoted=False))]
                 ),
-                [PropNode(name="class", default=None, attrs=[])],
+                TestComponent(name="test", content="{% bird:prop class %}"),
                 {},
                 {"class": "undefined"},
                 [],
@@ -191,7 +193,7 @@ class TestParams:
                 Params(
                     attrs=[Param(name="class", value=Value("user.name", quoted=False))]
                 ),
-                [PropNode(name="class", default=None, attrs=[])],
+                TestComponent(name="test", content="{% bird:prop class %}"),
                 {},
                 {"class": "user.name"},
                 [],
@@ -199,9 +201,17 @@ class TestParams:
         ],
     )
     def test_render_props(
-        self, params, nodelist, context, expected_props, expected_attrs
+        self,
+        params,
+        test_component,
+        context,
+        expected_props,
+        expected_attrs,
+        templates_dir,
     ):
-        assert params.render_props(nodelist, context) == expected_props
+        test_component.create(templates_dir)
+        component = Component.from_name(test_component.name)
+        assert params.render_props(component, context) == expected_props
         assert params.attrs == expected_attrs
 
     @pytest.mark.parametrize(

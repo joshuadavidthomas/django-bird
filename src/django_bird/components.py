@@ -131,7 +131,7 @@ class BoundComponent:
             ]
             self.params.attrs.extend(data_attrs)
 
-        props = self.params.render_props(self.component.nodelist, context)
+        props = self.params.render_props(self.component, context)
         attrs = self.params.render_attrs(context)
         slots = self.fill_slots(context)
 

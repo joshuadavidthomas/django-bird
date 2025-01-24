@@ -2,15 +2,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from typing import TYPE_CHECKING
 from typing import Any
 
 from django import template
-from django.template.base import NodeList
 from django.template.context import Context
 from django.utils.safestring import SafeString
 from django.utils.safestring import mark_safe
 
 from .templatetags.tags.prop import PropNode
+
+if TYPE_CHECKING:
+    from django_bird.components import Component
 
 
 @dataclass
@@ -23,13 +26,13 @@ class Params:
         """Create a Params instance with a copy of the provided attrs."""
         return cls(attrs=attrs.copy() if attrs is not None else [], props=[])
 
-    def render_props(self, nodelist: NodeList | None, context: Context):
-        if nodelist is None:
+    def render_props(self, component: Component, context: Context):
+        if component.nodelist is None:
             return
 
         attrs_to_remove = set()
 
-        for node in nodelist:
+        for node in component.nodelist:
             if not isinstance(node, PropNode):
                 continue
 
