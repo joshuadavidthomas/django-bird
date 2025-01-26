@@ -240,12 +240,12 @@ class ComponentRegistry:
         self._components[name] = component
         return component
 
-    def get_assets(self, asset_type: AssetType) -> frozenset[Asset]:
-        assets: set[Asset] = set()
+    def get_assets(self, asset_type: AssetType | None = None) -> frozenset[Asset]:
+        assets: list[Asset] = []
         for component in self._components.values():
-            for asset in component.assets:
-                if asset.type == asset_type:
-                    assets.add(asset)
+            assets.extend(component.assets)
+        if asset_type is not None:
+            assets = [asset for asset in assets if asset.type == asset_type]
         return frozenset(assets)
 
 

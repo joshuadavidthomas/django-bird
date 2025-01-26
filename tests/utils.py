@@ -69,3 +69,14 @@ class TestComponentCase:
     expected: str
     description: str = ""
     template_context: dict[str, Any] = field(default_factory=dict)
+
+
+def print_directory_tree(root_dir: str | Path, prefix: str = ""):
+    root_path = Path(root_dir)
+    contents = sorted(root_path.iterdir())
+    pointers = ["├── "] * (len(contents) - 1) + ["└── "]
+    for pointer, path in zip(pointers, contents):
+        print(prefix + pointer + path.name)
+        if path.is_dir():
+            extension = "│   " if pointer == "├── " else "    "
+            print_directory_tree(path, prefix=prefix + extension)

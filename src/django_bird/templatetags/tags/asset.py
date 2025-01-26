@@ -36,7 +36,5 @@ class AssetNode(template.Node):
         assets = components.get_assets(self.asset_type)
         if not assets:
             return ""
-        rendered = frozenset(
-            asset.render() for asset in sorted(assets, key=lambda a: a.path)
-        )
+        rendered = [asset.render() for asset in sorted(assets, key=lambda a: a.path)]
         return "\n".join(rendered)
