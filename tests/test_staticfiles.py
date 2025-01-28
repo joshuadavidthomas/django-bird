@@ -587,23 +587,6 @@ class TestStaticTemplateTag:
 
         assert rendered == "/static/django_bird/bird/button.css"
 
-    def test_static_tag(self, templates_dir):
-        button = TestComponent(
-            name="button", content="<button>Click me</button>"
-        ).create(templates_dir)
-        TestAsset(
-            component=button,
-            content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
-        ).create()
-
-        template = Template(
-            '{% load static %}{% static "django_bird/bird/button.css" %}'
-        )
-        rendered = template.render(Context({}))
-
-        assert rendered == "/static/django_bird/bird/button.css"
-
     def test_static_tag_nonexistent_asset(self):
         template = Template(
             '{% load static %}{% static "django_bird/bird/nonexistent.css" %}'
