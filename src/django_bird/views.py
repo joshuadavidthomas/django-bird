@@ -13,6 +13,13 @@ from .components import components
 
 
 def asset_view(request: HttpRequest, component_name: str, asset_filename: str):
+    warnings.warn(
+        "The 'asset_view' is deprecated and will be removed in a future release. "
+        "Use the 'BirdAssetFinder' with Django's static files system instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     if not settings.DEBUG:
         warnings.warn(
             "Serving assets through this view in production is not recommended.",

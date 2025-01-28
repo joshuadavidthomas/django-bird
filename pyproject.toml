@@ -71,6 +71,8 @@ Source = "https://github.com/joshuadavidthomas/django-bird"
 [tool.basedpyright]
 exclude = ["**/__pycache__"]
 include = ["src"]
+reportAny = false
+reportExplicitAny = false
 
 [[tool.basedpyright.executionEnvironments]]
 root = "src"

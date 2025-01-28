@@ -11,6 +11,12 @@ from django_bird.staticfiles import AssetType
 from .utils import TestAsset
 from .utils import TestComponent
 
+pytestmark = [
+    pytest.mark.filterwarnings(
+        "ignore:The 'asset_view' is deprecated.*:DeprecationWarning"
+    ),
+]
+
 
 @pytest.fixture(autouse=True)
 def debug_mode():

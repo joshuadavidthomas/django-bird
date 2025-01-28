@@ -456,13 +456,11 @@ class TestComponentRegistryAssets:
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
-
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
             asset_type=AssetType.CSS,
         ).create()
-
         button_js = TestAsset(
             component=button,
             content="console.log('loaded');",
@@ -478,6 +476,29 @@ class TestComponentRegistryAssets:
         assert len(js_assets) == 1
         assert Asset(button_css.file, button_css.asset_type) in css_assets
         assert Asset(button_js.file, button_js.asset_type) in js_assets
+
+    def test_get_assets_all(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: red; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        button_js = TestAsset(
+            component=button,
+            content="console.log('loaded');",
+            asset_type=AssetType.JS,
+        ).create()
+
+        components.discover_components()
+
+        assets = components.get_assets()
+
+        assert len(assets) == 2
+        assert Asset(button_css.file, button_css.asset_type) in assets
+        assert Asset(button_js.file, button_js.asset_type) in assets
 
     def test_assets_from_multiple_components(self, templates_dir):
         button1 = TestComponent(name="button1", content="<button>One</button>").create(
