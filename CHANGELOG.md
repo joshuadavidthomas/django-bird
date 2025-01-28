@@ -22,7 +22,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Added `BirdAssetFinder`, a custom staticfiles finder to serve component assets through Django's staticfiles app.
 - Added automatic configuration of `STATICFILES_FINDERS` to include `BirdAssetFinder` when `ENABLE_AUTO_CONFIG=True`.
-- Support for Django 5.2.
+- Added support for Django 5.2.
 
 ### Changed
 
