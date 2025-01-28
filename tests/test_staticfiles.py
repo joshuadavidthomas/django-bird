@@ -135,7 +135,7 @@ class TestAssetClass:
 
         assert asset.relative_path == Path("bird/nested/button.css")
 
-    def test_url_staticfiles_finder(self, templates_dir):
+    def test_url_with_staticfiles_finder(self, templates_dir):
         button = TestComponent(
             name="button",
             content="<button>Click me</button>",
@@ -155,7 +155,7 @@ class TestAssetClass:
         ):
             assert asset.url == str(button_css.file)
 
-    def test_url_reverse_fallback(self, templates_dir):
+    def test_url_with_reverse_fallback(self, templates_dir):
         button = TestComponent(
             name="button",
             content="<button>Click me</button>",
@@ -253,9 +253,9 @@ class TestBirdAssetFinder:
 
         finder = BirdAssetFinder()
 
-        assert len(list(finder.list("bird/*"))) == 0
-        assert len(list(finder.list("*/button*"))) == 0
-        assert len(list(finder.list("*/*.css"))) == 0
+        assert len(list(finder.list(["bird/*"]))) == 0
+        assert len(list(finder.list(["*/button*"]))) == 0
+        assert len(list(finder.list(["*.css"]))) == 0
 
     def test_list_custom_dir(self, templates_dir, override_app_settings):
         button = TestComponent(
