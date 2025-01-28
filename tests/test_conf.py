@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import pytest
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.template.base import Template
+from django.template.context import Context
 from django.test import override_settings
 
 from django_bird.conf import DJANGO_BIRD_BUILTINS
@@ -315,3 +318,40 @@ class TestAutoConfigurator:
             configurator.autoconfigure()
 
             assert template_options == expected
+
+    @override_settings(
+        **{
+            "STATICFILES_FINDERS": [
+                "django.contrib.staticfiles.finders.FileSystemFinder",
+                "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+            ],
+            "TEMPLATES": [
+                {
+                    "BACKEND": "django.template.backends.django.DjangoTemplates",
+                    "DIRS": [],
+                    "APP_DIRS": True,
+                    "OPTIONS": {
+                        "context_processors": [
+                            "django.template.context_processors.request",
+                            "django.contrib.auth.context_processors.auth",
+                            "django.contrib.messages.context_processors.messages",
+                        ],
+                    },
+                },
+            ],
+        }
+    )
+    def test_startproject_settings(self, configurator, example_template):
+        configurator.autoconfigure()
+
+        template_options = settings.TEMPLATES[0]["OPTIONS"]
+
+        assert DJANGO_BIRD_LOADER in template_options["loaders"]
+        assert DJANGO_BIRD_BUILTINS in template_options["builtins"]
+        assert DJANGO_BIRD_FINDER in settings.STATICFILES_FINDERS
+
+        with pytest.raises(
+            ImproperlyConfigured,
+            match="app_dirs must not be set when loaders is defined.",
+        ):
+            Template(example_template.content).render(Context({}))
