@@ -17,6 +17,7 @@ from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
 
 from ._typing import override
+from .apps import DjangoBirdAppConfig
 
 
 class AssetType(Enum):
@@ -79,7 +80,9 @@ class Asset:
 
     @property
     def storage(self):
-        return FileSystemStorage(location=str(self.template_dir))
+        storage = FileSystemStorage(location=str(self.template_dir))
+        storage.prefix = DjangoBirdAppConfig.label
+        return storage
 
     @property
     def template_dir(self):

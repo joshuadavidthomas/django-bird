@@ -24,7 +24,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Deprecated
 
-- The built-in asset serving view (`asset_view`) and its corresponding URL patterns is deprecated and in the next minor version (v0.14.0). Use `BirdAssetFinder` with Django's staticfiles app.
+- The built-in asset serving view (`asset_view`) is deprecated and will be removed in the next minor version (v0.14.0). Use `BirdAssetFinder` with Django's staticfiles app.
 
 ## [0.12.1]
 

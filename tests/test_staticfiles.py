@@ -7,6 +7,8 @@ import pytest
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.management import call_command
+from django.template.base import Template
+from django.template.context import Context
 from django.test import override_settings
 
 from django_bird.components import Component
@@ -16,6 +18,7 @@ from django_bird.staticfiles import BirdAssetFinder
 
 from .utils import TestAsset
 from .utils import TestComponent
+from .utils import print_directory_tree
 
 
 class TestAssetClass:
@@ -417,8 +420,8 @@ class TestStaticCollection:
 
         call_command("collectstatic", interactive=False, verbosity=0)
 
-        assert (static_root / "bird/button.css").exists()
-        assert (static_root / "bird/button.js").exists()
+        assert (static_root / "django_bird/bird/button.css").exists()
+        assert (static_root / "django_bird/bird/button.js").exists()
 
     def test_same_named_assets(self, templates_dir, static_root):
         button1 = TestComponent(
@@ -441,8 +444,10 @@ class TestStaticCollection:
 
         call_command("collectstatic", interactive=False, verbosity=0)
 
-        form_css = static_root / "bird/forms/button.css"
-        nav_css = static_root / "bird/nav/button.css"
+        form_css = static_root / "django_bird/bird/forms/button.css"
+        nav_css = static_root / "django_bird/bird/nav/button.css"
+
+        print_directory_tree(static_root)
 
         assert form_css.exists()
         assert nav_css.exists()
@@ -477,8 +482,8 @@ class TestStaticCollection:
 
         call_command("collectstatic", interactive=False, verbosity=0)
 
-        assert (static_root / "bird/button.css").exists()
-        assert not (static_root / "bird/input.css").exists()
+        assert (static_root / "django_bird/bird/button.css").exists()
+        assert not (static_root / "django_bird/bird/input.css").exists()
 
         input = TestComponent(name="input", content="<input>").create(templates_dir)
         TestAsset(
@@ -489,5 +494,42 @@ class TestStaticCollection:
 
         call_command("collectstatic", interactive=False, clear=True, verbosity=0)
 
-        assert (static_root / "bird/button.css").exists()
-        assert (static_root / "bird/input.css").exists()
+        assert (static_root / "django_bird/bird/button.css").exists()
+        assert (static_root / "django_bird/bird/input.css").exists()
+
+
+class TestStaticTemplateTag:
+    @pytest.fixture(autouse=True)
+    def staticfiles_app(self):
+        with override_settings(
+            INSTALLED_APPS=settings.INSTALLED_APPS + ["django.contrib.staticfiles"],
+            STATIC_URL="/static/",
+            STATICFILES_FINDERS=settings.STATICFILES_FINDERS
+            + ["django_bird.staticfiles.BirdAssetFinder"],
+        ):
+            yield
+
+    def test_static_tag_renders_url(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+
+        template = Template(
+            '{% load static %}{% static "django_bird/bird/button.css" %}'
+        )
+        rendered = template.render(Context({}))
+
+        assert rendered == "/static/django_bird/bird/button.css"
+
+    def test_static_tag_nonexistent_asset(self):
+        template = Template(
+            '{% load static %}{% static "django_bird/bird/nonexistent.css" %}'
+        )
+        rendered = template.render(Context({}))
+
+        assert rendered == "/static/django_bird/bird/nonexistent.css"
