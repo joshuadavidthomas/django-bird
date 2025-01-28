@@ -187,10 +187,8 @@ class TestBoundComponent:
     @pytest.mark.parametrize(
         "attr_app_setting,expected",
         [
-            ({"ENABLE_BIRD_ATTRS": True, "ENABLE_BIRD_ID_ATTR": True}, True),
-            ({"ENABLE_BIRD_ATTRS": True, "ENABLE_BIRD_ID_ATTR": False}, True),
-            ({"ENABLE_BIRD_ATTRS": False, "ENABLE_BIRD_ID_ATTR": True}, False),
-            ({"ENABLE_BIRD_ATTRS": False, "ENABLE_BIRD_ID_ATTR": False}, False),
+            ({"ENABLE_BIRD_ATTRS": True}, True),
+            ({"ENABLE_BIRD_ATTRS": False}, False),
         ],
     )
     def test_id_sequence(

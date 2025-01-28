@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from contextlib import nullcontext
-
 import pytest
 from django.conf import settings
 from django.test import override_settings
@@ -15,7 +13,6 @@ from django_bird.conf import app_settings
 def test_app_settings():
     assert app_settings.COMPONENT_DIRS == []
     assert app_settings.ENABLE_AUTO_CONFIG is True
-    assert app_settings.ENABLE_BIRD_ID_ATTR is True
 
 
 @override_settings(
@@ -305,38 +302,3 @@ class TestTemplateConfigurator:
             configurator.autoconfigure()
 
             assert template_options == expected
-
-
-@pytest.mark.parametrize(
-    "attr_app_setting,should_warn",
-    [
-        (
-            {"ENABLE_BIRD_ATTRS": True},
-            False,
-        ),
-        (
-            {"ENABLE_BIRD_ATTRS": True, "ENABLE_BIRD_ID_ATTR": False},
-            True,
-        ),
-        (
-            {"ENABLE_BIRD_ATTRS": False, "ENABLE_BIRD_ID_ATTR": True},
-            True,
-        ),
-        (
-            {"ENABLE_BIRD_ATTRS": False, "ENABLE_BIRD_ID_ATTR": False},
-            True,
-        ),
-    ],
-)
-def test_deprecated_bird_id_attr_setting(
-    attr_app_setting, should_warn, override_app_settings
-):
-    warning_context = pytest.warns(DeprecationWarning) if should_warn else nullcontext()
-
-    with warning_context as record:
-        with override_app_settings(**attr_app_setting):
-            AppSettings(**attr_app_setting)
-
-    if should_warn:
-        assert len(record) == 1
-        assert "ENABLE_BIRD_ID_ATTR is deprecated" in str(record[0].message)

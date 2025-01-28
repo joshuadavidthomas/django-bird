@@ -111,7 +111,7 @@ def override_app_settings():
 def data_bird_attr_app_setting(override_app_settings, request):
     enable = "default_app_settings" in request.keywords
 
-    with override_app_settings(ENABLE_BIRD_ATTRS=enable, ENABLE_BIRD_ID_ATTR=enable):
+    with override_app_settings(ENABLE_BIRD_ATTRS=enable):
         yield
 
 

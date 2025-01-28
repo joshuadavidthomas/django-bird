@@ -26,6 +26,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - The built-in asset serving view (`asset_view`) is deprecated and will be removed in the next minor version (v0.14.0). Use `BirdAssetFinder` with Django's staticfiles app.
 
+### Removed
+
+- Removed the deprecated `ENABLE_BIRD_ID_ATTR` setting.
+
 ## [0.12.1]
 
 ### Changed
