@@ -102,7 +102,9 @@ class AutoConfigurator:
             builtins.append(DJANGO_BIRD_BUILTINS)
 
     def configure_staticfiles(self) -> None:
-        if DJANGO_BIRD_FINDER not in settings.STATICFILES_FINDERS:
+        finders_already_configured = DJANGO_BIRD_FINDER in settings.STATICFILES_FINDERS
+
+        if not finders_already_configured:
             settings.STATICFILES_FINDERS.append(DJANGO_BIRD_FINDER)
 
 
