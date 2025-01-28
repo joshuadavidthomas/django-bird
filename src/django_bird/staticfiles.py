@@ -11,8 +11,6 @@ from typing import Literal
 from typing import final
 from typing import overload
 
-from .templates import get_component_directory_names
-
 from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.finders import BaseFinder
 from django.core.checks import CheckMessage
@@ -21,6 +19,7 @@ from django.urls import reverse
 
 from ._typing import override
 from .apps import DjangoBirdAppConfig
+from .templates import get_component_directory_names
 
 if TYPE_CHECKING:
     pass
@@ -94,8 +93,9 @@ class Asset:
     def template_dir(self):
         template_dir = self.path.parent
         component_dirs = get_component_directory_names()
-        # Walk up until we find one of the component directories
-        while len(template_dir.parts) > 1 and template_dir.parts[-1] not in component_dirs:
+        while (
+            len(template_dir.parts) > 1 and template_dir.parts[-1] not in component_dirs
+        ):
             template_dir = template_dir.parent
         return template_dir.parent
 
@@ -162,10 +162,7 @@ class BirdAssetFinder(BaseFinder):
         path_obj = Path(path)
 
         for asset in self.components.get_assets():
-            print(f"{path_obj=}")
-            print(f"{asset.relative_path=}")
             if path_obj == asset.relative_path:
-                print("hello")
                 matched_path = str(asset.absolute_path)
             elif asset.relative_path.is_relative_to(path_obj):
                 matched_path = str(path_obj.resolve())

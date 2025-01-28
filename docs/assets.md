@@ -65,12 +65,12 @@ The asset tags will render:
 
 ```html
 {# {% bird:css %} renders: #}
-<link rel="stylesheet" href="/static/bird/button.css">
-<link rel="stylesheet" href="/static/bird/alert.css">
+<link rel="stylesheet" href="/static/django_bird/bird/button.css">
+<link rel="stylesheet" href="/static/django_bird/bird/alert.css">
 
 {# {% bird:js %} renders: #}
-<script src="/static/bird/button.js"></script>
-<script src="/static/bird/alert.js"></script>
+<script src="/static/django_bird/bird/button.js"></script>
+<script src="/static/django_bird/bird/alert.js"></script>
 ```
 
 Assets are automatically deduplicated, so each component's assets are included only once even if the component is used multiple times in your templates. Only assets from components actually used in the template (or its parent templates) will be included - unused components' assets won't be loaded, keeping your pages lean.

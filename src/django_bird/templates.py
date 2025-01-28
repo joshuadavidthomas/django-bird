@@ -1,6 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from django.apps import apps
+from django.conf import settings
+from django.template.engine import Engine
+
 from .conf import app_settings
+
+
+def get_component_directory_names():
+    return list(dict.fromkeys([*app_settings.COMPONENT_DIRS, "bird"]))
 
 
 def get_template_names(name: str) -> list[str]:
@@ -39,7 +49,7 @@ def get_template_names(name: str) -> list[str]:
         list[str]: A list of potential template names in resolution order.
     """
     template_names = []
-    component_dirs = list(dict.fromkeys([*app_settings.COMPONENT_DIRS, "bird"]))
+    component_dirs = get_component_directory_names()
 
     name_parts = name.split(".")
     path_name = "/".join(name_parts)
@@ -54,3 +64,26 @@ def get_template_names(name: str) -> list[str]:
         template_names.extend(potential_names)
 
     return list(dict.fromkeys(template_names))
+
+
+def get_component_directories():
+    engine = Engine.get_default()
+    template_dirs: list[str | Path] = list(engine.dirs)
+
+    for app_config in apps.get_app_configs():
+        template_dir = Path(app_config.path) / "templates"
+        if template_dir.is_dir():
+            template_dirs.append(template_dir)
+
+    base_dir = getattr(settings, "BASE_DIR", None)
+
+    if base_dir is not None:
+        root_template_dir = Path(base_dir) / "templates"
+        if root_template_dir.is_dir():
+            template_dirs.append(root_template_dir)
+
+    return [
+        Path(template_dir) / component_dir
+        for template_dir in template_dirs
+        for component_dir in get_component_directory_names()
+    ]

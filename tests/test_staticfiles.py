@@ -18,7 +18,6 @@ from django_bird.staticfiles import BirdAssetFinder
 
 from .utils import TestAsset
 from .utils import TestComponent
-from .utils import print_directory_tree
 
 
 class TestAssetClass:
@@ -174,29 +173,39 @@ class TestAssetClass:
 
         assert asset.url == f"/__bird__/assets/{component.name}/{asset.path.name}"
 
-    @pytest.mark.parametrize(
-        "path,expected",
-        [
-            (Path("static.css"), Asset(Path("static.css"), AssetType.CSS)),
-            (Path("static.js"), Asset(Path("static.js"), AssetType.JS)),
-            (
-                Path("nested/path/style.css"),
-                Asset(Path("nested/path/style.css"), AssetType.CSS),
-            ),
-            (
-                Path("./relative/script.js"),
-                Asset(Path("./relative/script.js"), AssetType.JS),
-            ),
-            (Path("UPPERCASE.CSS"), Asset(Path("UPPERCASE.CSS"), AssetType.CSS)),
-            (Path("mixed.Js"), Asset(Path("mixed.Js"), AssetType.JS)),
-        ],
-    )
-    def test_from_path(self, path, expected):
-        assert Asset.from_path(path) == expected
+    def test_from_path(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        button_js = TestAsset(
+            component=button, content="console.log('button');", asset_type=AssetType.JS
+        ).create()
 
-    def test_from_path_invalid(self):
-        with pytest.raises(ValueError):
-            Asset.from_path(Path("static.html"))
+        assert Asset.from_path(button.file, button_css.asset_type) == Asset(
+            button_css.file, button_css.asset_type
+        )
+        assert Asset.from_path(button.file, button_js.asset_type) == Asset(
+            button_js.file, button_js.asset_type
+        )
+
+    def test_from_template_nested(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>", sub_dir="nested"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+
+        assert Asset.from_path(button.file, button_css.asset_type) == Asset(
+            button_css.file, button_css.asset_type
+        )
 
 
 class TestBirdAssetFinder:
@@ -285,6 +294,8 @@ class TestBirdAssetFinder:
             listed_assets = list(finder.list(None))
 
         assert len(listed_assets) == 1
+        # components are matched like templates, dirs in
+        # `settings.DJANGO_BIRD["COMPONENT_DIRS"]` take precedence
         assert listed_assets[0][0] in str(custom_button_css.file)
         assert listed_assets[0][0] not in str(button_css.file)
 
@@ -314,6 +325,31 @@ class TestFindersFind:
 
         assert finders.find("bird/button.css") == str(button_css.file)
         assert finders.find("bird/button.js") == str(button_js.file)
+
+    def test_find_asset_custom_dir(self, templates_dir, override_app_settings):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        custom_button = TestComponent(
+            name="button", content="<button>Click me</button>", parent_dir="components"
+        ).create(templates_dir)
+
+        TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        custom_button_css = TestAsset(
+            component=custom_button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+
+        with override_app_settings(COMPONENT_DIRS=["components"]):
+            # components are matched like templates, dirs in
+            # `settings.DJANGO_BIRD["COMPONENT_DIRS"]` take precedence
+            assert finders.find("components/button.css") == str(custom_button_css.file)
+            assert finders.find("bird/button.css") is None
 
     def test_find_nested_asset(self, templates_dir):
         button = TestComponent(
@@ -403,7 +439,7 @@ class TestStaticCollection:
 
         shutil.rmtree(static_dir)
 
-    def test_basic_collection(self, templates_dir, static_root):
+    def test_basic(self, templates_dir, static_root):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
@@ -422,6 +458,33 @@ class TestStaticCollection:
 
         assert (static_root / "django_bird/bird/button.css").exists()
         assert (static_root / "django_bird/bird/button.js").exists()
+
+    def test_custom_dir(self, templates_dir, static_root, override_app_settings):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        custom_button = TestComponent(
+            name="button", content="<button>Click me</button>", parent_dir="components"
+        ).create(templates_dir)
+
+        TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+        TestAsset(
+            component=custom_button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+
+        with override_app_settings(COMPONENT_DIRS=["components"]):
+            call_command("collectstatic", interactive=False, verbosity=0)
+
+            # components are matched like templates, dirs in
+            # `settings.DJANGO_BIRD["COMPONENT_DIRS"]` take precedence
+            assert (static_root / "django_bird/components/button.css").exists()
+            assert not (static_root / "django_bird/bird/button.css").exists()
 
     def test_same_named_assets(self, templates_dir, static_root):
         button1 = TestComponent(
@@ -446,8 +509,6 @@ class TestStaticCollection:
 
         form_css = static_root / "django_bird/bird/forms/button.css"
         nav_css = static_root / "django_bird/bird/nav/button.css"
-
-        print_directory_tree(static_root)
 
         assert form_css.exists()
         assert nav_css.exists()
@@ -509,7 +570,24 @@ class TestStaticTemplateTag:
         ):
             yield
 
-    def test_static_tag_renders_url(self, templates_dir):
+    def test_static_tag(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+
+        template = Template(
+            '{% load static %}{% static "django_bird/bird/button.css" %}'
+        )
+        rendered = template.render(Context({}))
+
+        assert rendered == "/static/django_bird/bird/button.css"
+
+    def test_static_tag(self, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
