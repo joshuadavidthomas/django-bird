@@ -150,6 +150,7 @@ def create_template():
 @dataclass
 class ExampleTemplate:
     base: Path
+    include: Path
     template: Path
     components: list[Component]
 
@@ -188,9 +189,6 @@ def example_template(templates_dir):
         component=button, content="console.log('button');", asset_type=AssetType.JS
     ).create()
 
-    alert_component = Component.from_name(alert.name)
-    button_component = Component.from_name(alert.name)
-
     base_template = templates_dir / "base.html"
     base_template.write_text("""
         <html>
@@ -206,18 +204,25 @@ def example_template(templates_dir):
         </html>
     """)
 
+    include_template = templates_dir / "include.html"
+    include_template.write_text("""
+        {% bird button %}Include me{% endbird %}
+    """)
+
     template = templates_dir / "template.html"
     template.write_text("""
-        {% extends 'base.html' %}
+        {% extends "base.html" %}
         {% block content %}
             {% bird button %}Click me{% endbird %}
+            {% include "include.html" %}
         {% endblock %}
     """)
 
     return ExampleTemplate(
         base=base_template,
+        include=include_template,
         template=template,
-        components=[alert_component, button_component],
+        components=[Component.from_name(alert.name), Component.from_name(button.name)],
     )
 
 
