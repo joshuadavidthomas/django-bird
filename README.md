@@ -3,9 +3,9 @@
 
 [![PyPI](https://img.shields.io/pypi/v/django-bird)](https://pypi.org/project/django-bird/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django-bird)
-![Django Version](https://img.shields.io/badge/django-4.2%20%7C%205.0%20%7C%205.1-%2344B78B?labelColor=%23092E20)
+![Django Version](https://img.shields.io/badge/django-4.2%20%7C%205.0%20%7C%205.1%20%7C%205.2-%2344B78B?labelColor=%23092E20)
 <!-- https://shields.io/badges -->
-<!-- django-4.2 | 5.0 | 5.1-#44B78B -->
+<!-- django-4.2 | 5.0 | 5.1 | 5.2-#44B78B -->
 <!-- labelColor=%23092E20 -->
 
 High-flying components for perfectionists with deadlines.
@@ -18,7 +18,7 @@ High-flying components for perfectionists with deadlines.
 ## Requirements
 
 - Python 3.10, 3.11, 3.12, 3.13
-- Django 4.2, 5.0, 5.1
+- Django 4.2, 5.0, 5.1, 5.2
 
 ## Installation
 
@@ -45,9 +45,9 @@ High-flying components for perfectionists with deadlines.
 
 3. django-bird will automatically configure the necessary settings in your project.
 
-    If you need to customize the configuration or prefer to set up django-bird manually, you can set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False` in your settings.
+   If you need to customize the configuration or prefer to set up django-bird manually, you can set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False` in your settings.
 
-    For detailed instructions, please refer to the [Manual Setup](https://django-bird.readthedocs.io/configuration.html#manual-setup) section within the Configuration documentation.
+   For detailed instructions, please refer to the [Manual Setup](https://django-bird.readthedocs.io/configuration.html#manual-setup) section within the Configuration documentation.
 
 ## Getting Started
 
