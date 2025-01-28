@@ -11,6 +11,8 @@ from typing import Literal
 from typing import final
 from typing import overload
 
+from .templates import get_component_directory_names
+
 from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.finders import BaseFinder
 from django.core.checks import CheckMessage
@@ -91,7 +93,9 @@ class Asset:
     @property
     def template_dir(self):
         template_dir = self.path.parent
-        while len(template_dir.parts) > 1 and template_dir.parts[-1] != "bird":
+        component_dirs = get_component_directory_names()
+        # Walk up until we find one of the component directories
+        while len(template_dir.parts) > 1 and template_dir.parts[-1] not in component_dirs:
             template_dir = template_dir.parent
         return template_dir.parent
 
