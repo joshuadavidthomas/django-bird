@@ -3,7 +3,9 @@ from __future__ import annotations
 import contextlib
 import logging
 import re
+from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from django.conf import settings
@@ -16,6 +18,10 @@ from django.urls import include
 from django.urls import path
 
 from .settings import DEFAULT_SETTINGS
+
+if TYPE_CHECKING:
+    from django_bird.components import Component
+
 
 pytest_plugins = []
 
@@ -139,6 +145,80 @@ def create_template():
         return DjangoTemplate(template, backend)
 
     return _create_template
+
+
+@dataclass
+class ExampleTemplate:
+    base: Path
+    template: Path
+    components: list[Component]
+
+    @property
+    def content(self):
+        return self.template.read_text()
+
+
+@pytest.fixture
+def example_template(templates_dir):
+    from django_bird.components import Component
+    from django_bird.staticfiles import AssetType
+
+    from .utils import TestAsset
+    from .utils import TestComponent
+
+    alert = TestComponent(
+        name="alert", content='<div class="alert">{{ slot }}</div>'
+    ).create(templates_dir)
+    TestAsset(
+        component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+    ).create()
+    TestAsset(
+        component=alert, content="console.log('alert');", asset_type=AssetType.JS
+    ).create()
+
+    button = TestComponent(name="button", content="<button>{{ slot }}</button>").create(
+        templates_dir
+    )
+    TestAsset(
+        component=button,
+        content=".button { color: blue; }",
+        asset_type=AssetType.CSS,
+    ).create()
+    TestAsset(
+        component=button, content="console.log('button');", asset_type=AssetType.JS
+    ).create()
+
+    alert_component = Component.from_name(alert.name)
+    button_component = Component.from_name(alert.name)
+
+    base_template = templates_dir / "base.html"
+    base_template.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            {% bird alert %}Warning{% endbird %}
+            {% block content %}{% endblock %}
+            {% bird:js %}
+        </body>
+        </html>
+    """)
+
+    template = templates_dir / "template.html"
+    template.write_text("""
+        {% extends 'base.html' %}
+        {% block content %}
+            {% bird button %}Click me{% endbird %}
+        {% endblock %}
+    """)
+
+    return ExampleTemplate(
+        base=base_template,
+        template=template,
+        components=[alert_component, button_component],
+    )
 
 
 @pytest.fixture
