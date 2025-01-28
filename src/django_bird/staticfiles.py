@@ -125,18 +125,17 @@ class BirdAssetFinder(BaseFinder):
     def check(self, **kwargs: Any) -> list[CheckMessage]:
         return []
 
-    @overload
+    # Django 5.2 changed the argument from `find` to `find_all`, but django-stubs
+    # (as of the time of this commit) hasn't been updated to reflect this, hence the
+    # type ignore
+    @overload  # type: ignore[override]
     def find(self, path: str, *, all: Literal[False] = False) -> str | None: ...
-
     @overload
     def find(self, path: str, *, all: Literal[True]) -> list[str]: ...
-
-    @overload  # type: ignore[override]
+    @overload
     def find(self, path: str, *, find_all: Literal[False] = False) -> str | None: ...
-
-    @overload  # type: ignore[override]
+    @overload
     def find(self, path: str, *, find_all: Literal[True]) -> list[str]: ...
-
     @override
     def find(
         self,
@@ -149,7 +148,7 @@ class BirdAssetFinder(BaseFinder):
         """
         if find_all is None:
             find_all = all
-        
+
         self.components.discover_components()
 
         matches: list[str] = []
