@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 from enum import Enum
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 from typing import final
@@ -21,7 +21,7 @@ from ._typing import override
 from .apps import DjangoBirdAppConfig
 
 if TYPE_CHECKING:
-    from .components import Component
+    pass
 
 
 class AssetType(Enum):
@@ -107,19 +107,8 @@ class Asset:
         )
 
     @classmethod
-    def from_path(cls, path: Path) -> Asset:
-        match path.suffix.lower():
-            case ".css":
-                asset_type = AssetType.CSS
-            case ".js":
-                asset_type = AssetType.JS
-            case _:
-                raise ValueError(f"Unknown asset type for path: {path}")
-        return cls(path=path, type=asset_type)
-
-    @classmethod
-    def from_component(cls, template_path: Path, asset_type: AssetType) -> 'Asset' | None:
-        asset_path = template_path.with_suffix(asset_type.ext)
+    def from_path(cls, path: Path, asset_type: AssetType):
+        asset_path = path.with_suffix(asset_type.ext)
         if asset_path.exists():
             return cls(path=asset_path, type=asset_type)
         return None
