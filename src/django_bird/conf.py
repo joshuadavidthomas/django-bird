@@ -6,6 +6,7 @@ from dataclasses import field
 from pathlib import Path
 from typing import Any
 from typing import final
+import warnings
 
 import django.template
 from django.conf import settings
@@ -38,6 +39,14 @@ class AppSettings:
         if not self.ENABLE_AUTO_CONFIG:
             return
 
+        warnings.warn(
+            "Auto-configuration is currently enabled by default, but will be disabled by default "
+            "in a future release. To silence this warning, explicitly set DJANGO_BIRD['ENABLE_AUTO_CONFIG'] "
+            "to True or False in your settings.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        
         self._configurator.autoconfigure()
 
 
