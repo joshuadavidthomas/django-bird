@@ -138,6 +138,7 @@ class BirdAssetFinder(BaseFinder):
 
         matches: list[str] = []
         path_obj = Path(path)
+
         for asset in self.components.get_assets():
             if path_obj == asset.relative_path:
                 matched_path = str(asset.absolute_path)
