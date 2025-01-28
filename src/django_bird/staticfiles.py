@@ -126,14 +126,26 @@ class BirdAssetFinder(BaseFinder):
         return []
 
     @overload
-    def find(self, path: str, all: Literal[False] = False) -> str | None: ...
+    def find(self, path: str, *, all: Literal[False] = False) -> str | None: ...
     @overload
-    def find(self, path: str, all: Literal[True]) -> list[str]: ...
+    def find(self, path: str, *, all: Literal[True]) -> list[str]: ...
+    @overload
+    def find(self, path: str, *, find_all: Literal[False] = False) -> str | None: ...
+    @overload
+    def find(self, path: str, *, find_all: Literal[True]) -> list[str]: ...
     @override
-    def find(self, path: str, all: bool = False) -> str | list[str] | None:
+    def find(
+        self,
+        path: str,
+        all: bool = False,
+        find_all: bool | None = None
+    ) -> str | list[str] | None:
         """
         Given a relative file path, return the absolute path(s) where it can be found.
         """
+        if find_all is None:
+            find_all = all
+            
         self.components.discover_components()
 
         matches: list[str] = []
@@ -147,7 +159,7 @@ class BirdAssetFinder(BaseFinder):
             else:
                 continue
 
-            if not all:
+            if not find_all:
                 return matched_path
             matches.append(matched_path)
 
