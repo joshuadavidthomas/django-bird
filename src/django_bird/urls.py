@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+
 from django.urls import path
 
 from .views import asset_view
