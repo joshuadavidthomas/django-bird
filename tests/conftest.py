@@ -167,16 +167,6 @@ def example_template(templates_dir):
     from .utils import TestAsset
     from .utils import TestComponent
 
-    alert = TestComponent(
-        name="alert", content='<div class="alert">{{ slot }}</div>'
-    ).create(templates_dir)
-    TestAsset(
-        component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
-    ).create()
-    TestAsset(
-        component=alert, content="console.log('alert');", asset_type=AssetType.JS
-    ).create()
-
     button = TestComponent(name="button", content="<button>{{ slot }}</button>").create(
         templates_dir
     )
@@ -188,6 +178,17 @@ def example_template(templates_dir):
     TestAsset(
         component=button, content="console.log('button');", asset_type=AssetType.JS
     ).create()
+
+    alert = TestComponent(
+        name="alert", content='<div class="alert">{{ slot }}</div>'
+    ).create(templates_dir)
+    TestAsset(
+        component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+    ).create()
+
+    banner = TestComponent(
+        name="banner", content="<div {{ attrs }}>{{ slot }}</div>"
+    ).create(templates_dir)
 
     base_template = templates_dir / "base.html"
     base_template.write_text("""
@@ -206,15 +207,15 @@ def example_template(templates_dir):
 
     include_template = templates_dir / "include.html"
     include_template.write_text("""
-        {% bird button %}Include me{% endbird %}
+        {% bird banner %}Include me{% endbird %}
     """)
 
     template = templates_dir / "template.html"
     template.write_text("""
         {% extends "base.html" %}
         {% block content %}
-            {% bird button %}Click me{% endbird %}
             {% include "include.html" %}
+            {% bird button %}Click me{% endbird %}
         {% endblock %}
     """)
 
@@ -222,7 +223,11 @@ def example_template(templates_dir):
         base=base_template,
         include=include_template,
         template=template,
-        components=[Component.from_name(alert.name), Component.from_name(button.name)],
+        components=[
+            Component.from_name(alert.name),
+            Component.from_name(banner.name),
+            Component.from_name(button.name),
+        ],
     )
 
 
