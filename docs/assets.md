@@ -146,7 +146,9 @@ If you still need to use the view-based asset serving during the transition, you
 :caption: urls.py
 
 from django.conf import settings
-from django.urls import include, path
+from django.urls import include
+from django.urls import path
+
 
 if settings.DEBUG:
     urlpatterns = [
