@@ -86,7 +86,7 @@ class Asset:
     @property
     def storage(self):
         storage = FileSystemStorage(location=str(self.template_dir))
-        storage.prefix = DjangoBirdAppConfig.label
+        storage.prefix = DjangoBirdAppConfig.label  # type: ignore[attr-defined]
         return storage
 
     @property
