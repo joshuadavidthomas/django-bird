@@ -78,15 +78,12 @@ class Component:
     def from_name(cls, name: str):
         template_names = get_template_names(name)
         template = select_template(template_names)
-
-        assets: set[Asset] = set()
         template_path = Path(template.template.origin.name)
-        for asset_type in AssetType:
-            asset_path = template_path.with_suffix(asset_type.ext)
-            if asset_path.exists():
-                asset = Asset.from_path(asset_path)
-                assets.add(asset)
-
+        assets = {
+            asset
+            for asset_type in AssetType
+            if (asset := Asset.from_component(template_path, asset_type)) is not None
+        }
         return cls(name=name, template=template, assets=frozenset(assets))
 
 
