@@ -29,6 +29,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Deprecated
 
 - The built-in asset serving view (`asset_view`) is deprecated and will be removed in the next minor version (v0.14.0). Use `BirdAssetFinder` with Django's staticfiles app.
+- Auto-configuration is now deprecated as an opt-out feature and will become opt-in by default in the next minor version (v0.14.0).
 
 ### Removed
 
