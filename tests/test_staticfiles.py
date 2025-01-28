@@ -12,6 +12,7 @@ from django.template.context import Context
 from django.test import override_settings
 
 from django_bird.components import Component
+from django_bird.conf import DJANGO_BIRD_FINDER
 from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
 from django_bird.staticfiles import BirdAssetFinder
@@ -151,11 +152,7 @@ class TestAssetClass:
         component = Component.from_name(button.name)
         asset = component.get_asset(button_css.file.name)
 
-        with override_settings(
-            STATICFILES_FINDERS=settings.STATICFILES_FINDERS
-            + ["django_bird.staticfiles.BirdAssetFinder"],
-        ):
-            assert asset.url == str(button_css.file)
+        assert asset.url == str(button_css.file)
 
     def test_url_with_reverse_fallback(self, templates_dir):
         button = TestComponent(
@@ -171,7 +168,14 @@ class TestAssetClass:
         component = Component.from_name(button.name)
         asset = component.get_asset(button_css.file.name)
 
-        assert asset.url == f"/__bird__/assets/{component.name}/{asset.path.name}"
+        with override_settings(
+            STATICFILES_FINDERS=[
+                finder
+                for finder in settings.STATICFILES_FINDERS
+                if finder != DJANGO_BIRD_FINDER
+            ]
+        ):
+            assert asset.url == f"/__bird__/assets/{component.name}/{asset.path.name}"
 
     def test_from_path(self, templates_dir):
         button = TestComponent(
@@ -301,14 +305,6 @@ class TestBirdAssetFinder:
 
 
 class TestFindersFind:
-    @pytest.fixture(autouse=True)
-    def setup_finder(self):
-        with override_settings(
-            STATICFILES_FINDERS=settings.STATICFILES_FINDERS
-            + ["django_bird.staticfiles.BirdAssetFinder"],
-        ):
-            yield
-
     def test_find_asset(self, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
@@ -424,8 +420,6 @@ class TestStaticCollection:
         with override_settings(
             INSTALLED_APPS=settings.INSTALLED_APPS + ["django.contrib.staticfiles"],
             STATIC_URL="/static/",
-            STATICFILES_FINDERS=settings.STATICFILES_FINDERS
-            + ["django_bird.staticfiles.BirdAssetFinder"],
         ):
             yield
 
@@ -565,8 +559,6 @@ class TestStaticTemplateTag:
         with override_settings(
             INSTALLED_APPS=settings.INSTALLED_APPS + ["django.contrib.staticfiles"],
             STATIC_URL="/static/",
-            STATICFILES_FINDERS=settings.STATICFILES_FINDERS
-            + ["django_bird.staticfiles.BirdAssetFinder"],
         ):
             yield
 

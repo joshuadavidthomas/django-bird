@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import pytest
+from django.conf import settings
 from django.template.base import Parser
 from django.template.base import Token
 from django.template.base import TokenType
 from django.template.context import Context
 from django.template.exceptions import TemplateSyntaxError
+from django.test import override_settings
 
+from django_bird.conf import DJANGO_BIRD_FINDER
 from django_bird.staticfiles import AssetType
 from django_bird.templatetags.tags.asset import CSS_TAG
 from django_bird.templatetags.tags.asset import JS_TAG
@@ -14,6 +17,18 @@ from django_bird.templatetags.tags.asset import AssetNode
 from django_bird.templatetags.tags.asset import do_asset
 from tests.utils import TestAsset
 from tests.utils import TestComponent
+
+
+@pytest.fixture(autouse=True)
+def reset_staticfiles_finders():
+    with override_settings(
+        STATICFILES_FINDERS=[
+            finder
+            for finder in settings.STATICFILES_FINDERS
+            if finder != DJANGO_BIRD_FINDER
+        ]
+    ):
+        yield
 
 
 class TestTemplateTag:
