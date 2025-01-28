@@ -65,12 +65,12 @@ The asset tags will render:
 
 ```html
 {# {% bird:css %} renders: #}
-<link rel="stylesheet" href="/static/templates/bird/button.css">
-<link rel="stylesheet" href="/static/templates/bird/alert.css">
+<link rel="stylesheet" href="/static/bird/button.css">
+<link rel="stylesheet" href="/static/bird/alert.css">
 
 {# {% bird:js %} renders: #}
-<script src="/static/templates/bird/button.js"></script>
-<script src="/static/templates/bird/alert.js"></script>
+<script src="/static/bird/button.js"></script>
+<script src="/static/bird/alert.js"></script>
 ```
 
 Assets are automatically deduplicated, so each component's assets are included only once even if the component is used multiple times in your templates. Only assets from components actually used in the template (or its parent templates) will be included - unused components' assets won't be loaded, keeping your pages lean.
@@ -117,8 +117,8 @@ django-bird provides a custom staticfiles finder to serve component assets throu
 
 To enable the custom finder, add `BirdAssetFinder` to your `STATICFILES_FINDERS` setting:
 
-```python
-# settings.py
+```{code-block} python
+:caption: settings.py
 
 STATICFILES_FINDERS = [
     # ... your existing finders ...
@@ -132,16 +132,18 @@ After adding the finder, run:
 python manage.py collectstatic
 ```
 
-This will collect all component assets into your static files directory, allowing you to serve them via your web server or CDN.
+This will collect all component assets into your static files directory, allowing you to serve them via your web server, [WhiteNoise](https://whitenoise.readthedocs.io), or a CDN.
 
 ### Deprecated View-Based Serving
 
-> **Warning:** The built-in asset serving view is deprecated and will be removed in a future release. Please switch to using the custom staticfiles finder and serve assets through Django's static files system.
+```{warning}
+**Warning:** The built-in asset serving view is deprecated and will be removed in a future release. Please switch to using the custom staticfiles finder and serve assets through Django's static files system.
+```
 
 If you still need to use the view-based asset serving during the transition, you can enable it by adding django-bird's URLs to your project's URL configuration:
 
-```python
-# urls.py
+```{code-block} python
+:caption: urls.py
 
 from django.conf import settings
 from django.urls import include, path
