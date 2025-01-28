@@ -117,7 +117,3 @@ This configuration ensures that django-bird's templatetags are available globall
 Controls whether components automatically receive data attributes related to django-bird in its `attrs` template context variable. Defaults to `True`.
 
 See [Component ID Attribute](params.md#component-id-attribute) for more details on how this works.
-
-```{important}
-This setting was previously named `ENABLE_BIRD_ID_ATTRS`. It was renamed to reflect the expansion of the data attributes for a component, from just `data-bird-id` to include `data-bird-<component_name>`, as well as to allow for future expansion. As of v0.12.0, the `ENABLE_BIRD_ID_ATTRS` setting is deprecated and will be removed in v0.13.0.
-```
