@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 from typing import Any
+from typing import final
 
 import django.template
 from django.conf import settings
@@ -13,42 +14,55 @@ from ._typing import override
 
 DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 
+DJANGO_BIRD_BUILTINS = "django_bird.templatetags.django_bird"
+DJANGO_BIRD_FINDER = "django_bird.staticfiles.BirdAssetFinder"
+DJANGO_BIRD_LOADER = "django_bird.loader.BirdLoader"
+
 
 @dataclass
 class AppSettings:
     COMPONENT_DIRS: list[Path | str] = field(default_factory=list)
     ENABLE_AUTO_CONFIG: bool = True
     ENABLE_BIRD_ATTRS: bool = True
-    _template_configurator: TemplateConfigurator = field(init=False)
+    _configurator: AutoConfigurator = field(init=False)
 
     def __post_init__(self):
-        self._template_configurator = TemplateConfigurator(self)
+        self._configurator = AutoConfigurator(self)
 
     @override
     def __getattribute__(self, __name: str) -> object:
         user_settings = getattr(settings, DJANGO_BIRD_SETTINGS_NAME, {})
-        return user_settings.get(__name, super().__getattribute__(__name))  # pyright: ignore[reportAny]
+        return user_settings.get(__name, super().__getattribute__(__name))
 
     def autoconfigure(self) -> None:
         if not self.ENABLE_AUTO_CONFIG:
             return
 
-        self._template_configurator.autoconfigure()
+        self._configurator.autoconfigure()
 
 
-class TemplateConfigurator:
-    def __init__(self, app_settings: AppSettings, engine_name: str = "django") -> None:
+@final
+class AutoConfigurator:
+    def __init__(self, app_settings: AppSettings) -> None:
         self.app_settings = app_settings
-        self.engine_name = engine_name
         self._configured = False
 
     def autoconfigure(self) -> None:
-        for template_config in settings.TEMPLATES:
-            engine_name = (
-                template_config.get("NAME") or template_config["BACKEND"].split(".")[-2]
-            )
-            if engine_name != self.engine_name:
-                return
+        self.configure_templates()
+        self.configure_staticfiles()
+        self._configured = True
+
+    def configure_templates(self) -> None:
+        template_config = None
+
+        for config in settings.TEMPLATES:
+            engine_name = config.get("NAME") or config["BACKEND"].split(".")[-2]
+            if engine_name == "django":
+                template_config = config
+                break
+
+        if template_config is None:
+            return
 
         options = template_config.setdefault("OPTIONS", {})
 
@@ -59,8 +73,6 @@ class TemplateConfigurator:
         with suppress(AttributeError):
             del django.template.engines.templates
             django.template.engines._engines = {}  # type: ignore[attr-defined]
-
-        self._configured = True
 
     def configure_loaders(self, options: dict[str, Any]) -> None:
         loaders = options.setdefault("loaders", [])
@@ -75,19 +87,25 @@ class TemplateConfigurator:
 
         # if django-bird's loader is the first, we good
         loaders_already_configured = (
-            len(loaders) > 0 and "django_bird.loader.BirdLoader" == loaders[0]
+            len(loaders) > 0 and DJANGO_BIRD_LOADER == loaders[0]
         )
 
         if not loaders_already_configured:
-            loaders.insert(0, "django_bird.loader.BirdLoader")
+            loaders.insert(0, DJANGO_BIRD_LOADER)
 
     def configure_builtins(self, options: dict[str, Any]) -> None:
         builtins = options.setdefault("builtins", [])
 
-        builtins_already_configured = "django_bird.templatetags.django_bird" in builtins
+        builtins_already_configured = DJANGO_BIRD_BUILTINS in builtins
 
         if not builtins_already_configured:
-            builtins.append("django_bird.templatetags.django_bird")
+            builtins.append(DJANGO_BIRD_BUILTINS)
+
+    def configure_staticfiles(self) -> None:
+        finders_already_configured = DJANGO_BIRD_FINDER in settings.STATICFILES_FINDERS
+
+        if not finders_already_configured:
+            settings.STATICFILES_FINDERS.append(DJANGO_BIRD_FINDER)
 
 
 app_settings = AppSettings()
