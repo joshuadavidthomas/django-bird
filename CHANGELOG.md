@@ -18,6 +18,14 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added `BirdAssetFinder`, a custom staticfiles finder to serve component assets through Django's static files system. This allows you to collect all component assets using `collectstatic` and serve them efficiently in production.
+
+### Deprecated
+
+- Deprecated the built-in asset serving view (`asset_view`) and its corresponding URL patterns. This functionality will be removed in the next minor version (**v0.14.0**). Please switch to using `BirdAssetFinder` with Django's static files system.
+
 ## [0.12.1]
 
 ### Changed
