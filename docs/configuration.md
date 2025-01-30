@@ -70,7 +70,6 @@ If you would like to disable this behavior and perform the setup manually, setti
 When `ENABLE_AUTO_CONFIG` is set to `False`, you need to manually configure the following:
 
 1. Add django-bird's template tags to Django's built-ins.
-2. Include django-bird's loader in your template loaders, ensuring it comes before Django's default filesystem and app directories loaders.
 
 The complete setup in your settings file should look like this:
 
@@ -95,22 +94,12 @@ TEMPLATES = [
             "builtins": [
                 "django_bird.templatetags.django_bird",
             ],
-            "loaders": [
-                (
-                    "django.template.loaders.cached.Loader",
-                    [
-                        "django_bird.loader.BirdLoader",
-                        "django.template.loaders.filesystem.Loader",
-                        "django.template.loaders.app_directories.Loader",
-                    ],
-                ),
-            ],
         },
     }
 ]
 ```
 
-This configuration ensures that django-bird's templatetags are available globally and that its loader is used to compile bird component templates before the standard Django loaders.
+This configuration ensures that django-bird's templatetags are available globally.
 
 ## `ENABLE_BIRD_ATTRS`
 
