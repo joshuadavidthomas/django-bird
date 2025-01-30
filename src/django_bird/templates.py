@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Iterator
@@ -83,10 +84,10 @@ def get_template_names(name: str) -> list[str]:
 
 def get_template_directories() -> Generator[Path, Any, None]:
     engine = Engine.get_default()
-    for dir in engine.dirs:
-        yield Path(dir)
-    for dir in get_app_template_dirs("templates"):
-        yield Path(dir)
+    for engine_dir in engine.dirs:
+        yield Path(engine_dir)
+    for app_dir in get_app_template_dirs("templates"):
+        yield Path(app_dir)
 
 
 def get_component_directories(
@@ -135,6 +136,7 @@ def gather_bird_tag_template_usage() -> Generator[tuple[Path, Path], Any, None]:
 
 
 def scan_template_for_bird_tag(template_name: str) -> set[str]:
+    print(f"{template_name=}")
     engine = Engine.get_default()
     try:
         template = engine.get_template(template_name)
@@ -142,8 +144,12 @@ def scan_template_for_bird_tag(template_name: str) -> set[str]:
         return set()
     context = Context()
     visitor = NodeVisitor(engine)
-    visitor.visit(template, context)
+    with context.bind_template(template):
+        visitor.visit(template, context)
     return visitor.components
+
+
+NodeVisitorMethod = Callable[[Template | Node, Context], None]
 
 
 @final
@@ -153,39 +159,34 @@ class NodeVisitor:
         self.components: set[str] = set()
         self.visited_templates: set[str] = set()
 
-    def visit(self, node: Template | Node, context: Context):
+    def visit(self, node: Template | Node, context: Context) -> None:
         method_name = f"visit_{node.__class__.__name__}"
-        visitor = getattr(self, method_name, self.generic_visit)
+        visitor: NodeVisitorMethod = getattr(self, method_name, self.generic_visit)
         return visitor(node, context)
 
-    def generic_visit(self, node: Template | Node, context: Context):
+    def generic_visit(self, node: Template | Node, context: Context) -> None:
         if not _has_nodelist(node) or node.nodelist is None:
             return
         for child_node in node.nodelist:
             self.visit(child_node, context)
 
-    def visit_Template(self, template: Template, context: Context):
+    def visit_Template(self, template: Template, context: Context) -> None:
         if template.name is None or template.name in self.visited_templates:
             return
         self.visited_templates.add(template.name)
         self.generic_visit(template, context)
 
-    def visit_BirdNode(self, node: BirdNode, context: Context):
+    def visit_BirdNode(self, node: BirdNode, context: Context) -> None:
         component_name = node.name.strip("\"'")
         self.components.add(component_name)
         self.generic_visit(node, context)
 
-    def visit_ExtendsNode(self, node: ExtendsNode, context: Context):
-        try:
-            parent_template = node.get_parent(context)
-        except AttributeError:
-            parent_template = self.engine.get_template(
-                node.parent_name.resolve(context)
-            )
+    def visit_ExtendsNode(self, node: ExtendsNode, context: Context) -> None:
+        parent_template = node.get_parent(context)
         self.visit(parent_template, context)
         self.generic_visit(node, context)
 
-    def visit_IncludeNode(self, node: IncludeNode, context: Context):
+    def visit_IncludeNode(self, node: IncludeNode, context: Context) -> None:
         try:
             included_templates = node.template.resolve(context)
             if not isinstance(included_templates, (list, tuple)):
