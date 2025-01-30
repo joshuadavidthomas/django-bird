@@ -9,7 +9,6 @@ from django.template.context import Context
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
-from django_bird.components import components
 from django_bird.params import Param
 
 TAG = "bird"
@@ -66,6 +65,8 @@ class BirdNode(template.Node):
 
     @override
     def render(self, context: Context) -> str:
+        from django_bird.components import components
+
         component_name = self.get_component_name(context)
         component = components.get_component(component_name)
         bound_component = component.get_bound_component(node=self)

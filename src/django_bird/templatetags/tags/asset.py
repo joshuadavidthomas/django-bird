@@ -33,7 +33,16 @@ class AssetNode(template.Node):
 
     @override
     def render(self, context: Context) -> str:
-        assets = components.get_assets(self.asset_type)
+        template = getattr(context, "template", None)
+        if not template:
+            return ""
+        used_components = components.get_component_usage(template.origin.name)
+        assets = set(
+            asset
+            for component in used_components
+            for asset in component.assets
+            if asset.type == self.asset_type
+        )
         if not assets:
             return ""
         rendered = [asset.render() for asset in sorted(assets, key=lambda a: a.path)]

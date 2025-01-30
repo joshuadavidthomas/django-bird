@@ -1,12 +1,27 @@
 from __future__ import annotations
 
+import re
+from collections.abc import Generator
+from collections.abc import Iterable
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
+from typing import final
 
-from django.apps import apps
-from django.conf import settings
+from django.template.base import Node
+from django.template.base import Template
+from django.template.context import Context
 from django.template.engine import Engine
+from django.template.exceptions import TemplateDoesNotExist
+from django.template.exceptions import TemplateSyntaxError
+from django.template.loader_tags import ExtendsNode
+from django.template.loader_tags import IncludeNode
+from django.template.utils import get_app_template_dirs
 
+from ._typing import _has_nodelist
 from .conf import app_settings
+from .templatetags.tags.bird import TAG
+from .templatetags.tags.bird import BirdNode
 
 
 def get_component_directory_names():
@@ -66,24 +81,118 @@ def get_template_names(name: str) -> list[str]:
     return list(dict.fromkeys(template_names))
 
 
-def get_component_directories():
+def get_template_directories() -> Generator[Path, Any, None]:
     engine = Engine.get_default()
-    template_dirs: list[str | Path] = list(engine.dirs)
+    for dir in engine.dirs:
+        yield Path(dir)
+    for dir in get_app_template_dirs("templates"):
+        yield Path(dir)
 
-    for app_config in apps.get_app_configs():
-        template_dir = Path(app_config.path) / "templates"
-        if template_dir.is_dir():
-            template_dirs.append(template_dir)
 
-    base_dir = getattr(settings, "BASE_DIR", None)
-
-    if base_dir is not None:
-        root_template_dir = Path(base_dir) / "templates"
-        if root_template_dir.is_dir():
-            template_dirs.append(root_template_dir)
+def get_component_directories(
+    template_dirs: Iterator[Path] | None = None,
+) -> list[Path]:
+    if template_dirs is None:
+        template_dirs = get_template_directories()
 
     return [
         Path(template_dir) / component_dir
         for template_dir in template_dirs
         for component_dir in get_component_directory_names()
     ]
+
+
+def get_files_from_dirs(
+    dirs: Iterable[Path],
+) -> Generator[tuple[Path, Path], Any, None]:
+    for dir in dirs:
+        for path in dir.rglob("*"):
+            if path.is_file():
+                yield path, dir
+
+
+BIRD_TAG_PATTERN = re.compile(
+    rf"{{%\s*{TAG}\s+(?:\"|')?([a-zA-Z0-9_.-]+)(?:\"|')?.*?%}}"
+)
+
+
+def scan_file_for_bird_tag(path: Path) -> Generator[str, Any, None]:
+    if not path.is_file():
+        return
+
+    with open(path) as f:
+        for line in f:
+            for match in BIRD_TAG_PATTERN.finditer(line):
+                yield match.group(1).strip("'\"")
+
+
+def gather_bird_tag_template_usage() -> Generator[tuple[Path, Path], Any, None]:
+    template_dirs = get_template_directories()
+    for path, root in get_files_from_dirs(template_dirs):
+        bird_tag_usage = [line for line in scan_file_for_bird_tag(path)]
+        if bird_tag_usage:
+            yield path, root
+
+
+def scan_template_for_bird_tag(template_name: str) -> set[str]:
+    engine = Engine.get_default()
+    try:
+        template = engine.get_template(template_name)
+    except (TemplateDoesNotExist, TemplateSyntaxError):
+        return set()
+    context = Context()
+    visitor = NodeVisitor(engine)
+    visitor.visit(template, context)
+    return visitor.components
+
+
+@final
+class NodeVisitor:
+    def __init__(self, engine: Engine):
+        self.engine = engine
+        self.components: set[str] = set()
+        self.visited_templates: set[str] = set()
+
+    def visit(self, node: Template | Node, context: Context):
+        method_name = f"visit_{node.__class__.__name__}"
+        visitor = getattr(self, method_name, self.generic_visit)
+        return visitor(node, context)
+
+    def generic_visit(self, node: Template | Node, context: Context):
+        if not _has_nodelist(node) or node.nodelist is None:
+            return
+        for child_node in node.nodelist:
+            self.visit(child_node, context)
+
+    def visit_Template(self, template: Template, context: Context):
+        if template.name is None or template.name in self.visited_templates:
+            return
+        self.visited_templates.add(template.name)
+        self.generic_visit(template, context)
+
+    def visit_BirdNode(self, node: BirdNode, context: Context):
+        component_name = node.name.strip("\"'")
+        self.components.add(component_name)
+        self.generic_visit(node, context)
+
+    def visit_ExtendsNode(self, node: ExtendsNode, context: Context):
+        try:
+            parent_template = node.get_parent(context)
+        except AttributeError:
+            parent_template = self.engine.get_template(
+                node.parent_name.resolve(context)
+            )
+        self.visit(parent_template, context)
+        self.generic_visit(node, context)
+
+    def visit_IncludeNode(self, node: IncludeNode, context: Context):
+        try:
+            included_templates = node.template.resolve(context)
+            if not isinstance(included_templates, (list, tuple)):
+                included_templates = [included_templates]
+            for template_name in included_templates:
+                included_template = self.engine.get_template(template_name)
+                self.visit(included_template, context)
+        except Exception:
+            pass
+        self.generic_visit(node, context)

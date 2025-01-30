@@ -13,7 +13,7 @@ def test_ready_scans_components(templates_dir):
     )
     TestComponent(name="alert", content="<div>Alert</div>").create(templates_dir)
 
-    components.clear()
+    components.reset()
 
     assert "button" not in components._components
     assert "alert" not in components._components

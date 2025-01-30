@@ -48,7 +48,7 @@ TEST_SETTINGS = {
                     "django_bird.templatetags.django_bird",
                 ],
                 "loaders": [
-                    "django_bird.loader.BirdLoader",
+                    # "django_bird.loader.BirdLoader",
                     "django.template.loaders.filesystem.Loader",
                     "django.template.loaders.app_directories.Loader",
                 ],
@@ -152,7 +152,8 @@ class ExampleTemplate:
     base: Path
     include: Path
     template: Path
-    components: list[Component]
+    used_components: list[Component]
+    unused_components: list[Component]
 
     @property
     def content(self):
@@ -190,6 +191,18 @@ def example_template(templates_dir):
         name="banner", content="<div {{ attrs }}>{{ slot }}</div>"
     ).create(templates_dir)
 
+    toast = TestComponent(name="toast", content="<div>{{ slot }}</div>").create(
+        templates_dir
+    )
+    TestAsset(
+        component=toast,
+        content=".toast { color: pink; }",
+        asset_type=AssetType.CSS,
+    ).create()
+    TestAsset(
+        component=toast, content="console.log('toast');", asset_type=AssetType.JS
+    ).create()
+
     base_template = templates_dir / "base.html"
     base_template.write_text("""
         <html>
@@ -223,11 +236,12 @@ def example_template(templates_dir):
         base=base_template,
         include=include_template,
         template=template,
-        components=[
+        used_components=[
             Component.from_name(alert.name),
             Component.from_name(banner.name),
             Component.from_name(button.name),
         ],
+        unused_components=[Component.from_name(toast.name)],
     )
 
 
@@ -254,9 +268,9 @@ def normalize_whitespace():
 
 
 @pytest.fixture(autouse=True)
-def clear_components_registry():
+def registry():
     from django_bird.components import components
 
-    components.clear()
-    yield
-    components.clear()
+    components.reset()
+    yield components
+    components.reset()

@@ -27,6 +27,9 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Changed
 
 - **Internal**: Renamed `TemplateConfigurator` to `AutoConfigurator` and consolidated configuration logic.
+- **Internal**: Changed `Component` loading strategy in `BirdLoader`.
+- **Internal**: Refactored `Component` loading strategy in the `ComponentRegistry.discover_components` method to track usage between `Template` and `Component` objects.
+- **Internal**: Switched `Asset` loading in `{% bird:asset %}` templatetag to use new usage based loading strategy in `ComponentRegistry`.
 
 ### Deprecated
 
@@ -35,6 +38,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Removed
 
 - Removed the deprecated `ENABLE_BIRD_ID_ATTR` setting.
+
+### Fixed
+
+- Asset loading in `{% bird:asset %}` templatetags should be much improved.
 
 ## [0.12.1]
 

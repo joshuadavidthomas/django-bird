@@ -26,6 +26,17 @@ from .utils import TestComponent
 
 
 class TestComponentClass:
+    def test_from_abs_path_basic(self, templates_dir):
+        test_component = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        component = Component.from_abs_path(
+            test_component.file, test_component.file.parent
+        )
+
+        assert component is not None
+
     def test_from_name_basic(self, templates_dir):
         TestComponent(name="button", content="<button>Click me</button>").create(
             templates_dir
@@ -306,7 +317,7 @@ class TestComponentRegistryProject:
             assert "First" in component.template.template.source
             assert "Second" not in component.template.template.source
 
-        components.clear()
+        components.reset()
 
         with override_app_settings(COMPONENT_DIRS=["second", "first"]):
             components.discover_components()
@@ -400,7 +411,7 @@ class {app_dir.name.capitalize()}Config(AppConfig):
             assert "App1" in component.template.template.source
             assert "App2" not in component.template.template.source
 
-        components.clear()
+        components.reset()
 
         with override_settings(INSTALLED_APPS=["test_app2", "test_app1"]):
             components.discover_components()
@@ -612,7 +623,7 @@ class TestComponentRegistryCaching:
         assert "button1" in small_registry._components
         assert "button2" in small_registry._components
 
-    def test_cache_clear(self, templates_dir):
+    def test_cache_clear_with_reset(self, templates_dir):
         TestComponent(name="button", content="<button>Clear Me</button>").create(
             templates_dir
         )
@@ -621,7 +632,7 @@ class TestComponentRegistryCaching:
             components.get_component("button")
             assert "button" in components._components
 
-            components.clear()
+            components.reset()
             assert len(components._components) == 0
 
     def test_lru_cache_eviction_order(self, templates_dir):
