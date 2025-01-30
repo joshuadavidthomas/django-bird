@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from collections.abc import Generator
-from collections.abc import Iterable
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -19,14 +18,13 @@ from django.template.loader_tags import ExtendsNode
 from django.template.loader_tags import IncludeNode
 from django.template.utils import get_app_template_dirs
 
+from django_bird.utils import unique_ordered
+
 from ._typing import _has_nodelist
 from .conf import app_settings
 from .templatetags.tags.bird import TAG
 from .templatetags.tags.bird import BirdNode
-
-
-def get_component_directory_names():
-    return list(dict.fromkeys([*app_settings.COMPONENT_DIRS, "bird"]))
+from .utils import get_files_from_dirs
 
 
 def get_template_names(name: str) -> list[str]:
@@ -64,8 +62,8 @@ def get_template_names(name: str) -> list[str]:
     Returns:
         list[str]: A list of potential template names in resolution order.
     """
-    template_names = []
-    component_dirs = get_component_directory_names()
+    template_names: list[str] = []
+    component_dirs = app_settings.get_component_directory_names()
 
     name_parts = name.split(".")
     path_name = "/".join(name_parts)
@@ -79,7 +77,7 @@ def get_template_names(name: str) -> list[str]:
         ]
         template_names.extend(potential_names)
 
-    return list(dict.fromkeys(template_names))
+    return unique_ordered(template_names)
 
 
 def get_template_directories() -> Generator[Path, Any, None]:
@@ -99,17 +97,8 @@ def get_component_directories(
     return [
         Path(template_dir) / component_dir
         for template_dir in template_dirs
-        for component_dir in get_component_directory_names()
+        for component_dir in app_settings.get_component_directory_names()
     ]
-
-
-def get_files_from_dirs(
-    dirs: Iterable[Path],
-) -> Generator[tuple[Path, Path], Any, None]:
-    for dir in dirs:
-        for path in dir.rglob("*"):
-            if path.is_file():
-                yield path, dir
 
 
 BIRD_TAG_PATTERN = re.compile(
