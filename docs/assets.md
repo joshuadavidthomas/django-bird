@@ -115,7 +115,7 @@ The `{% bird:css %}` tag will include CSS and the `[% bird:js %}` tag will inclu
 
 django-bird provides a custom staticfiles finder to serve component assets through Django's static files system. This allows you to collect all component assets using Django's `collectstatic` command and serve them efficiently in production.
 
-To enable the custom finder, add `BirdAssetFinder` to your `STATICFILES_FINDERS` setting:
+To enable the custom finder, `BirdAssetFinder` must be in the list in your `STATICFILES_FINDERS` setting. This should be handled if are allowing django-bird to configure your project. If you are manually configuring the library by [setting `ENABLE_AUTO_CONFIG = False` in your `DJANGO_BIRD` settings](configuration.md#enable_auto_config), you will need to add the finder by hand:
 
 ```{code-block} python
 :caption: settings.py
