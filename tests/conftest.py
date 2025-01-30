@@ -48,7 +48,7 @@ TEST_SETTINGS = {
                     "django_bird.templatetags.django_bird",
                 ],
                 "loaders": [
-                    # "django_bird.loader.BirdLoader",
+                    "django_bird.loader.BirdLoader",
                     "django.template.loaders.filesystem.Loader",
                     "django.template.loaders.app_directories.Loader",
                 ],
