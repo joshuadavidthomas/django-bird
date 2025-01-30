@@ -32,6 +32,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Deprecated
 
 - The built-in asset serving view (`asset_view`) is deprecated and will be removed in the next minor version (v0.14.0). Use `BirdAssetFinder` with Django's staticfiles app.
+- The `BirdLoader` template loader is deprecated and will be removed in a future version. If you have enabled manual configuration by setting `ENABLE_AUTO_CONFIG=False`, please remove `django_bird.loader.BirdLoader` from your `TEMPLATES` setting.
 
 ### Removed
 
