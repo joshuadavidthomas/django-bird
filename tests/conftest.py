@@ -48,7 +48,6 @@ TEST_SETTINGS = {
                     "django_bird.templatetags.django_bird",
                 ],
                 "loaders": [
-                    "django_bird.loader.BirdLoader",
                     "django.template.loaders.filesystem.Loader",
                     "django.template.loaders.app_directories.Loader",
                 ],
@@ -127,7 +126,6 @@ def create_template():
         engine = Engine(
             builtins=["django_bird.templatetags.django_bird"],
             dirs=[str(template_file.parent)],
-            loaders=["django_bird.loader.BirdLoader"],
         )
         template = engine.get_template(template_file.name)
         backend = DjangoTemplates(
