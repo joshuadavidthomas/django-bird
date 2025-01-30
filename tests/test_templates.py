@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 from django.test import override_settings
 
+from django_bird.templates import BIRD_TAG_PATTERN
 from django_bird.templates import get_template_names
 
 
@@ -68,3 +69,28 @@ def test_get_template_names_duplicates():
 
         for _, count in template_counts.items():
             assert count == 1
+
+
+@pytest.mark.parametrize(
+    "template_content,expected_matches",
+    [
+        ("{% bird button %}", ["button"]),
+        ("{% bird alert %}{% bird button %}", ["alert", "button"]),
+        ("{% bird 'button' %}", ["'button'"]),
+        ('{% bird "button" %}', ['"button"']),
+        ("{%bird button%}", ["button"]),
+        ("{%    bird    button    %}", ["button"]),
+        ("{% endbird button %}", []),
+        ("{% birds button %}", []),
+        ("<bird:button>", []),
+        ("{% extends 'base.html' %}{% bird button %}", ["button"]),
+        ("{% bird\n'multiline'\n%}", ["'multiline'"]),
+        ('{% bird "line1\nline2" %}', ['"line1\nline2"']),
+        ("{% bird   '  whitespace  '  \n%}", ["'  whitespace  '"]),
+        ("{% bird 'mixed\"quotes'\n%}", ["'mixed\"quotes'"]),
+        ("{% bird content\n%}", ["content"]),
+    ],
+)
+def test_bird_tag_pattern(template_content, expected_matches):
+    matches = [m.group(1) for m in BIRD_TAG_PATTERN.finditer(template_content)]
+    assert matches == expected_matches
