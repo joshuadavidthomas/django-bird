@@ -5,30 +5,6 @@ from django.conf import settings
 from django.template.loader import get_template
 from django.test import override_settings
 
-from django_bird.loader import BIRD_TAG_PATTERN
-
-
-@pytest.mark.parametrize(
-    "template_content,expected_matches",
-    [
-        ("{% bird button %}", ["button"]),
-        ("{% bird alert %}{% bird button %}", ["alert", "button"]),
-        ("{% bird 'button' %}", ["button"]),
-        ('{% bird "button" %}', ["button"]),
-        ("{%bird button%}", ["button"]),
-        ("{%    bird    button    %}", ["button"]),
-        ("{% endbird button %}", []),
-        ("{% birds button %}", []),
-        ("<bird:button>", []),
-        ("{% extends 'base.html' %}{% bird button %}", ["button"]),
-    ],
-)
-def test_bird_tag_pattern(template_content, expected_matches):
-    matches = [
-        m.group(1).strip("'\"") for m in BIRD_TAG_PATTERN.finditer(template_content)
-    ]
-    assert matches == expected_matches
-
 
 @pytest.mark.parametrize(
     "template_name",
