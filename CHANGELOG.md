@@ -41,7 +41,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Fixed
 
-- Asset loading in `{% bird:asset %}` templatetags should be much improved.
+- Fixed asset loading in `{% bird:asset %}` templatetags to only render assets from components actually used in the current template by tracking template-component relationships during component discovery.
 
 ## [0.12.1]
 
