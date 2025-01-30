@@ -1,21 +1,11 @@
 from __future__ import annotations
 
 import pytest
-from django.template.base import Node
-from django.template.base import NodeList
-from django.template.base import Template
-from django.template.context import Context
-from django.template.engine import Engine
+from django.conf import settings
 from django.template.loader import get_template
+from django.test import override_settings
 
-from django_bird.components import components
 from django_bird.loader import BIRD_TAG_PATTERN
-from django_bird.loader import BirdLoader
-from django_bird.staticfiles import AssetType
-from django_bird.templatetags.tags.bird import BirdNode
-
-from .utils import TestAsset
-from .utils import TestComponent
 
 
 @pytest.mark.parametrize(
@@ -60,39 +50,49 @@ def test_render_template(template_name):
 
 
 @pytest.mark.parametrize(
-    "node,expected_count",
+    "loaders",
     [
-        (Template("{% bird button %}Click me{% endbird %}"), 1),
-        (BirdNode(name="button", attrs=[], nodelist=None), 1),
-        (
-            BirdNode(
-                name="button",
-                attrs=[],
-                nodelist=NodeList(
-                    [BirdNode(name="button", attrs=[], nodelist=None)],
-                ),
-            ),
-            1,
-        ),
-        (type("NodeWithNoneNodelist", (Node,), {"nodelist": None})(), 0),
-        (Template("{% bird button %}{% bird button %}{% endbird %}{% endbird %}"), 1),
+        [
+            "django_bird.loader.BirdLoader",
+            "django.template.loaders.filesystem.Loader",
+            "django.template.loaders.app_directories.Loader",
+        ],
+        [
+            "django.template.loaders.filesystem.Loader",
+            "django_bird.loader.BirdLoader",
+            "django.template.loaders.app_directories.Loader",
+        ],
+        [
+            "django.template.loaders.filesystem.Loader",
+            "django.template.loaders.app_directories.Loader",
+            "django_bird.loader.BirdLoader",
+        ],
     ],
 )
-def test_ensure_components_loaded(node, expected_count, templates_dir):
-    button = TestComponent(name="button", content="<button>Click me</button>").create(
-        templates_dir
+def test_loader_order(loaders, example_template, registry):
+    registry.discover_components()
+
+    with override_settings(
+        TEMPLATES=[
+            settings.TEMPLATES[0]
+            | {
+                **settings.TEMPLATES[0],
+                "OPTIONS": {
+                    **settings.TEMPLATES[0]["OPTIONS"],
+                    "loaders": loaders,
+                },
+            }
+        ]
+    ):
+        rendered = get_template(example_template.template.name).render({})
+
+    assert all(
+        asset.url in rendered
+        for component in example_template.used_components
+        for asset in component.assets
     )
-
-    TestAsset(
-        component=button, content=".button { color: blue; }", asset_type=AssetType.CSS
-    ).create()
-    TestAsset(
-        component=button, content="console.log('button');", asset_type=AssetType.JS
-    ).create()
-
-    loader = BirdLoader(Engine.get_default())
-    context = Context()
-
-    loader._ensure_components_loaded(node, context)
-
-    assert len(components._components) == expected_count
+    assert not any(
+        asset.url in rendered
+        for component in example_template.unused_components
+        for asset in component.assets
+    )

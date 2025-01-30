@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from unittest.mock import patch
-
 import pytest
 from django.template import Context
 from django.template import Library
@@ -9,6 +7,7 @@ from django.template import Template
 from django.template.base import Parser
 from django.template.base import Token
 from django.template.base import TokenType
+from django.template.engine import Engine
 from django.template.exceptions import TemplateDoesNotExist
 from django.template.exceptions import TemplateSyntaxError
 
@@ -1082,14 +1081,12 @@ class TestSlots:
         def make_fancy(value):
             return f"✨{value}✨"
 
-        def get_template_libraries(self, libraries):
-            return {"custom_filters": register}
+        engine = Engine.get_default()
+        engine.template_libraries["custom_filters"] = register
 
-        with patch(
-            "django.template.engine.Engine.get_template_libraries",
-            get_template_libraries,
-        ):
-            yield
+        yield
+
+        del engine.template_libraries["custom_filters"]
 
     @pytest.mark.parametrize(
         "test_case",

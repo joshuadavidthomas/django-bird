@@ -7,6 +7,7 @@ from django.template.base import Token
 from django.template.base import TokenType
 from django.template.context import Context
 from django.template.exceptions import TemplateSyntaxError
+from django.template.loader import get_template
 from django.test import override_settings
 
 from django_bird.conf import DJANGO_BIRD_FINDER
@@ -61,7 +62,7 @@ class TestTemplateTag:
         with pytest.raises(ValueError):
             do_asset(parser, token)
 
-    def test_template_inheritence(self, create_template, templates_dir):
+    def test_template_inheritence(self, create_template, templates_dir, registry):
         alert = TestComponent(
             name="alert", content='<div class="alert">{{ slot }}</div>'
         ).create(templates_dir)
@@ -106,6 +107,8 @@ class TestTemplateTag:
                 {% bird button %}Click me{% endbird %}
             {% endblock %}
         """)
+
+        registry.discover_components()
 
         template = create_template(child_path)
 
@@ -155,7 +158,7 @@ class TestTemplateTag:
         assert '<link rel="stylesheet" href="' not in rendered
         assert '<script src="' not in rendered
 
-    def test_component_render_order(self, create_template, templates_dir):
+    def test_component_render_order(self, create_template, templates_dir, registry):
         first = TestComponent(
             name="first", content="<div>First: {{ slot }}</div>"
         ).create(templates_dir)
@@ -195,6 +198,8 @@ class TestTemplateTag:
             </html>
         """)
 
+        registry.discover_components()
+
         template = create_template(template_path)
 
         rendered = template.render({})
@@ -219,7 +224,7 @@ class TestTemplateTag:
             in rendered[body_start:]
         )
 
-    def test_asset_duplication(self, create_template, templates_dir):
+    def test_asset_duplication(self, create_template, templates_dir, registry):
         alert = TestComponent(
             name="alert", content='<div class="alert">{{ slot }}</div>'
         ).create(templates_dir)
@@ -257,9 +262,12 @@ class TestTemplateTag:
             {% endblock %}
         """)
 
-        template = create_template(child_path)
+        registry.discover_components()
+
+        template = get_template(child_path.name)
 
         rendered = template.render({})
+        print(f"{rendered=}")
 
         assert (
             rendered.count(
@@ -274,7 +282,9 @@ class TestTemplateTag:
             == 1
         )
 
-    def test_unused_component_asset_not_rendered(self, create_template, templates_dir):
+    def test_unused_component_asset_not_rendered(
+        self, create_template, templates_dir, registry
+    ):
         alert = TestComponent(
             name="alert", content='<div class="alert">{{ slot }}</div>'
         ).create(templates_dir)
@@ -319,6 +329,8 @@ class TestTemplateTag:
                 {% bird alert %}Base Alert{% endbird %}
             {% endblock %}
         """)
+
+        registry.discover_components()
 
         template = create_template(child_path)
 

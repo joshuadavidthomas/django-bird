@@ -27,6 +27,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Changed
 
 - **Internal**: Renamed `TemplateConfigurator` to `AutoConfigurator` and consolidated configuration logic.
+- **Internal**: Refactored component and asset loading strategy to track relationships between templates and components, affecting `ComponentRegistry.discover_components` and the `{% bird:asset %}` templatetag.
 
 ### Deprecated
 
@@ -35,6 +36,12 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Removed
 
 - Removed the deprecated `ENABLE_BIRD_ID_ATTR` setting.
+- Removed automatically discovering templates in `BASE_DIR/templates`. Templates must now be in directories configured in Django's template engine settings or app template directories.
+- Removed component scanning functionality from `BirdLoader`.
+
+### Fixed
+
+- Fixed asset loading in `{% bird:asset %}` templatetags to only render assets from components actually used in the current template by tracking template-component relationships during component discovery.
 
 ## [0.12.1]
 

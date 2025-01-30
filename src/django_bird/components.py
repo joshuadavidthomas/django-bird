@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from collections import defaultdict
+from collections.abc import Generator
 from dataclasses import dataclass
 from dataclasses import field
 from hashlib import md5
 from pathlib import Path
 from threading import Lock
-from typing import TYPE_CHECKING
+from typing import Any
 
 from cachetools import LRUCache
 from django.conf import settings
@@ -14,23 +16,22 @@ from django.template.base import Node
 from django.template.base import NodeList
 from django.template.base import TextNode
 from django.template.context import Context
-from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import select_template
 
-from django_bird.params import Param
-from django_bird.params import Params
-from django_bird.params import Value
-from django_bird.staticfiles import Asset
-from django_bird.templatetags.tags.slot import DEFAULT_SLOT
-from django_bird.templatetags.tags.slot import SlotNode
-
 from .conf import app_settings
+from .params import Param
+from .params import Params
+from .params import Value
+from .staticfiles import Asset
 from .staticfiles import AssetType
+from .templates import gather_bird_tag_template_usage
 from .templates import get_component_directories
+from .templates import get_files_from_dirs
 from .templates import get_template_names
-
-if TYPE_CHECKING:
-    from django_bird.templatetags.tags.bird import BirdNode
+from .templates import scan_template_for_bird_tag
+from .templatetags.tags.bird import BirdNode
+from .templatetags.tags.slot import DEFAULT_SLOT
+from .templatetags.tags.slot import SlotNode
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,6 +73,15 @@ class Component:
     @property
     def source(self):
         return self.template.template.source
+
+    @property
+    def used_in(self):
+        return components.get_template_usage(self.name)
+
+    @classmethod
+    def from_abs_path(cls, path: Path, root: Path) -> Component | None:
+        name = str(path.relative_to(root).with_suffix("")).replace("/", ".")
+        return cls.from_name(name)
 
     @classmethod
     def from_name(cls, name: str):
@@ -180,41 +190,39 @@ class BoundComponent:
 
 class ComponentRegistry:
     def __init__(self, maxsize: int = 100):
+        self._component_usage: dict[str, set[Path]] = defaultdict(set)
         self._components: LRUCache[str, Component] = LRUCache(maxsize=maxsize)
+        self._template_usage: dict[Path, set[str]] = defaultdict(set)
 
     def discover_components(self) -> None:
         component_dirs = get_component_directories()
-
-        for component_dir in component_dirs:
-            component_dir = Path(component_dir)
-
-            if not component_dir.is_dir():
+        component_paths = get_files_from_dirs(component_dirs)
+        for component_abs_path, root_abs_path in component_paths:
+            if component_abs_path.suffix != ".html":
                 continue
 
-            for component_path in component_dir.rglob("*.html"):
-                component_name = str(
-                    component_path.relative_to(component_dir).with_suffix("")
-                ).replace("/", ".")
-                try:
-                    component = Component.from_name(component_name)
-                    self._components[component_name] = component
-                except TemplateDoesNotExist:
-                    continue
+            component = Component.from_abs_path(component_abs_path, root_abs_path)
+            if component is None:
+                continue
 
-    def clear(self) -> None:
-        """Clear the registry. Mainly useful for testing."""
+            if component.name not in self._components:
+                self._components[component.name] = component
+
+        templates_using_bird_tag = gather_bird_tag_template_usage()
+        for template_abs_path, root_abs_path in templates_using_bird_tag:
+            if self._template_usage.get(template_abs_path, None) is not None:
+                continue
+
+            template_name = template_abs_path.relative_to(root_abs_path)
+            for component_name in scan_template_for_bird_tag(str(template_name)):
+                self._template_usage[template_abs_path].add(component_name)
+                self._component_usage[component_name].add(template_abs_path)
+
+    def reset(self) -> None:
+        """Reset the registry, used for testing."""
+        self._component_usage = defaultdict(set)
         self._components.clear()
-
-    def get_component(self, name: str) -> Component:
-        try:
-            if not settings.DEBUG:
-                return self._components[name]
-        except KeyError:
-            pass
-
-        component = Component.from_name(name)
-        self._components[name] = component
-        return component
+        self._template_usage = defaultdict(set)
 
     def get_assets(self, asset_type: AssetType | None = None) -> frozenset[Asset]:
         return frozenset(
@@ -223,6 +231,26 @@ class ComponentRegistry:
             for asset in component.assets
             if asset_type is None or asset.type == asset_type
         )
+
+    def get_component(self, name: str) -> Component:
+        if name in self._components and not settings.DEBUG:
+            return self._components[name]
+
+        self._components[name] = Component.from_name(name)
+        if name not in self._component_usage:
+            self._component_usage[name] = set()
+        return self._components[name]
+
+    def get_component_usage(
+        self, template_path: str | Path
+    ) -> Generator[Component, Any, None]:
+        path = Path(template_path) if isinstance(template_path, str) else template_path
+        for component_name in self._template_usage.get(path, set()):
+            yield Component.from_name(component_name)
+
+    def get_template_usage(self, component: str | Component) -> frozenset[Path]:
+        name = component.name if isinstance(component, Component) else component
+        return frozenset(self._component_usage.get(name, set()))
 
 
 components = ComponentRegistry()
