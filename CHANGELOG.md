@@ -38,6 +38,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 - Removed the deprecated `ENABLE_BIRD_ID_ATTR` setting.
 - Removed automatically discovering templates in `BASE_DIR/templates`. Templates must now be in directories configured in Django's template engine settings or app template directories.
 - Removed component scanning functionality from `BirdLoader`.
+- Removed `django_bird.compiler.Compiler`.
 
 ### Fixed
 
