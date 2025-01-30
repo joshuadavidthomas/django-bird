@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+🚨 This release contains some breaking changes. See the Deprecated and Removed sections for more information. 🚨
+
 ### Added
 
 - Added `BirdAssetFinder`, a custom staticfiles finder to serve component assets through Django's staticfiles app.
