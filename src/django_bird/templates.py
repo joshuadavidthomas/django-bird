@@ -101,9 +101,7 @@ def get_component_directories(
     ]
 
 
-BIRD_TAG_PATTERN = re.compile(
-    rf"{{%\s*{TAG}\s+(?:\"|')?([a-zA-Z0-9_.-]+)(?:\"|')?.*?%}}"
-)
+BIRD_TAG_PATTERN = re.compile(rf"{{%\s*{TAG}\s+(.*?)\s*%}}", re.DOTALL)
 
 
 def scan_file_for_bird_tag(path: Path) -> Generator[str, Any, None]:
