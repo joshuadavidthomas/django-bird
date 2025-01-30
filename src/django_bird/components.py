@@ -26,12 +26,12 @@ from .staticfiles import Asset
 from .staticfiles import AssetType
 from .templates import gather_bird_tag_template_usage
 from .templates import get_component_directories
-from .templates import get_files_from_dirs
 from .templates import get_template_names
 from .templates import scan_template_for_bird_tag
 from .templatetags.tags.bird import BirdNode
 from .templatetags.tags.slot import DEFAULT_SLOT
 from .templatetags.tags.slot import SlotNode
+from .utils import get_files_from_dirs
 
 
 @dataclass(frozen=True, slots=True)

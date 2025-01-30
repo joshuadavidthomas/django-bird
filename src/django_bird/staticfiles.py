@@ -19,7 +19,7 @@ from django.urls import reverse
 
 from ._typing import override
 from .apps import DjangoBirdAppConfig
-from .templates import get_component_directory_names
+from .conf import app_settings
 
 if TYPE_CHECKING:
     pass
@@ -92,7 +92,7 @@ class Asset:
     @property
     def template_dir(self):
         template_dir = self.path.parent
-        component_dirs = get_component_directory_names()
+        component_dirs = app_settings.get_component_directory_names()
         while (
             len(template_dir.parts) > 1 and template_dir.parts[-1] not in component_dirs
         ):

@@ -11,6 +11,7 @@ import django.template
 from django.conf import settings
 
 from ._typing import override
+from .utils import unique_ordered
 
 DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 
@@ -39,6 +40,9 @@ class AppSettings:
             return
 
         self._configurator.autoconfigure()
+
+    def get_component_directory_names(self):
+        return unique_ordered([*self.COMPONENT_DIRS, "bird"])
 
 
 @final
