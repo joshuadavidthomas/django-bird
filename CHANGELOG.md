@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.13.0]
+
 🚨 This release contains some breaking changes. See the Deprecated and Removed sections for more information. 🚨
 
 ### Added
@@ -303,7 +305,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.12.1...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.13.0...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -331,3 +333,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.11.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.11.2
 [0.12.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.12.0
 [0.12.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.12.1
+[0.13.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.13.0
