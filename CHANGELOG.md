@@ -27,9 +27,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Changed
 
 - **Internal**: Renamed `TemplateConfigurator` to `AutoConfigurator` and consolidated configuration logic.
-- **Internal**: Changed `Component` loading strategy in `BirdLoader`.
-- **Internal**: Refactored `Component` loading strategy in the `ComponentRegistry.discover_components` method to track usage between `Template` and `Component` objects.
-- **Internal**: Switched `Asset` loading in `{% bird:asset %}` templatetag to use new usage based loading strategy in `ComponentRegistry`.
+- **Internal**: Refactored component and asset loading strategy to track relationships between templates and components, affecting `BirdLoader`, `ComponentRegistry.discover_components`, and the `{% bird:asset %}` templatetag.
 
 ### Deprecated
 
