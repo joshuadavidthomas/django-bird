@@ -17,7 +17,6 @@ DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 
 DJANGO_BIRD_BUILTINS = "django_bird.templatetags.django_bird"
 DJANGO_BIRD_FINDER = "django_bird.staticfiles.BirdAssetFinder"
-DJANGO_BIRD_LOADER = "django_bird.loader.BirdLoader"
 
 
 @dataclass
@@ -70,32 +69,12 @@ class AutoConfigurator:
 
         options = template_config.setdefault("OPTIONS", {})
 
-        self.configure_loaders(options)
         self.configure_builtins(options)
 
         # Force re-evaluation of settings.TEMPLATES because EngineHandler caches it.
         with suppress(AttributeError):
             del django.template.engines.templates
             django.template.engines._engines = {}  # type: ignore[attr-defined]
-
-    def configure_loaders(self, options: dict[str, Any]) -> None:
-        loaders = options.setdefault("loaders", [])
-
-        # find the inner-most loaders, which is an iterable of only strings
-        while not all(isinstance(loader, str) for loader in loaders):
-            for loader in loaders:
-                # if we've found a list or tuple, we aren't yet in the inner-most loaders
-                if isinstance(loader, list | tuple):
-                    # reassign `loaders` variable to force the while loop restart
-                    loaders = loader
-
-        # if django-bird's loader is the first, we good
-        loaders_already_configured = (
-            len(loaders) > 0 and DJANGO_BIRD_LOADER == loaders[0]
-        )
-
-        if not loaders_already_configured:
-            loaders.insert(0, DJANGO_BIRD_LOADER)
 
     def configure_builtins(self, options: dict[str, Any]) -> None:
         builtins = options.setdefault("builtins", [])
