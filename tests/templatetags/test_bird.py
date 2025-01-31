@@ -56,18 +56,18 @@ class TestTagParsing:
         "params,expected_attrs",
         [
             (
-                "class='btn'",
-                [Param(name="class", value=Value("btn", quoted=True))],
+                'class="btn"',
+                [Param(name="class", value=Value('"btn"'))],
             ),
             (
                 'class="btn"',
-                [Param(name="class", value=Value("btn", quoted=True))],
+                [Param(name="class", value=Value('"btn"'))],
             ),
             (
-                "class='btn' id='my-btn'",
+                'class="btn" id="my-btn"',
                 [
-                    Param(name="class", value=Value("btn", quoted=True)),
-                    Param(name="id", value=Value("my-btn", quoted=True)),
+                    Param(name="class", value=Value('"btn"')),
+                    Param(name="id", value=Value('"my-btn"')),
                 ],
             ),
             (
@@ -76,13 +76,13 @@ class TestTagParsing:
             ),
             (
                 "class=dynamic",
-                [Param(name="class", value=Value("dynamic", quoted=False))],
+                [Param(name="class", value=Value("dynamic"))],
             ),
             (
                 "class=item.name id=user.id",
                 [
-                    Param(name="class", value=Value("item.name", quoted=False)),
-                    Param(name="id", value=Value("user.id", quoted=False)),
+                    Param(name="class", value=Value("item.name")),
+                    Param(name="id", value=Value("user.id")),
                 ],
             ),
         ],

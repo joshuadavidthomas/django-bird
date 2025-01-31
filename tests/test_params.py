@@ -14,15 +14,15 @@ class TestValue:
     @pytest.mark.parametrize(
         "value,context,expected",
         [
-            (Value("btn", quoted=True), {"btn": "blue"}, "btn"),
-            (Value("btn", quoted=False), {"btn": "blue"}, "blue"),
+            (Value('"btn"'), {"btn": "blue"}, "btn"),
+            (Value("btn"), {"btn": "blue"}, "blue"),
             (Value(True), {}, True),
             (Value(None), {}, None),
             (Value("True"), {}, True),
             (Value("False"), {}, None),
-            (Value("undefined", quoted=False), {}, "undefined"),
-            (Value("foo.bar", quoted=False), {}, "foo.bar"),
-            (Value("foo.bar", quoted=False), {"foo": {}}, "foo.bar"),
+            (Value("undefined"), {}, "undefined"),
+            (Value("foo.bar"), {}, "foo.bar"),
+            (Value("foo.bar"), {"foo": {}}, "foo.bar"),
         ],
     )
     def test_resolve(self, value, context, expected):
@@ -33,40 +33,40 @@ class TestParam:
     @pytest.mark.parametrize(
         "param,context,expected",
         [
-            (Param(name="class", value=Value("btn", quoted=False)), {}, 'class="btn"'),
+            (Param(name="class", value=Value("btn")), {}, 'class="btn"'),
             (
-                Param(name="class", value=Value("btn", quoted=False)),
+                Param(name="class", value=Value("btn")),
                 {"btn": "blue"},
                 'class="blue"',
             ),
             (Param(name="disabled", value=Value(True)), {}, "disabled"),
             (Param(name="disabled", value=Value(None)), {}, ""),
             (
-                Param(name="class", value=Value("btn", quoted=True)),
+                Param(name="class", value=Value('"btn"')),
                 {"btn": "blue"},
                 'class="btn"',
             ),
             (
-                Param(name="class", value=Value("item.name", quoted=True)),
+                Param(name="class", value=Value("'item.name'")),
                 {"item": {"name": "value"}},
                 'class="item.name"',
             ),
             (
-                Param(name="class", value=Value("undefined", quoted=False)),
+                Param(name="class", value=Value("undefined")),
                 {},
                 'class="undefined"',
             ),
             (
-                Param(name="class", value=Value("foo.bar", quoted=False)),
+                Param(name="class", value=Value("foo.bar")),
                 {},
                 'class="foo.bar"',
             ),
             (
-                Param(name="class", value=Value("foo.bar", quoted=False)),
+                Param(name="class", value=Value("foo.bar")),
                 {"foo": {}},
                 'class="foo.bar"',
             ),
-            (Param(name="hx_get", value=Value("/", quoted=False)), {}, 'hx-get="/"'),
+            (Param(name="hx_get", value=Value("/")), {}, 'hx-get="/"'),
         ],
     )
     def test_render_attr(self, param, context, expected):
@@ -75,43 +75,43 @@ class TestParam:
     @pytest.mark.parametrize(
         "param,context,expected",
         [
-            (Param(name="class", value=Value("btn", quoted=False)), {}, "btn"),
+            (Param(name="class", value=Value("btn")), {}, "btn"),
             (
-                Param(name="class", value=Value("btn", quoted=False)),
+                Param(name="class", value=Value("btn")),
                 {"btn": "blue"},
                 "blue",
             ),
             (Param(name="disabled", value=Value(True)), {}, True),
             (Param(name="disabled", value=Value(None)), {}, None),
             (
-                Param(name="count", value=Value("items.length", quoted=False)),
+                Param(name="count", value=Value("items.length")),
                 {"items": {"length": 5}},
                 5,
             ),
             (Param(name="isActive", value=Value("False")), {}, None),
             (Param(name="isActive", value=Value("True")), {}, True),
             (
-                Param(name="data", value=Value("user.name", quoted=False)),
+                Param(name="data", value=Value("user.name")),
                 {"user": {"name": "Alice"}},
                 "Alice",
             ),
             (
-                Param(name="data", value=Value("user.name", quoted=True)),
+                Param(name="data", value=Value("'user.name'")),
                 {"user": {"name": "Alice"}},
                 "user.name",
             ),
             (
-                Param(name="class", value=Value("undefined", quoted=False)),
+                Param(name="class", value=Value("undefined")),
                 {},
                 "undefined",
             ),
             (
-                Param(name="data", value=Value("user.name", quoted=False)),
+                Param(name="data", value=Value("user.name")),
                 {},
                 "user.name",
             ),
             (
-                Param(name="data", value=Value("user.name", quoted=False)),
+                Param(name="data", value=Value("user.name")),
                 {"user": {}},
                 "user.name",
             ),
@@ -123,17 +123,17 @@ class TestParam:
     @pytest.mark.parametrize(
         "bit,expected",
         [
-            ("class='btn'", Param(name="class", value=Value("btn", quoted=True))),
-            ('class="btn"', Param(name="class", value=Value("btn", quoted=True))),
-            ("class=btn", Param(name="class", value=Value("btn", quoted=False))),
+            ("class='btn'", Param(name="class", value=Value("'btn'"))),
+            ('class="btn"', Param(name="class", value=Value('"btn"'))),
+            ("class=btn", Param(name="class", value=Value("btn"))),
             ("disabled", Param(name="disabled", value=Value(True))),
             (
                 "class=item.name",
-                Param(name="class", value=Value("item.name", quoted=False)),
+                Param(name="class", value=Value("item.name")),
             ),
             (
                 'class="item.name"',
-                Param(name="class", value=Value("item.name", quoted=True)),
+                Param(name="class", value=Value('"item.name"')),
             ),
         ],
     )
@@ -153,46 +153,42 @@ class TestParams:
                 [],
             ),
             (
-                Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
+                Params(attrs=[Param(name="class", value=Value("btn"))]),
                 TestComponent(name="test", content="{% bird:prop class %}"),
                 {},
                 {"class": "btn"},
                 [],
             ),
             (
-                Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
+                Params(attrs=[Param(name="class", value=Value("btn"))]),
                 TestComponent(name="test", content=""),
                 {},
                 {},
-                [Param(name="class", value=Value("btn", quoted=False))],
+                [Param(name="class", value=Value("btn"))],
             ),
             (
-                Params(attrs=[Param(name="class", value=Value("static", quoted=True))]),
+                Params(attrs=[Param(name="class", value=Value("'static'"))]),
                 TestComponent(name="test", content="{% bird:prop class %}"),
                 {"static": "dynamic"},
                 {"class": "static"},
                 [],
             ),
             (
-                Params(attrs=[Param(name="class", value=Value("var", quoted=False))]),
+                Params(attrs=[Param(name="class", value=Value("var"))]),
                 TestComponent(name="test", content="{% bird:prop class %}"),
                 {"var": "dynamic"},
                 {"class": "dynamic"},
                 [],
             ),
             (
-                Params(
-                    attrs=[Param(name="class", value=Value("undefined", quoted=False))]
-                ),
+                Params(attrs=[Param(name="class", value=Value("undefined"))]),
                 TestComponent(name="test", content="{% bird:prop class %}"),
                 {},
                 {"class": "undefined"},
                 [],
             ),
             (
-                Params(
-                    attrs=[Param(name="class", value=Value("user.name", quoted=False))]
-                ),
+                Params(attrs=[Param(name="class", value=Value("user.name"))]),
                 TestComponent(name="test", content="{% bird:prop class %}"),
                 {},
                 {"class": "user.name"},
@@ -218,12 +214,12 @@ class TestParams:
         "params,context,expected",
         [
             (
-                Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
+                Params(attrs=[Param(name="class", value=Value("btn"))]),
                 {},
                 'class="btn"',
             ),
             (
-                Params(attrs=[Param(name="class", value=Value("btn", quoted=False))]),
+                Params(attrs=[Param(name="class", value=Value("btn"))]),
                 {"btn": "blue"},
                 'class="blue"',
             ),
@@ -231,7 +227,7 @@ class TestParams:
             (
                 Params(
                     attrs=[
-                        Param(name="class", value=Value("btn", quoted=False)),
+                        Param(name="class", value=Value("btn")),
                         Param(name="disabled", value=Value(True)),
                     ]
                 ),
@@ -239,33 +235,27 @@ class TestParams:
                 'class="btn" disabled',
             ),
             (
-                Params(attrs=[Param(name="class", value=Value("static", quoted=True))]),
+                Params(attrs=[Param(name="class", value=Value("'static'"))]),
                 {"static": "dynamic"},
                 'class="static"',
             ),
             (
-                Params(attrs=[Param(name="class", value=Value("var", quoted=False))]),
+                Params(attrs=[Param(name="class", value=Value("var"))]),
                 {"var": "dynamic"},
                 'class="dynamic"',
             ),
             (
-                Params(
-                    attrs=[Param(name="class", value=Value("undefined", quoted=False))]
-                ),
+                Params(attrs=[Param(name="class", value=Value("undefined"))]),
                 {},
                 'class="undefined"',
             ),
             (
-                Params(
-                    attrs=[Param(name="class", value=Value("user.name", quoted=False))]
-                ),
+                Params(attrs=[Param(name="class", value=Value("user.name"))]),
                 {},
                 'class="user.name"',
             ),
             (
-                Params(
-                    attrs=[Param(name="class", value=Value("user.name", quoted=False))]
-                ),
+                Params(attrs=[Param(name="class", value=Value("user.name"))]),
                 {"user": {}},
                 'class="user.name"',
             ),
@@ -278,18 +268,18 @@ class TestParams:
         "attrs,expected",
         [
             (
-                [Param(name="class", value=Value("btn", quoted=True))],
-                Params(attrs=[Param(name="class", value=Value("btn", quoted=True))]),
+                [Param(name="class", value=Value('"btn"'))],
+                Params(attrs=[Param(name="class", value=Value('"btn"'))]),
             ),
             (
                 [
-                    Param(name="class", value=Value("btn", quoted=True)),
-                    Param(name="id", value=Value("my-btn", quoted=True)),
+                    Param(name="class", value=Value('"btn"')),
+                    Param(name="id", value=Value('"my-btn"')),
                 ],
                 Params(
                     attrs=[
-                        Param(name="class", value=Value("btn", quoted=True)),
-                        Param(name="id", value=Value("my-btn", quoted=True)),
+                        Param(name="class", value=Value('"btn"')),
+                        Param(name="id", value=Value('"my-btn"')),
                     ]
                 ),
             ),
@@ -298,20 +288,18 @@ class TestParams:
                 Params(attrs=[Param(name="disabled", value=Value(True))]),
             ),
             (
-                [Param(name="class", value=Value("dynamic", quoted=False))],
-                Params(
-                    attrs=[Param(name="class", value=Value("dynamic", quoted=False))]
-                ),
+                [Param(name="class", value=Value("dynamic"))],
+                Params(attrs=[Param(name="class", value=Value("dynamic"))]),
             ),
             (
                 [
-                    Param(name="class", value=Value("item.name", quoted=False)),
-                    Param(name="id", value=Value("user.id", quoted=False)),
+                    Param(name="class", value=Value("item.name")),
+                    Param(name="id", value=Value("user.id")),
                 ],
                 Params(
                     attrs=[
-                        Param(name="class", value=Value("item.name", quoted=False)),
-                        Param(name="id", value=Value("user.id", quoted=False)),
+                        Param(name="class", value=Value("item.name")),
+                        Param(name="id", value=Value("user.id")),
                     ]
                 ),
             ),

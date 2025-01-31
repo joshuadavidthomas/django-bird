@@ -36,7 +36,7 @@ class Params:
             if not isinstance(node, PropNode):
                 continue
 
-            value = Value(node.default, quoted=False)
+            value = Value(node.default)
 
             for idx, attr in enumerate(self.attrs):
                 if node.name == attr.name:
@@ -78,11 +78,7 @@ class Param:
     def from_bit(cls, bit: str) -> Param:
         if "=" in bit:
             name, raw_value = bit.split("=", 1)
-            # Check if the value is quoted
-            if raw_value.startswith(("'", '"')) and raw_value.endswith(raw_value[0]):
-                value = Value(raw_value[1:-1], quoted=True)
-            else:
-                value = Value(raw_value.strip(), quoted=False)
+            value = Value(raw_value.strip())
         else:
             name, value = bit, Value(True)
         return cls(name, value)
@@ -91,18 +87,32 @@ class Param:
 @dataclass
 class Value:
     raw: str | bool | None
-    quoted: bool = False
 
     def resolve(self, context: Context | dict[str, Any]) -> Any:
-        if self.raw is None or (isinstance(self.raw, str) and self.raw == "False"):
-            return None
-        if (isinstance(self.raw, bool) and self.raw) or (
-            isinstance(self.raw, str) and self.raw == "True"
-        ):
-            return True
-        if isinstance(self.raw, str) and not self.quoted:
-            try:
-                return template.Variable(str(self.raw)).resolve(context)
-            except template.VariableDoesNotExist:
-                return self.raw
-        return self.raw
+        match (self.raw, self.is_quoted):
+            case (None, _):
+                return None
+
+            case (str(raw_str), False) if raw_str == "False":
+                return None
+            case (str(raw_str), False) if raw_str == "True":
+                return True
+
+            case (bool(b), _):
+                return b if b else None
+
+            case (str(raw_str), False):
+                try:
+                    return template.Variable(raw_str).resolve(context)
+                except template.VariableDoesNotExist:
+                    return raw_str
+
+            case (_, True):
+                return str(self.raw)[1:-1]
+
+    @property
+    def is_quoted(self) -> bool:
+        if self.raw is None or isinstance(self.raw, bool):
+            return False
+
+        return self.raw.startswith(("'", '"')) and self.raw.endswith(self.raw[0])
