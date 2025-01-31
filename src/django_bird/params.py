@@ -14,17 +14,13 @@ from .templatetags.tags.prop import PropNode
 
 if TYPE_CHECKING:
     from django_bird.components import Component
+    from django_bird.templatetags.tags.bird import BirdNode
 
 
 @dataclass
 class Params:
     attrs: list[Param] = field(default_factory=list)
     props: list[Param] = field(default_factory=list)
-
-    @classmethod
-    def with_attrs(cls, attrs: list[Param] | None) -> Params:
-        """Create a Params instance with a copy of the provided attrs."""
-        return cls(attrs=attrs.copy() if attrs is not None else [], props=[])
 
     def render_props(self, component: Component, context: Context):
         if component.nodelist is None:
@@ -56,6 +52,10 @@ class Params:
         rendered = " ".join(attr.render_attr(context) for attr in self.attrs)
         return mark_safe(rendered)
 
+    @classmethod
+    def from_node(cls, node: BirdNode) -> Params:
+        return cls(attrs=node.attrs.copy(), props=[])
+
 
 @dataclass
 class Param:
@@ -64,9 +64,9 @@ class Param:
 
     def render_attr(self, context: Context) -> str:
         value = self.value.resolve(context)
-        name = self.name.replace("_", "-")
         if value is None:
             return ""
+        name = self.name.replace("_", "-")
         if value is True:
             return name
         return f'{name}="{value}"'

@@ -6,6 +6,7 @@ from django_bird.components import Component
 from django_bird.params import Param
 from django_bird.params import Params
 from django_bird.params import Value
+from django_bird.templatetags.tags.bird import BirdNode
 
 from .utils import TestComponent
 
@@ -305,5 +306,6 @@ class TestParams:
             ),
         ],
     )
-    def test_with_attrs(self, attrs, expected):
-        assert Params.with_attrs(attrs) == expected
+    def test_from_node(self, attrs, expected):
+        node = BirdNode(name="test", attrs=attrs, nodelist=None)
+        assert Params.from_node(node) == expected

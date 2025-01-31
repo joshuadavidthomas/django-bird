@@ -47,7 +47,7 @@ class Component:
         return None
 
     def get_bound_component(self, node: BirdNode):
-        params = Params.with_attrs(node.attrs)
+        params = Params.from_node(node)
         return BoundComponent(component=self, params=params, nodelist=node.nodelist)
 
     @property
