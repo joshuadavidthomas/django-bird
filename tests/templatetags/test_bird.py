@@ -20,6 +20,7 @@ from django_bird.templatetags.tags.bird import BirdNode
 from django_bird.templatetags.tags.bird import do_bird
 from tests.utils import TestComponent
 from tests.utils import TestComponentCase
+from tests.utils import normalize_whitespace
 
 
 class TestTagParsing:
@@ -153,9 +154,7 @@ class TestTagParsing:
         ],
         ids=lambda x: x.description,
     )
-    def test_basic_name_templatetag(
-        self, test_case, templates_dir, normalize_whitespace
-    ):
+    def test_basic_name_templatetag(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(
@@ -165,7 +164,7 @@ class TestTagParsing:
 
         assert normalize_whitespace(rendered) == test_case.expected
 
-    def test_nested_name_templatetag(self, templates_dir, normalize_whitespace):
+    def test_nested_name_templatetag(self, templates_dir):
         test_case = TestComponentCase(
             description="Nested component name",
             component=TestComponent(
@@ -254,9 +253,7 @@ class TestTagParsing:
         ],
         ids=lambda x: x.description,
     )
-    def test_dynamic_name_template_context_templatetag(
-        self, test_case, templates_dir, normalize_whitespace
-    ):
+    def test_dynamic_name_template_context_templatetag(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(
@@ -266,7 +263,7 @@ class TestTagParsing:
 
         assert normalize_whitespace(rendered) == test_case.expected
 
-    def test_dynamic_name_with_string(self, templates_dir, normalize_whitespace):
+    def test_dynamic_name_with_string(self, templates_dir):
         button = TestComponent(
             name="button",
             content="""
@@ -299,7 +296,7 @@ class TestTagParsing:
             template.render(Context({}))
 
 
-def test_self_closing_tag(templates_dir, normalize_whitespace):
+def test_self_closing_tag(templates_dir):
     test_case = TestComponentCase(
         component=TestComponent(
             name="image",
@@ -359,7 +356,7 @@ class TestAttributes:
         ],
         ids=lambda x: x.description,
     )
-    def test_basic(self, test_case, templates_dir, normalize_whitespace):
+    def test_basic(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -424,7 +421,7 @@ class TestAttributes:
         ],
         ids=lambda x: x.description,
     )
-    def test_boolean(self, test_case, templates_dir, normalize_whitespace):
+    def test_boolean(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -493,9 +490,7 @@ class TestAttributes:
         ],
         ids=lambda x: x.description,
     )
-    def test_dynamic_template_context(
-        self, test_case, templates_dir, normalize_whitespace
-    ):
+    def test_dynamic_template_context(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -553,9 +548,7 @@ class TestAttributes:
         ],
         ids=lambda x: x.description,
     )
-    def test_nested_template_context(
-        self, test_case, templates_dir, normalize_whitespace
-    ):
+    def test_nested_template_context(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -625,7 +618,7 @@ class TestAttributes:
         ],
         ids=lambda x: x.description,
     )
-    def test_error_handling(self, test_case, templates_dir, normalize_whitespace):
+    def test_error_handling(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -646,7 +639,6 @@ class TestAttributes:
         expected,
         override_app_settings,
         templates_dir,
-        normalize_whitespace,
     ):
         button = TestComponent(
             name="button",
@@ -729,7 +721,7 @@ class TestProperties:
         ],
         ids=lambda x: x.description,
     )
-    def test_basic(self, test_case, templates_dir, normalize_whitespace):
+    def test_basic(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -805,7 +797,7 @@ class TestProperties:
         ],
         ids=lambda x: x.description,
     )
-    def test_dynamic(self, test_case, templates_dir, normalize_whitespace):
+    def test_dynamic(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -874,7 +866,7 @@ class TestProperties:
         ],
         ids=lambda x: x.description,
     )
-    def test_error_handling(self, test_case, templates_dir, normalize_whitespace):
+    def test_error_handling(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -883,7 +875,7 @@ class TestProperties:
         assert normalize_whitespace(rendered) == test_case.expected
 
 
-def test_attrs_and_props(templates_dir, normalize_whitespace):
+def test_attrs_and_props(templates_dir):
     test_case = TestComponentCase(
         component=TestComponent(
             name="button",
@@ -969,7 +961,7 @@ class TestSlots:
         ],
         ids=lambda x: x.description,
     )
-    def test_default(self, test_case, templates_dir, normalize_whitespace):
+    def test_default(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -1065,7 +1057,7 @@ class TestSlots:
         ],
         ids=lambda x: x.description,
     )
-    def test_named(self, test_case, templates_dir, normalize_whitespace):
+    def test_named(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -1159,9 +1151,7 @@ class TestSlots:
         ],
         ids=lambda x: x.description,
     )
-    def test_with_outside_templatetag(
-        self, test_case, fancy_filter, templates_dir, normalize_whitespace
-    ):
+    def test_with_outside_templatetag(self, test_case, fancy_filter, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -1170,7 +1160,7 @@ class TestSlots:
         assert normalize_whitespace(rendered) == test_case.expected
 
 
-def test_nested_components_with_loops(templates_dir, normalize_whitespace):
+def test_nested_components_with_loops(templates_dir):
     nav = TestComponent(
         name="nav",
         content="""
@@ -1302,7 +1292,7 @@ def test_nested_components_with_loops(templates_dir, normalize_whitespace):
     ],
     ids=lambda x: x.description,
 )
-def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
+def test_parent_context_access(test_case, templates_dir):
     test_case.component.create(templates_dir)
 
     template = Template(test_case.template_content)
@@ -1394,7 +1384,7 @@ def test_parent_context_access(test_case, templates_dir, normalize_whitespace):
     ],
     ids=lambda x: x.description,
 )
-def test_only_flag(test_case, templates_dir, normalize_whitespace):
+def test_only_flag(test_case, templates_dir):
     test_case.component.create(templates_dir)
 
     template = Template(test_case.template_content)

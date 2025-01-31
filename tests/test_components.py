@@ -23,6 +23,7 @@ from django_bird.staticfiles import AssetType
 
 from .utils import TestAsset
 from .utils import TestComponent
+from .utils import normalize_whitespace
 
 
 class TestComponentClass:
@@ -208,7 +209,6 @@ class TestBoundComponent:
         expected,
         override_app_settings,
         templates_dir,
-        normalize_whitespace,
     ):
         button = TestComponent(
             name="button", content="<button {{ attrs }}>{{ slot }}</button>"

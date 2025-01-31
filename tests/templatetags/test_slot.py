@@ -8,6 +8,7 @@ from django.template.exceptions import TemplateSyntaxError
 from django_bird.templatetags.tags.slot import parse_slot_name
 from tests.utils import TestComponent
 from tests.utils import TestComponentCase
+from tests.utils import normalize_whitespace
 
 
 @pytest.mark.parametrize(
@@ -44,7 +45,7 @@ class TestTemplateTag:
             '{% bird:slot name="default" %}{% endbird:slot %}',
         ],
     )
-    def test_default_slot(self, component_content, templates_dir, normalize_whitespace):
+    def test_default_slot(self, component_content, templates_dir):
         test_case = TestComponentCase(
             component=TestComponent(
                 name="test",
@@ -61,7 +62,7 @@ class TestTemplateTag:
 
         assert normalize_whitespace(rendered) == test_case.expected
 
-    def test_default_content(self, templates_dir, normalize_whitespace):
+    def test_default_content(self, templates_dir):
         test_case = TestComponentCase(
             component=TestComponent(
                 name="test",
@@ -87,7 +88,7 @@ class TestTemplateTag:
 
         assert normalize_whitespace(rendered) == test_case.expected
 
-    def test_default_content_override(self, templates_dir, normalize_whitespace):
+    def test_default_content_override(self, templates_dir):
         test_case = TestComponentCase(
             component=TestComponent(
                 name="test",
@@ -126,7 +127,7 @@ class TestTemplateTag:
             "{% bird:slot name=named_slot %}{% endbird:slot %}",
         ],
     )
-    def test_named_slot(self, component_content, templates_dir, normalize_whitespace):
+    def test_named_slot(self, component_content, templates_dir):
         test_case = TestComponentCase(
             component=TestComponent(
                 name="test",
@@ -210,7 +211,7 @@ class TestTemplateTag:
         ],
         ids=lambda x: x.description,
     )
-    def test_nested_slots(self, test_case, templates_dir, normalize_whitespace):
+    def test_nested_slots(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
@@ -254,7 +255,7 @@ class TestTemplateTag:
         ],
         ids=lambda x: x.description,
     )
-    def test_template_content(self, test_case, templates_dir, normalize_whitespace):
+    def test_template_content(self, test_case, templates_dir):
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)

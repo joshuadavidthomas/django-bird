@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
@@ -80,3 +81,21 @@ def print_directory_tree(root_dir: str | Path, prefix: str = ""):
         if path.is_dir():
             extension = "│   " if pointer == "├── " else "    "
             print_directory_tree(path, prefix=prefix + extension)
+
+
+def normalize_whitespace(text: str) -> str:
+    """Normalize whitespace in rendered template output"""
+    # multiple whitespace characters
+    text = re.sub(r"\s+", " ", text)
+    # after opening tag, including when there are attributes
+    text = re.sub(r"<(\w+)(\s+[^>]*)?\s*>", r"<\1\2>", text)
+    # before closing tag
+    text = re.sub(r"\s+>", ">", text)
+    # after opening tag and before closing tag
+    text = re.sub(r">\s+<", "><", text)
+    # immediately after opening tag (including attributes) or before closing tag
+    text = re.sub(r"(<\w+(?:\s+[^>]*)?>)\s+|\s+(<\/\w+>)", r"\1\2", text)
+    # between tags and text content
+    text = re.sub(r">\s+([^<])", r">\1", text)
+    text = re.sub(r"([^>])\s+<", r"\1<", text)
+    return text.strip()
