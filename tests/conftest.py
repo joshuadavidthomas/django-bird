@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import contextlib
 import logging
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -241,28 +240,6 @@ def example_template(templates_dir):
         ],
         unused_components=[Component.from_name(toast.name)],
     )
-
-
-@pytest.fixture
-def normalize_whitespace():
-    def func(text: str) -> str:
-        """Normalize whitespace in rendered template output"""
-        # multiple whitespace characters
-        text = re.sub(r"\s+", " ", text)
-        # after opening tag, including when there are attributes
-        text = re.sub(r"<(\w+)(\s+[^>]*)?\s*>", r"<\1\2>", text)
-        # before closing tag
-        text = re.sub(r"\s+>", ">", text)
-        # after opening tag and before closing tag
-        text = re.sub(r">\s+<", "><", text)
-        # immediately after opening tag (including attributes) or before closing tag
-        text = re.sub(r"(<\w+(?:\s+[^>]*)?>)\s+|\s+(<\/\w+>)", r"\1\2", text)
-        # between tags and text content
-        text = re.sub(r">\s+([^<])", r">\1", text)
-        text = re.sub(r"([^>])\s+<", r"\1<", text)
-        return text.strip()
-
-    return func
 
 
 @pytest.fixture(autouse=True)
