@@ -12,14 +12,15 @@ from django_bird.templatetags.tags.prop import do_prop
 @pytest.mark.parametrize(
     "prop,expected",
     [
-        ("id", ("id", None)),
-        ("class='btn'", ("class", "'btn'")),
+        ("id", ("id", None, [])),
+        ("class='btn'", ("class", "'btn'", [])),
     ],
 )
-def test_name_do_prop(prop, expected):
+def test_do_prop(prop, expected):
     start_token = Token(TokenType.BLOCK, f"{TAG} {prop}")
 
     node = do_prop(Parser([]), start_token)
 
     assert node.name == expected[0]
     assert node.default == expected[1]
+    assert node.attrs == expected[2]
