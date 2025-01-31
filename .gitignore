@@ -185,7 +185,7 @@ dist-ssr
 *.sln
 *.sw?
 
-staticfiles/
+# staticfiles/
 mediafiles/
 
 # pyright config for nvim-lspconfig
