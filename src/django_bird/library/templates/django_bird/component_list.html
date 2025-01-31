@@ -1,0 +1,14 @@
+<dj-page>
+  <dj-sidebar>
+    <dj-nav>
+      {% for component in components %}
+        {% url 'component-detail' component_name=component.name as component_url %}
+        <dj-nav.item href=component_url>
+          {{ component.name }}
+        </dj-nav.item>
+      {% endfor %}
+    </dj-nav>
+  </dj-sidebar>
+  <dj-main>
+  </dj-main>
+</dj-page>

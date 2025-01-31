@@ -1,0 +1,18 @@
+{% bird:prop title="Django Bird Demo" %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ props.title }}</title>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    {% bird:css %}
+  </head>
+  <body class="min-h-screen">
+    {{ slot }}
+    {% bird:js %}
+  </body>
+</html>
