@@ -269,14 +269,11 @@ class TestParams:
         "attrs,expected",
         [
             (
-                [Param(name="class", value=Value('"btn"'))],
+                ['class="btn"'],
                 Params(attrs=[Param(name="class", value=Value('"btn"'))]),
             ),
             (
-                [
-                    Param(name="class", value=Value('"btn"')),
-                    Param(name="id", value=Value('"my-btn"')),
-                ],
+                ['class="btn"', 'id="my-btn"'],
                 Params(
                     attrs=[
                         Param(name="class", value=Value('"btn"')),
@@ -285,18 +282,15 @@ class TestParams:
                 ),
             ),
             (
-                [Param(name="disabled", value=Value(True))],
+                ["disabled"],
                 Params(attrs=[Param(name="disabled", value=Value(True))]),
             ),
             (
-                [Param(name="class", value=Value("dynamic"))],
+                ["class=dynamic"],
                 Params(attrs=[Param(name="class", value=Value("dynamic"))]),
             ),
             (
-                [
-                    Param(name="class", value=Value("item.name")),
-                    Param(name="id", value=Value("user.id")),
-                ],
+                ["class=item.name", "id=user.id"],
                 Params(
                     attrs=[
                         Param(name="class", value=Value("item.name")),

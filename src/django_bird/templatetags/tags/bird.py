@@ -1,6 +1,8 @@
 # pyright: reportAny=false
 from __future__ import annotations
 
+from typing import final
+
 from django import template
 from django.template.base import NodeList
 from django.template.base import Parser
@@ -9,7 +11,6 @@ from django.template.context import Context
 
 from django_bird._typing import TagBits
 from django_bird._typing import override
-from django_bird.params import Param
 
 TAG = "bird"
 END_TAG = "endbird"
@@ -22,7 +23,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
         raise template.TemplateSyntaxError(msg)
 
     name = bits[1]
-    attrs = []
+    attrs: TagBits = []
     isolated_context = False
 
     for bit in bits[2:]:
@@ -32,8 +33,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
             case "/":
                 continue
             case _:
-                param = Param.from_bit(bit)
-                attrs.append(param)
+                attrs.append(bit)
 
     nodelist = parse_nodelist(bits, parser)
     return BirdNode(name, attrs, nodelist, isolated_context)
@@ -50,11 +50,12 @@ def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:
     return nodelist
 
 
+@final
 class BirdNode(template.Node):
     def __init__(
         self,
         name: str,
-        attrs: list[Param],
+        attrs: TagBits,
         nodelist: NodeList | None,
         isolated_context: bool = False,
     ) -> None:
