@@ -12,8 +12,6 @@ from django.template.exceptions import TemplateDoesNotExist
 from django.template.exceptions import TemplateSyntaxError
 
 from django_bird.components import Component
-from django_bird.params import Param
-from django_bird.params import Value
 from django_bird.templatetags.tags.bird import END_TAG
 from django_bird.templatetags.tags.bird import TAG
 from django_bird.templatetags.tags.bird import BirdNode
@@ -55,36 +53,12 @@ class TestTagParsing:
     @pytest.mark.parametrize(
         "params,expected_attrs",
         [
-            (
-                'class="btn"',
-                [Param(name="class", value=Value('"btn"'))],
-            ),
-            (
-                'class="btn"',
-                [Param(name="class", value=Value('"btn"'))],
-            ),
-            (
-                'class="btn" id="my-btn"',
-                [
-                    Param(name="class", value=Value('"btn"')),
-                    Param(name="id", value=Value('"my-btn"')),
-                ],
-            ),
-            (
-                "disabled",
-                [Param(name="disabled", value=Value(True))],
-            ),
-            (
-                "class=dynamic",
-                [Param(name="class", value=Value("dynamic"))],
-            ),
-            (
-                "class=item.name id=user.id",
-                [
-                    Param(name="class", value=Value("item.name")),
-                    Param(name="id", value=Value("user.id")),
-                ],
-            ),
+            ('class="btn"', ['class="btn"']),
+            ("class='btn'", ["class='btn'"]),
+            ('class="btn" id="my-btn"', ['class="btn"', 'id="my-btn"']),
+            ("disabled", ["disabled"]),
+            ("class=dynamic", ["class=dynamic"]),
+            ("class=item.name id=user.id", ["class=item.name", "id=user.id"]),
         ],
     )
     def test_attrs_do_bird(self, params, expected_attrs):

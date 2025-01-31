@@ -10,11 +10,11 @@ from django.template.context import Context
 from django.utils.safestring import SafeString
 from django.utils.safestring import mark_safe
 
+from .templatetags.tags.bird import BirdNode
 from .templatetags.tags.prop import PropNode
 
 if TYPE_CHECKING:
     from django_bird.components import Component
-    from django_bird.templatetags.tags.bird import BirdNode
 
 
 @dataclass
@@ -54,7 +54,10 @@ class Params:
 
     @classmethod
     def from_node(cls, node: BirdNode) -> Params:
-        return cls(attrs=node.attrs.copy(), props=[])
+        return cls(
+            attrs=[Param.from_bit(bit) for bit in node.attrs],
+            props=[],
+        )
 
 
 @dataclass
