@@ -108,7 +108,7 @@ class Value:
                     return raw_str
 
             case (_, True):
-                return self.raw[1:-1]
+                return str(self.raw)[1:-1]
 
     @property
     def is_quoted(self) -> bool:
