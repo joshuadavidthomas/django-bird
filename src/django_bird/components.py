@@ -135,9 +135,9 @@ class BoundComponent:
             data_attrs = [
                 Param(
                     f"data-bird-{self.component.data_attribute_name}",
-                    Value(True, False),
+                    Value(True),
                 ),
-                Param("data-bird-id", Value(f"{self.component.id}-{self.id}", True)),
+                Param("data-bird-id", Value(f'"{self.component.id}-{self.id}"')),
             ]
             self.params.attrs.extend(data_attrs)
 
