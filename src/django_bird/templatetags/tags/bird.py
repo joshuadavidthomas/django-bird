@@ -17,16 +17,16 @@ END_TAG = "endbird"
 
 
 def do_bird(parser: Parser, token: Token) -> BirdNode:
-    bits = token.split_contents()
-    if len(bits) == 1:
+    _tag, *bits = token.split_contents()
+    if not bits:
         msg = f"{TAG} tag requires at least one argument"
         raise template.TemplateSyntaxError(msg)
 
-    name = bits[1]
+    name = bits.pop(0)
     attrs: TagBits = []
     isolated_context = False
 
-    for bit in bits[2:]:
+    for bit in bits:
         match bit:
             case "only":
                 isolated_context = True
