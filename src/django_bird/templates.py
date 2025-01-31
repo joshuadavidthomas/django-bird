@@ -6,6 +6,7 @@ from collections.abc import Generator
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
+from typing import TypeGuard
 from typing import final
 
 from django.template.base import Node
@@ -20,7 +21,6 @@ from django.template.utils import get_app_template_dirs
 
 from django_bird.utils import unique_ordered
 
-from ._typing import _has_nodelist
 from .conf import app_settings
 from .templatetags.tags.bird import TAG
 from .templatetags.tags.bird import BirdNode
@@ -139,6 +139,10 @@ def scan_template_for_bird_tag(template_name: str) -> set[str]:
 NodeVisitorMethod = Callable[[Template | Node, Context], None]
 
 
+def has_nodelist(node: Template | Node) -> TypeGuard[Template]:
+    return hasattr(node, "nodelist")
+
+
 @final
 class NodeVisitor:
     def __init__(self, engine: Engine):
@@ -152,7 +156,7 @@ class NodeVisitor:
         return visitor(node, context)
 
     def generic_visit(self, node: Template | Node, context: Context) -> None:
-        if not _has_nodelist(node) or node.nodelist is None:
+        if not has_nodelist(node) or node.nodelist is None:
             return
         for child_node in node.nodelist:
             self.visit(child_node, context)
