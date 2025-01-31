@@ -1,0 +1,75 @@
+:root {
+  font-family: Inter, sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+}
+@supports (font-variation-settings: normal) {
+  :root { font-family: InterVariable, sans-serif; }
+}
+
+*:has(> [data-slot="main"]) {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: min-content minmax(0, 1fr) min-content;
+  grid-template-areas:
+    "banner  banner banner"
+    "header  header header"
+    "sidebar main   aside"
+    "footer  footer footer";
+}
+
+[data-slot="aside"] {
+  background-color: theme("colors.blue.500");
+  grid-area: aside;
+}
+
+
+[data-slot="banner"] {
+  background-color: theme("colors.red.500");
+  grid-area: banner;
+}
+
+[data-slot="footer"] {
+  background-color: theme("colors.indigo.500");
+  grid-area: footer;
+}
+
+[data-slot="header"] {
+  background-color: theme("colors.yellow.500");
+  grid-area: header;
+}
+
+[data-slot="main"] {
+  grid-area: main;
+}
+
+[data-slot="sidebar"] {
+  grid-area: sidebar;
+}
+
+[data-slot="banner"],
+[data-slot="footer"],
+[data-slot="header"] {
+  padding: theme("spacing.2") theme("spacing.0");
+}
+
+[data-slot="aside"],
+[data-slot="sidebar"] {
+  display: flex;
+  flex-direction: column;
+  max-height: theme("height.dvh");
+  min-height: theme("height.0");
+  position: sticky;
+  top: theme("spacing.0");
+  width: theme("width.full");
+  @screen md {
+    width: theme("spacing.64");
+  }
+}
+
+[data-slot="main"] > [data-slot="aside"],
+[data-slot="main"] > [data-slot="sidebar"] {
+  @screen md {
+    width: theme("spacing.56");
+  }
+}
+
