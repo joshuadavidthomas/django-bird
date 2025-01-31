@@ -3,32 +3,39 @@ from __future__ import annotations
 import pytest
 from django.template import Context
 from django.template import Template
+from django.template.base import Parser
+from django.template.base import Token
+from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 
-from django_bird.templatetags.tags.slot import parse_slot_name
+from django_bird.templatetags.tags.slot import DEFAULT_SLOT
+from django_bird.templatetags.tags.slot import END_TAG
+from django_bird.templatetags.tags.slot import TAG
+from django_bird.templatetags.tags.slot import SlotNode
+from django_bird.templatetags.tags.slot import do_slot
 from tests.utils import TestComponent
 from tests.utils import TestComponentCase
 from tests.utils import normalize_whitespace
 
 
 @pytest.mark.parametrize(
-    "bits,expected",
+    "contents,expected",
     [
-        (["slot"], "default"),
-        (["slot", "foo"], "foo"),
-        (["slot", "'foo'"], "foo"),
-        (["slot", '"foo"'], "foo"),
-        (["slot", 'name="foo"'], "foo"),
-        (["slot", "name='foo'"], "foo"),
+        ("", SlotNode(name=DEFAULT_SLOT, nodelist=None)),
+        ("foo", SlotNode(name="foo", nodelist=None)),
+        ("'foo'", SlotNode(name="foo", nodelist=None)),
+        ('"foo"', SlotNode(name="foo", nodelist=None)),
+        ('name="foo"', SlotNode(name="foo", nodelist=None)),
+        ("name='foo'", SlotNode(name="foo", nodelist=None)),
     ],
 )
-def test_parse_slot_name(bits, expected):
-    assert parse_slot_name(bits) == expected
+def test_parse_slot_name(contents, expected):
+    start_token = Token(TokenType.BLOCK, f"{TAG} {contents}")
+    end_token = Token(TokenType.BLOCK, END_TAG)
 
+    node = do_slot(Parser([end_token]), start_token)
 
-def test_parse_slot_name_no_args():
-    with pytest.raises(TemplateSyntaxError):
-        assert parse_slot_name([])
+    assert node.name == expected.name
 
 
 class TestTemplateTag:
