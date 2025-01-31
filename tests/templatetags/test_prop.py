@@ -6,21 +6,22 @@ from django.template.base import Token
 from django.template.base import TokenType
 
 from django_bird.templatetags.tags.prop import TAG
+from django_bird.templatetags.tags.prop import PropNode
 from django_bird.templatetags.tags.prop import do_prop
 
 
 @pytest.mark.parametrize(
-    "prop,expected",
+    "contents,expected",
     [
-        ("id", ("id", None, [])),
-        ("class='btn'", ("class", "'btn'", [])),
+        ("id", PropNode(name="id", default=None, attrs=[])),
+        ("class='btn'", PropNode(name="class", default="'btn'", attrs=[])),
     ],
 )
-def test_do_prop(prop, expected):
-    start_token = Token(TokenType.BLOCK, f"{TAG} {prop}")
+def test_do_prop(contents, expected):
+    start_token = Token(TokenType.BLOCK, f"{TAG} {contents}")
 
     node = do_prop(Parser([]), start_token)
 
-    assert node.name == expected[0]
-    assert node.default == expected[1]
-    assert node.attrs == expected[2]
+    assert node.name == expected.name
+    assert node.default == expected.default
+    assert node.attrs == expected.attrs
