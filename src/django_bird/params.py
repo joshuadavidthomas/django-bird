@@ -54,11 +54,10 @@ class Params:
 
     @classmethod
     def from_node(cls, node: BirdNode) -> Params:
-        attrs: list[Param] = []
-        for bit in node.attrs:
-            param = Param.from_bit(bit)
-            attrs.append(param)
-        return cls(attrs=attrs, props=[])
+        return cls(
+            attrs=[Param.from_bit(bit) for bit in node.attrs],
+            props=[],
+        )
 
 
 @dataclass
