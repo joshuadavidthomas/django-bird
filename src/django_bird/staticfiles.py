@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 from typing import Literal
@@ -15,6 +16,7 @@ from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.finders import BaseFinder
 from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.core.checks import CheckMessage
+from django.core.files import File
 from django.core.files.storage import FileSystemStorage
 
 from django_bird import hookimpl
@@ -24,6 +26,10 @@ from .apps import DjangoBirdAppConfig
 from .conf import app_settings
 from .templates import get_component_directories
 from .templatetags.tags.asset import AssetTag
+
+if TYPE_CHECKING:
+    pass
+
 
 
 class AssetElement(Enum):
@@ -40,7 +46,25 @@ class AssetType:
     @property
     def suffix(self):
         return f".{self.extension}"
+    def content_type(self):
+        match self:
+            case AssetType.CSS:
+                return "text/css"
+            case AssetType.JS:
+                return "application/javascript"
+    def content_type(self) -> str:
+        match self:
+            case AssetType.CSS:
+                return "text/css"
+            case AssetType.JS:
+                return "application/javascript"
 
+    @property
+    def ext(self):
+        return f".{self.value}"
+    @property
+    def ext(self) -> str:
+        return f".{self.value}"
 
 CSS = AssetType(
     element=AssetElement.STYLESHEET,
@@ -76,6 +100,32 @@ asset_types = AssetTypes()
 def register_asset_types(register_type: Callable[[AssetType], None]):
     register_type(CSS)
     register_type(JS)
+    @classmethod
+    def from_tag_name(cls, tag_name: str):
+        try:
+            asset_type = tag_name.split(":")[1]
+            match asset_type:
+                case "css":
+                    return cls.CSS
+                case "js":
+                    return cls.JS
+                case _:
+                    raise ValueError(f"Unknown asset type: {asset_type}")
+        except IndexError as e:
+            raise ValueError(f"Invalid tag name: {tag_name}") from e
+    @classmethod
+    def from_tag_name(cls, tag_name: str) -> AssetType:
+        try:
+            asset_type = tag_name.split(":")[1]
+            match asset_type:
+                case "css":
+                    return cls.CSS
+                case "js":
+                    return cls.JS
+                case _:
+                    raise ValueError(f"Unknown asset type: {asset_type}")
+        except IndexError as e:
+            raise ValueError(f"Invalid tag name: {tag_name}") from e
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,16 +146,22 @@ class Asset:
 
         match self.type.element:
             case AssetElement.STYLESHEET:
+    def render(self):
+        match self.type:
+            case AssetType.CSS:
+    def render(self) -> str:
+        match self.type:
+            case AssetType.CSS:
                 return f'<link rel="stylesheet" href="{self.url}">'
             case AssetElement.SCRIPT:
                 return f'<script src="{self.url}"></script>'
 
     @property
-    def absolute_path(self):
+    def absolute_path(self) -> Path:
         return self.path.resolve()
 
     @property
-    def relative_path(self):
+    def relative_path(self) -> Path:
         return self.path.relative_to(self.template_dir)
 
     @property
@@ -113,9 +169,17 @@ class Asset:
         return BirdAssetStorage(
             location=str(self.template_dir), prefix=DjangoBirdAppConfig.label
         )
+    def storage(self):
+        storage = FileSystemStorage(location=str(self.template_dir))
+        storage.prefix = DjangoBirdAppConfig.label  # type: ignore[attr-defined]
+        return storage
+    def storage(self) -> BirdAssetStorage:
+        storage = BirdAssetStorage(location=str(self.template_dir))
+        storage.prefix = DjangoBirdAppConfig.label  # type: ignore[attr-defined]
+        return storage
 
     @property
-    def template_dir(self):
+    def template_dir(self) -> Path:
         template_dir = self.path.parent
         component_dirs = app_settings.get_component_directory_names()
         while (
@@ -138,6 +202,12 @@ def collect_component_assets(template_path: Path) -> Iterable[Asset]:
     assets: list[Asset] = []
     for asset_type in asset_types.types:
         asset_path = template_path.with_suffix(asset_type.suffix)
+    @classmethod
+    def from_path(cls, path: Path, asset_type: AssetType):
+        asset_path = path.with_suffix(asset_type.ext)
+    @classmethod
+    def from_path(cls, path: Path, asset_type: AssetType) -> Asset | None:
+        asset_path = path.with_suffix(asset_type.ext)
         if asset_path.exists():
             assets.append(Asset(path=asset_path, type=asset_type))
     return assets
@@ -212,7 +282,7 @@ class BirdAssetFinder(BaseFinder):
     @override
     def list(
         self, ignore_patterns: Iterable[str] | None
-    ) -> Iterable[tuple[str, FileSystemStorage]]:
+    ) -> Iterable[tuple[str, BirdAssetStorage]]:
         """
         Return (relative_path, storage) pairs for all assets.
         """
@@ -224,3 +294,27 @@ class BirdAssetFinder(BaseFinder):
             ):
                 continue
             yield str(asset.relative_path), asset.storage
+
+
+class BirdAssetStorage(FileSystemStorage):
+    def _open(self, name: str, mode: str = "rb") -> BirdAssetFile:
+        return BirdAssetFile(open(self.path(name), mode))
+
+
+class BirdAssetFile(File):
+    def __init__(self, file: Any, header: str = "/* hello */\n") -> None:
+        super().__init__(file)
+        self.header = header
+        self._has_read_header = False
+
+    def read(self, chunk_size: int | None = None) -> bytes | str:
+        print("read")
+        content = super().read(chunk_size)
+        print(f"{isinstance(self.file, BytesIO)=}")
+        print(f"{isinstance(content, bytes)=}")
+        if not self._has_read_header:
+            self._has_read_header = True
+            if isinstance(content, bytes):
+                return self.header.encode() + content
+            return self.header + content
+        return content

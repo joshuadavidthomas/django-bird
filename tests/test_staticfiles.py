@@ -134,6 +134,12 @@ class TestAssetClass:
         ):
             assert str(asset.storage.location) in str(button_css.file)
 
+        file = asset.storage.open(button_css.file)
+        with file.open() as f:
+            print(f"{f.read()=}")
+
+        raise AssertionError
+
     def test_template_dir(self, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
