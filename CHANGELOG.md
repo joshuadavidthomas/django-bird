@@ -18,6 +18,9 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+- **Internal**: Refactored attribute value handling to use pattern matching for cleaner value resolution.
+
 ## [0.13.1]
 
 ### Fixed
