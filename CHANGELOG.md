@@ -18,6 +18,9 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+- Fixed static file URL generation to use correct relative paths when serving component assets through Django's static file storage system.
+
 ## [0.13.1]
 
 ### Changed

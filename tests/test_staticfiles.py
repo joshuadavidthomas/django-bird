@@ -155,7 +155,9 @@ class TestAssetClass:
         component = Component.from_name(button.name)
         asset = component.get_asset(button_css.file.name)
 
-        assert asset.url == f"/static{button_css.file.parent}/{button_css.file.name}"
+        assert (
+            asset.url == f"/static/{button_css.file.parent.name}/{button_css.file.name}"
+        )
 
     def test_url_with_reverse_fallback(self, templates_dir):
         button = TestComponent(
