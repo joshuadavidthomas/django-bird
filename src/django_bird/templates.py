@@ -123,7 +123,6 @@ def gather_bird_tag_template_usage() -> Generator[tuple[Path, Path], Any, None]:
 
 
 def scan_template_for_bird_tag(template_name: str) -> set[str]:
-    print(f"{template_name=}")
     engine = Engine.get_default()
     try:
         template = engine.get_template(template_name)
