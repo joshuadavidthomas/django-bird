@@ -10,6 +10,12 @@ default:
     @just --list --list-submodules
 
 [private]
+diff SHA="HEAD":
+    #!/usr/bin/env bash
+    LATEST_TAG=$(git describe --tags --abbrev=0)
+    GIT_PAGER=cat git diff "$LATEST_TAG"..{{ SHA }} src/
+
+[private]
 fmt:
     @just --fmt
     @just copier fmt
