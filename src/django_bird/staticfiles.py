@@ -104,7 +104,8 @@ class Asset:
     def url(self) -> str:
         static_path = finders.find(str(self.relative_path))
         if static_path is not None:
-            return self.storage.url(static_path)
+            static_relative_path = Path(static_path).relative_to(self.template_dir)
+            return self.storage.url(str(static_relative_path))
         return reverse(
             "django_bird:asset",
             kwargs={
