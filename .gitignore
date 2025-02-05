@@ -190,3 +190,6 @@ mediafiles/
 
 # pyright config for nvim-lspconfig
 pyrightconfig.json
+
+# Sphinx apidocs
+docs/apidocs/
