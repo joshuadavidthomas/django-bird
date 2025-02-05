@@ -18,8 +18,19 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.13.1]
+
+### Changed
+
+- **Internal**: Refactored attribute value handling to use pattern matching for cleaner value resolution.
+- **Internal**: Improved handling of quoted vs unquoted attribute values in component parameters.
+- **Internal**: Simplified template tag parsing in `bird`, `bird:prop`, and `bird:slot` tags.
+- **Internal**: Refactored component parameter handling to be more consistent across the codebase.
+
 ### Fixed
+
 - Fixed asset URL generation to properly use Django's static file storage system instead of raw file paths.
+- Fixed handling of data attributes in components to properly handle quotes and boolean values.
 
 ## [0.13.0]
 
@@ -308,7 +319,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.13.0...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.13.1...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -337,3 +348,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.12.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.12.0
 [0.12.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.12.1
 [0.13.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.13.0
+[0.13.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.13.1
