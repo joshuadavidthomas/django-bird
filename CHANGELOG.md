@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.13.2]
+
 ### Fixed
 - Fixed static file URL generation to use correct relative paths when serving component assets through Django's static file storage system.
 
@@ -322,7 +324,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.13.1...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.13.2...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -352,3 +354,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.12.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.12.1
 [0.13.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.13.0
 [0.13.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.13.1
+[0.13.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.13.2
