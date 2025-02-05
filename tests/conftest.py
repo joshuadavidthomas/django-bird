@@ -34,7 +34,9 @@ def pytest_configure(config):
 TEST_SETTINGS = {
     "INSTALLED_APPS": [
         "django_bird",
+        "django.contrib.staticfiles",
     ],
+    "STATIC_URL": "/static/",
     "TEMPLATES": [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",

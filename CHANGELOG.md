@@ -18,6 +18,9 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+- Fixed asset URL generation to properly use Django's static file storage system instead of raw file paths.
+
 ## [0.13.0]
 
 🚨 This release contains some breaking changes. See the Deprecated and Removed sections for more information. 🚨

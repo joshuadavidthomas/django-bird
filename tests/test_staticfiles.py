@@ -72,7 +72,10 @@ class TestAssetClass:
         component = Component.from_name(button.name)
         asset = component.get_asset(button_css.file.name)
 
-        assert str(asset.storage.location) in str(button_css.file)
+        with override_settings(
+            STATIC_URL="/static/",
+        ):
+            assert str(asset.storage.location) in str(button_css.file)
 
     def test_template_dir(self, templates_dir):
         button = TestComponent(
@@ -152,7 +155,7 @@ class TestAssetClass:
         component = Component.from_name(button.name)
         asset = component.get_asset(button_css.file.name)
 
-        assert asset.url == str(button_css.file)
+        assert asset.url == f"/static{button_css.file.parent}/{button_css.file.name}"
 
     def test_url_with_reverse_fallback(self, templates_dir):
         button = TestComponent(
@@ -415,14 +418,6 @@ class TestFindersFind:
 
 
 class TestStaticCollection:
-    @pytest.fixture(autouse=True)
-    def staticfiles_app(self):
-        with override_settings(
-            INSTALLED_APPS=settings.INSTALLED_APPS + ["django.contrib.staticfiles"],
-            STATIC_URL="/static/",
-        ):
-            yield
-
     @pytest.fixture
     def static_root(self, tmp_path):
         static_dir = tmp_path / "static"
@@ -554,14 +549,6 @@ class TestStaticCollection:
 
 
 class TestStaticTemplateTag:
-    @pytest.fixture(autouse=True)
-    def staticfiles_app(self):
-        with override_settings(
-            INSTALLED_APPS=settings.INSTALLED_APPS + ["django.contrib.staticfiles"],
-            STATIC_URL="/static/",
-        ):
-            yield
-
     def test_static_tag(self, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"

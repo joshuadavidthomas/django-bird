@@ -13,6 +13,7 @@ from typing import overload
 
 from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.finders import BaseFinder
+from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.core.checks import CheckMessage
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
@@ -85,7 +86,7 @@ class Asset:
 
     @property
     def storage(self):
-        storage = FileSystemStorage(location=str(self.template_dir))
+        storage = StaticFilesStorage(location=str(self.template_dir))
         storage.prefix = DjangoBirdAppConfig.label  # type: ignore[attr-defined]
         return storage
 
@@ -101,8 +102,10 @@ class Asset:
 
     @property
     def url(self) -> str:
-        path = finders.find(str(self.relative_path))
-        return path or reverse(
+        static_path = finders.find(str(self.relative_path))
+        if static_path is not None:
+            return self.storage.url(static_path)
+        return reverse(
             "django_bird:asset",
             kwargs={
                 "component_name": self.path.stem,
