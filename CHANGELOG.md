@@ -20,6 +20,13 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Changed
 - **Internal**: Refactored attribute value handling to use pattern matching for cleaner value resolution.
+- **Internal**: Improved handling of quoted vs unquoted attribute values in component parameters.
+- **Internal**: Simplified template tag parsing in `bird`, `bird:prop`, and `bird:slot` tags.
+- **Internal**: Refactored component parameter handling to be more consistent across the codebase.
+
+### Fixed
+- Fixed asset URL generation to properly use Django's static file storage system instead of raw file paths.
+- Fixed handling of data attributes in components to properly handle quotes and boolean values.
 
 ## [0.13.1]
 
