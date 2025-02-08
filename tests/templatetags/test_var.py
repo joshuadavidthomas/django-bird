@@ -86,6 +86,21 @@ def test_explicit_var_cleanup():
     assert "After: cleaned" in rendered
 
 
+def test_reseting_var():
+    template = Template("""
+        {% load django_bird %}
+        {% bird:var x='hello' %}
+        Before: {{ vars.x }}
+        {% bird:var x=None %}
+        After: {{ vars.x|default:'cleaned' }}
+    """)
+
+    rendered = template.render(Context({}))
+
+    assert "Before: hello" in rendered
+    assert "After: cleaned" in rendered
+
+
 def test_explicit_var_cleanup_with_multiple_vars():
     template = Template("""
         {% load django_bird %}
