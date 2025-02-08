@@ -71,6 +71,40 @@ def test_variable_with_template_variable():
     assert rendered.strip() == "Hello Django"
 
 
+def test_explicit_var_cleanup():
+    template = Template("""
+        {% load django_bird %}
+        {% bird:var x='hello' %}
+        Before: {{ vars.x }}
+        {% endbird:var x %}
+        After: {{ vars.x|default:'cleaned' }}
+    """)
+
+    rendered = template.render(Context({}))
+
+    assert "Before: hello" in rendered
+    assert "After: cleaned" in rendered
+
+
+def test_explicit_var_cleanup_with_multiple_vars():
+    template = Template("""
+        {% load django_bird %}
+        {% bird:var x='hello' %}
+        {% bird:var y='world' %}
+        Before: {{ vars.x }} {{ vars.y }}
+        {% endbird:var x %}
+        Middle: {{ vars.x|default:'cleaned' }} {{ vars.y }}
+        {% endbird:var y %}
+        After: {{ vars.x|default:'cleaned' }} {{ vars.y|default:'cleaned' }}
+    """)
+
+    rendered = template.render(Context({}))
+
+    assert "Before: hello world" in rendered
+    assert "Middle: cleaned world" in rendered
+    assert "After: cleaned cleaned" in rendered
+
+
 @pytest.mark.parametrize(
     ("template_str", "expected_error"),
     [
