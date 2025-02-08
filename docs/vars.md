@@ -61,6 +61,31 @@ Outside: {{ vars.count }}  {# vars.count is not accessible here #}
 
 Each instance of the button component will have its own isolated `count` variable.
 
+## Explicit Variable Cleanup
+
+While variables are automatically cleaned up when a component finishes rendering, you can explicitly clean up variables using the `endbird:var` tag:
+
+```django
+{% bird:var message='Hello' %}
+{{ vars.message }}  {# Outputs: Hello #}
+{% endbird:var message %}
+{{ vars.message }}  {# Variable is now cleaned up #}
+```
+
+This can be useful when you want to ensure a variable is cleaned up at a specific point in your template, rather than waiting for the component to finish rendering.
+
+You can clean up multiple variables independently:
+
+```django
+{% bird:var x='hello' %}
+{% bird:var y='world' %}
+{{ vars.x }} {{ vars.y }}  {# Outputs: hello world #}
+{% endbird:var x %}
+{{ vars.x }} {{ vars.y }}  {# Outputs: world (x is cleaned up) #}
+{% endbird:var y %}
+{{ vars.x }} {{ vars.y }}  {# Both variables are now cleaned up #}
+```
+
 ## Working with Template Variables
 
 You can use template variables when setting values:
