@@ -184,3 +184,69 @@ def test_var_context_isolation_nested_components(create_template, templates_dir)
     assert "Outer: outer" in rendered
     assert "Inner: inner" in rendered
     assert "After Inner: outer" in rendered
+
+
+def test_var_context_clean_between_renders(create_template, templates_dir):
+    """Verify that vars are clean between multiple renders of the same template."""
+    TestComponent(
+        name="counter",
+        content="""
+            {% bird:var count='1' %}
+            Count: {{ vars.count }}
+        """
+    ).create(templates_dir)
+
+    template_path = templates_dir / "test.html"
+    template_path.write_text("{% bird counter %}{% endbird %}")
+    template = create_template(template_path)
+
+    first_render = template.render({})
+    second_render = template.render({})
+    
+    assert "Count: 1" in first_render
+    assert "Count: 1" in second_render  # Should be reset, not incremented
+
+
+def test_var_append_with_nested_components(create_template, templates_dir):
+    """Verify that += operator works correctly with nested components."""
+    TestComponent(
+        name="outer",
+        content="""
+            {% bird:var message='Hello' %}
+            {% bird:var message+=' outer' %}
+            Outer: {{ vars.message }}
+            {% bird inner %}{% endbird %}
+            After: {{ vars.message }}
+        """
+    ).create(templates_dir)
+
+    TestComponent(
+        name="inner",
+        content="""
+            {% bird:var message='Hello' %}
+            {% bird:var message+=' inner' %}
+            Inner: {{ vars.message }}
+        """
+    ).create(templates_dir)
+
+    template_path = templates_dir / "test.html"
+    template_path.write_text("{% bird outer %}{% endbird %}")
+    template = create_template(template_path)
+
+    rendered = template.render({})
+    assert "Outer: Hello outer" in rendered
+    assert "Inner: Hello inner" in rendered
+    assert "After: Hello outer" in rendered
+
+
+def test_var_outside_component():
+    """Verify that using vars outside a component fails appropriately."""
+    template = Template(
+        """
+        {% load django_bird %}
+        {% bird:var x='test' %}
+        {{ vars.x }}
+        """
+    )
+    with pytest.raises(TemplateSyntaxError, match=r"\'bird:var\' tag can only be used within a bird component"):
+        template.render(Context({}))
