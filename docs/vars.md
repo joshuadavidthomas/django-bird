@@ -1,6 +1,6 @@
 # Variables in Components
 
-Django Bird provides a way to manage local variables within components using the `bird:var` template tag. Similar to Django's built-in `{% with %}` tag, it allows you to create temporary variables, but with some key advantages:
+django-bird provides a way to manage local variables within components using the `{% bird:var %}` template tag. Similar to Django's built-in `{% with %}` tag, it allows you to create temporary variables, but with some key advantages:
 
 - No closing tag required (unlike `{% with %}` which needs `{% endwith %}`)
 - Variables are automatically cleaned up when the component finishes rendering
@@ -9,13 +9,13 @@ Django Bird provides a way to manage local variables within components using the
 
 ## Basic Usage
 
-The `bird:var` tag allows you to create and modify variables that are scoped to the current component. These variables are accessible through the `vars` context dictionary.
+The `{% bird:var %}` tag allows you to create and modify variables that are scoped to the current component. These variables are accessible through the `vars` context dictionary.
 
 ### Creating Variables
 
 To create a new variable:
 
-```django
+```htmldjango
 {% bird:var name='value' %}
 {{ vars.name }}  {# Outputs: value #}
 ```
@@ -24,7 +24,7 @@ To create a new variable:
 
 You can append to existing variables using the `+=` operator:
 
-```django
+```htmldjango
 {% bird:var greeting='Hello' %}
 {% bird:var greeting+=' World' %}
 {{ vars.greeting }}  {# Outputs: Hello World #}
@@ -32,23 +32,21 @@ You can append to existing variables using the `+=` operator:
 
 If you append to a non-existent variable, it will be created:
 
-```django
+```htmldjango
 {% bird:var message+='World' %}
 {{ vars.message }}  {# Outputs: World #}
 ```
 
 ## Variable Scope
 
-Variables created with `bird:var` are:
+Variables created with `{% bird:var %}` are:
 
 - Local to the component where they are defined
 - Isolated between different instances of the same component
 - Not accessible outside the component
 - Reset between renders
 
-### Example of Scope Isolation
-
-```django
+```htmldjango
 {# button.html #}
 {% bird:var count='1' %}
 Count: {{ vars.count }}
@@ -61,11 +59,11 @@ Outside: {{ vars.count }}  {# vars.count is not accessible here #}
 
 Each instance of the button component will have its own isolated `count` variable.
 
-## Explicit Variable Cleanup
+### Explicit Variable Cleanup
 
-While variables are automatically cleaned up when a component finishes rendering, you can explicitly clean up variables using the `endbird:var` tag:
+While variables are automatically cleaned up when a component finishes rendering, you can explicitly clean up variables using the `{% endbird:var %}` tag:
 
-```django
+```htmldjango
 {% bird:var message='Hello' %}
 {{ vars.message }}  {# Outputs: Hello #}
 {% endbird:var message %}
@@ -76,7 +74,7 @@ This can be useful when you want to ensure a variable is cleaned up at a specifi
 
 You can clean up multiple variables independently:
 
-```django
+```htmldjango
 {% bird:var x='hello' %}
 {% bird:var y='world' %}
 {{ vars.x }} {{ vars.y }}  {# Outputs: hello world #}
@@ -90,7 +88,7 @@ You can clean up multiple variables independently:
 
 You can use template variables when setting values:
 
-```django
+```htmldjango
 {% bird:var greeting='Hello ' %}
 {% bird:var greeting+=user.name %}
 {{ vars.greeting }}  {# Outputs: Hello John #}
@@ -100,7 +98,7 @@ You can use template variables when setting values:
 
 Variables are properly scoped in nested components:
 
-```django
+```htmldjango
 {# outer.html #}
 {% bird:var message='Outer' %}
 {{ vars.message }}
