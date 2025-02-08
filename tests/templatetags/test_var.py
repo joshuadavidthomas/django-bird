@@ -88,15 +88,15 @@ def test_variable_with_template_variable():
     [
         (
             "{% load django_bird %}{% bird:var %}",
-            "'bird:var' tag requires an assignment",
+            r"\'bird:var\' tag requires an assignment",
         ),
         (
             "{% load django_bird %}{% bird:var invalid_syntax %}",
-            "Invalid assignment in 'bird:var' tag: invalid_syntax. Expected format: bird:var variable='value' or bird:var variable+='value'.",
+            r"Invalid assignment in \'bird:var\' tag: invalid_syntax\. Expected format: bird:var variable=\'value\' or bird:var variable\+=\'value\'\.",
         ),
         (
             "{% load django_bird %}{% endbird:var %}",
-            "endbird:var tag requires a variable name",
+            r"endbird:var tag requires a variable name",
         ),
     ],
 )
