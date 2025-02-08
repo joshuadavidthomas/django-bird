@@ -20,7 +20,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Added
 
-- Added the `{% bird:var %}` templatetag for managing local context variables within components, including support for appending, overwriting, and resetting values. Variables are scoped to components and automatically are cleaned up when the component finishes rendering, with option explicit cleanup via `{% endbird:var %}`.
+- Added the `{% bird:var %}` templatetag for managing local context variables within components, including support for appending, overwriting, and resetting values. Variables are scoped to components and automatically are cleaned up when the component finishes rendering, with optional explicit cleanup via `{% endbird:var %}`.
 
 ## [0.13.2]
 
