@@ -13,16 +13,23 @@ The `{% bird:var %}` tag allows you to create and modify variables that are scop
 
 ### Creating Variables
 
-To create a new variable:
+To create a new variable, use the assignment syntax:
 
 ```htmldjango
 {% bird:var name='value' %}
 {{ vars.name }}  {# Outputs: value #}
 ```
 
+You can also set a variable to None to clear it:
+
+```htmldjango
+{% bird:var name=None %}
+{{ vars.name|default:'cleared' }}  {# Outputs: cleared #}
+```
+
 ### Appending to Variables
 
-You can append to existing variables using the `+=` operator:
+The `+=` operator lets you append to existing variables:
 
 ```htmldjango
 {% bird:var greeting='Hello' %}
@@ -35,6 +42,14 @@ If you append to a non-existent variable, it will be created:
 ```htmldjango
 {% bird:var message+='World' %}
 {{ vars.message }}  {# Outputs: World #}
+```
+
+Variables can also use template variables in their values:
+
+```htmldjango
+{% bird:var greeting='Hello ' %}
+{% bird:var greeting+=user.name %}
+{{ vars.greeting }}  {# Outputs: Hello John #}
 ```
 
 ## Variable Scope
