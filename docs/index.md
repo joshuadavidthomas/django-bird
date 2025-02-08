@@ -13,6 +13,7 @@
 :maxdepth: 3
 Naming <naming>
 Attributes/Properties <params>
+Variables <vars>
 slots
 Assets <assets>
 Organization <organization>
