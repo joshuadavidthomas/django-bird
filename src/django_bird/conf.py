@@ -72,7 +72,7 @@ class AutoConfigurator:
         self.configure_builtins(options)
 
         # Force re-evaluation of settings.TEMPLATES because EngineHandler caches it.
-        with suppress(AttributeError):
+        with suppress(AttributeError):  # pragma: no cover
             del django.template.engines.templates
             django.template.engines._engines = {}  # type: ignore[attr-defined]
 

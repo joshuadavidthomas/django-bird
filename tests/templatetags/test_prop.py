@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from django import template
 from django.template.base import Parser
 from django.template.base import Token
 from django.template.base import TokenType
@@ -25,3 +26,10 @@ def test_do_prop(contents, expected):
     assert node.name == expected.name
     assert node.default == expected.default
     assert node.attrs == expected.attrs
+
+
+def test_do_prop_no_args():
+    start_token = Token(TokenType.BLOCK, TAG)
+
+    with pytest.raises(template.TemplateSyntaxError):
+        do_prop(Parser([]), start_token)

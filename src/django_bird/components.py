@@ -74,12 +74,8 @@ class Component:
     def source(self):
         return self.template.template.source
 
-    @property
-    def used_in(self):
-        return components.get_template_usage(self.name)
-
     @classmethod
-    def from_abs_path(cls, path: Path, root: Path) -> Component | None:
+    def from_abs_path(cls, path: Path, root: Path) -> Component:
         name = str(path.relative_to(root).with_suffix("")).replace("/", ".")
         return cls.from_name(name)
 
@@ -174,11 +170,6 @@ class BoundComponent:
             **slot_nodes,
         }
 
-        if context.get("slots"):
-            for name, content in context["slots"].items():
-                if name not in slots or not slots.get(name):
-                    slots[name] = TextNode(str(content))
-
         if not slots[DEFAULT_SLOT] and "slot" in context:
             slots[DEFAULT_SLOT] = TextNode(context["slot"])
 
@@ -203,8 +194,6 @@ class ComponentRegistry:
                 continue
 
             component = Component.from_abs_path(component_abs_path, root_abs_path)
-            if component is None:
-                continue
 
             if component.name not in self._components:
                 self._components[component.name] = component
@@ -248,10 +237,6 @@ class ComponentRegistry:
         path = Path(template_path) if isinstance(template_path, str) else template_path
         for component_name in self._template_usage.get(path, set()):
             yield Component.from_name(component_name)
-
-    def get_template_usage(self, component: str | Component) -> frozenset[Path]:
-        name = component.name if isinstance(component, Component) else component
-        return frozenset(self._component_usage.get(name, set()))
 
 
 components = ComponentRegistry()
