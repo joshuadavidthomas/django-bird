@@ -4,7 +4,6 @@ import shutil
 from pathlib import Path
 
 import pytest
-from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.management import call_command
 from django.template.base import Template
@@ -12,7 +11,6 @@ from django.template.context import Context
 from django.test import override_settings
 
 from django_bird.components import Component
-from django_bird.conf import DJANGO_BIRD_FINDER
 from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
 from django_bird.staticfiles import BirdAssetFinder
@@ -49,15 +47,38 @@ class TestAssetClass:
     @pytest.mark.parametrize(
         "asset,expected_html_tag_bits",
         [
-            (Asset(Path("static.css"), AssetType.CSS), 'link rel="stylesheet" href='),
-            (Asset(Path("static.js"), AssetType.JS), "script src="),
+            (
+                TestAsset(
+                    component=None,
+                    content=".button { color: blue; }",
+                    asset_type=AssetType.CSS,
+                ),
+                'link rel="stylesheet" href=',
+            ),
+            (
+                TestAsset(
+                    component=None,
+                    content="console.log('button');",
+                    asset_type=AssetType.JS,
+                ),
+                "script src=",
+            ),
         ],
     )
-    def test_render(self, asset, expected_html_tag_bits):
-        rendered = asset.render()
+    def test_render(self, asset, expected_html_tag_bits, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        asset.component = button
+        asset.create()
+
+        component = Component.from_name(button.name)
+        component_asset = component.get_asset(asset.file.name)
+
+        rendered = component_asset.render()
 
         assert expected_html_tag_bits in rendered
-        assert asset.url in rendered
+        assert component_asset.url in rendered
 
     def test_storage(self, templates_dir, settings):
         button = TestComponent(
@@ -141,7 +162,7 @@ class TestAssetClass:
 
         assert asset.relative_path == Path("bird/nested/button.css")
 
-    def test_url_with_staticfiles_finder(self, templates_dir):
+    def test_url(self, templates_dir):
         button = TestComponent(
             name="button",
             content="<button>Click me</button>",
@@ -159,7 +180,7 @@ class TestAssetClass:
             asset.url == f"/static/{button_css.file.parent.name}/{button_css.file.name}"
         )
 
-    def test_url_with_reverse_fallback(self, templates_dir):
+    def test_url_nonexistent(self, templates_dir):
         button = TestComponent(
             name="button",
             content="<button>Click me</button>",
@@ -173,14 +194,9 @@ class TestAssetClass:
         component = Component.from_name(button.name)
         asset = component.get_asset(button_css.file.name)
 
-        with override_settings(
-            STATICFILES_FINDERS=[
-                finder
-                for finder in settings.STATICFILES_FINDERS
-                if finder != DJANGO_BIRD_FINDER
-            ]
-        ):
-            assert asset.url == f"/__bird__/assets/{component.name}/{asset.path.name}"
+        button_css.file.unlink()
+
+        assert asset.url is None
 
     def test_from_path(self, templates_dir):
         button = TestComponent(

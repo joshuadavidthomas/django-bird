@@ -133,27 +133,3 @@ python manage.py collectstatic
 ```
 
 This will collect all component assets into your static files directory, allowing you to serve them via your web server, [WhiteNoise](https://whitenoise.readthedocs.io), or a CDN.
-
-### Deprecated View-Based Serving
-
-```{warning}
-**Warning:** The built-in asset serving view is deprecated and will be removed in a future release. Please switch to using the custom staticfiles finder and serve assets through Django's static files system.
-```
-
-If you still need to use the view-based asset serving during the transition, you can enable it by adding django-bird's URLs to your project's URL configuration:
-
-```{code-block} python
-:caption: urls.py
-
-from django.conf import settings
-from django.urls import include
-from django.urls import path
-
-
-if settings.DEBUG:
-    urlpatterns = [
-        path("__bird__/", include("django_bird.urls")),
-    ]
-```
-
-This will make component assets available at `/__bird__/assets/<component_name>/<asset_filename>` when `DEBUG` is `True`.

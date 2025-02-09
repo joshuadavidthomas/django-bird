@@ -37,6 +37,11 @@ TEST_SETTINGS = {
         "django.contrib.staticfiles",
     ],
     "STATIC_URL": "/static/",
+    "STATICFILES_FINDERS": [
+        "django.contrib.staticfiles.finders.FileSystemFinder",
+        "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+        "django_bird.staticfiles.BirdAssetFinder",
+    ],
     "TEMPLATES": [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",

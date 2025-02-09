@@ -117,7 +117,12 @@ exclude_lines = [
 fail_under = 98
 
 [tool.coverage.run]
-omit = ["src/django_bird/migrations/*", "src/django_bird/_typing.py", "tests/*"]
+omit = [
+  "src/django_bird/migrations/*",
+  "src/django_bird/_typing.py",
+  "src/django_bird/views.py",  # TODO: remove when not empty
+  "tests/*"
+]
 source = ["src/django_bird"]
 
 [tool.django-stubs]
