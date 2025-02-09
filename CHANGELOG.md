@@ -22,6 +22,11 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Added the `{% bird:var %}` templatetag for managing local context variables within components, including support for appending, overwriting, and resetting values. Variables are scoped to components and automatically are cleaned up when the component finishes rendering, with optional explicit cleanup via `{% endbird:var %}`.
 
+### Removed
+
+- Removed the deprecated asset serving view (`asset_view`) and its URL configuration. Use
+ `BirdAssetFinder` with Django's staticfiles app instead.
+
 ## [0.13.2]
 
 ### Fixed
