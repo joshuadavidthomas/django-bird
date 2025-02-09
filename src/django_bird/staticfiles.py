@@ -16,7 +16,6 @@ from django.contrib.staticfiles.finders import BaseFinder
 from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.core.checks import CheckMessage
 from django.core.files.storage import FileSystemStorage
-from django.urls import reverse
 
 from ._typing import override
 from .apps import DjangoBirdAppConfig
@@ -70,6 +69,9 @@ class Asset:
         return self.path.exists()
 
     def render(self):
+        if self.url is None:
+            return ""
+
         match self.type:
             case AssetType.CSS:
                 return f'<link rel="stylesheet" href="{self.url}">'
@@ -101,18 +103,14 @@ class Asset:
         return template_dir.parent
 
     @property
-    def url(self) -> str:
+    def url(self) -> str | None:
+        print(f"{self.relative_path=}")
         static_path = finders.find(str(self.relative_path))
-        if static_path is not None:
-            static_relative_path = Path(static_path).relative_to(self.template_dir)
-            return self.storage.url(str(static_relative_path))
-        return reverse(
-            "django_bird:asset",
-            kwargs={
-                "component_name": self.path.stem,
-                "asset_filename": self.path.name,
-            },
-        )
+        print(f"{static_path=}")
+        if static_path is None:
+            return None
+        static_relative_path = Path(static_path).relative_to(self.template_dir)
+        return self.storage.url(str(static_relative_path))
 
     @classmethod
     def from_path(cls, path: Path, asset_type: AssetType):
@@ -166,6 +164,7 @@ class BirdAssetFinder(BaseFinder):
         path_obj = Path(path)
 
         for asset in self.components.get_assets():
+            print(f"{asset=}")
             if path_obj == asset.relative_path:
                 matched_path = str(asset.absolute_path)
             elif asset.relative_path.is_relative_to(path_obj):

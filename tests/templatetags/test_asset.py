@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import pytest
-from django.conf import settings
 from django.template.base import Parser
 from django.template.base import Token
 from django.template.base import TokenType
 from django.template.context import Context
 from django.template.exceptions import TemplateSyntaxError
 from django.template.loader import get_template
-from django.test import override_settings
 
-from django_bird.conf import DJANGO_BIRD_FINDER
 from django_bird.staticfiles import AssetType
 from django_bird.templatetags.tags.asset import CSS_TAG
 from django_bird.templatetags.tags.asset import JS_TAG
@@ -18,18 +15,6 @@ from django_bird.templatetags.tags.asset import AssetNode
 from django_bird.templatetags.tags.asset import do_asset
 from tests.utils import TestAsset
 from tests.utils import TestComponent
-
-
-@pytest.fixture(autouse=True)
-def reset_staticfiles_finders():
-    with override_settings(
-        STATICFILES_FINDERS=[
-            finder
-            for finder in settings.STATICFILES_FINDERS
-            if finder != DJANGO_BIRD_FINDER
-        ]
-    ):
-        yield
 
 
 class TestTemplateTag:
@@ -115,21 +100,15 @@ class TestTemplateTag:
         rendered = template.render({})
 
         assert (
-            f'<link rel="stylesheet" href="/__bird__/assets/{alert.name}/{alert_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/bird/{alert_css.file.name}">'
             in rendered
         )
         assert (
-            f'<link rel="stylesheet" href="/__bird__/assets/{button.name}/{button_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
             in rendered
         )
-        assert (
-            f'<script src="/__bird__/assets/{alert.name}/{alert_js.file.name}"></script>'
-            in rendered
-        )
-        assert (
-            f'<script src="/__bird__/assets/{button.name}/{button_js.file.name}"></script>'
-            in rendered
-        )
+        assert f'<script src="/static/bird/{alert_js.file.name}"></script>' in rendered
+        assert f'<script src="/static/bird/{button_js.file.name}"></script>' in rendered
 
     def test_with_no_assets(self, create_template, templates_dir):
         TestComponent(
@@ -206,21 +185,21 @@ class TestTemplateTag:
 
         head_end = rendered.find("</head>")
         assert (
-            f'<link rel="stylesheet" href="/__bird__/assets/{first.name}/{first_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/bird/{first_css.file.name}">'
             in rendered[:head_end]
         )
         assert (
-            f'<link rel="stylesheet" href="/__bird__/assets/{second.name}/{second_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/bird/{second_css.file.name}">'
             in rendered[:head_end]
         )
 
         body_start = rendered.find("<body")
         assert (
-            f'<script src="/__bird__/assets/{first.name}/{first_js.file.name}"></script>'
+            f'<script src="/static/bird/{first_js.file.name}"></script>'
             in rendered[body_start:]
         )
         assert (
-            f'<script src="/__bird__/assets/{second.name}/{second_js.file.name}"></script>'
+            f'<script src="/static/bird/{second_js.file.name}"></script>'
             in rendered[body_start:]
         )
 
@@ -267,18 +246,15 @@ class TestTemplateTag:
         template = get_template(child_path.name)
 
         rendered = template.render({})
-        print(f"{rendered=}")
 
         assert (
             rendered.count(
-                f'<link rel="stylesheet" href="/__bird__/assets/{alert.name}/{alert_css.file.name}">'
+                f'<link rel="stylesheet" href="/static/bird/{alert_css.file.name}">'
             )
             == 1
         )
         assert (
-            rendered.count(
-                f'<script src="/__bird__/assets/{alert.name}/{alert_js.file.name}"></script>'
-            )
+            rendered.count(f'<script src="/static/bird/{alert_js.file.name}"></script>')
             == 1
         )
 
@@ -337,19 +313,16 @@ class TestTemplateTag:
         rendered = template.render({})
 
         assert (
-            f'<link rel="stylesheet" href="/__bird__/assets/{alert.name}/{alert_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/bird/{alert_css.file.name}">'
             in rendered
         )
+        assert f'<script src="/static/bird/{alert_js.file.name}"></script>' in rendered
         assert (
-            f'<script src="/__bird__/assets/{alert.name}/{alert_js.file.name}"></script>'
-            in rendered
-        )
-        assert (
-            f'<link rel="stylesheet" href="/__bird__/assets/{button.name}/{button_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
             not in rendered
         )
         assert (
-            f'<script src="/__bird__/assets/{button.name}/{button_js.file.name}"></script>'
+            f'<script src="/static/bird/{button_js.file.name}"></script>'
             not in rendered
         )
 
