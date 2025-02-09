@@ -1,6 +1,6 @@
 # Variables in Components
 
-django-bird provides a way to manage local variables within components using the `{% bird:var %}` template tag, similar to Django's built-in `{% with %}` tag, it allows you to create temporary variables, but with some key advantages:
+django-bird provides a way to manage local variables within components using the `{% bird:var %}` template tag. Similar to Django's built-in `{% with %}` tag, it allows you to create temporary variables, but with some key advantages:
 
 - No closing tag required (unlike `{% with %}` which needs `{% endwith %}`)
 - Variables are automatically cleaned up when the component finishes rendering
