@@ -1,6 +1,6 @@
 # Variables in Components
 
-django-bird provides a way to manage local variables within components using the `{% bird:var %}` template tag. Similar to Django's built-in `{% with %}` tag, it allows you to create temporary variables, but with some key advantages:
+django-bird provides a way to manage local variables within components using the `{% bird:var %}` template tag, similar to Django's built-in `{% with %}` tag, it allows you to create temporary variables, but with some key advantages:
 
 - No closing tag required (unlike `{% with %}` which needs `{% endwith %}`)
 - Variables are automatically cleaned up when the component finishes rendering
@@ -20,12 +20,27 @@ To create a new variable, use the assignment syntax:
 {{ vars.name }}  {# Outputs: value #}
 ```
 
-You can also set a variable to None to clear it:
+### Overwriting and Clearing Variables
+
+You can overwrite an existing variable by assigning a new value:
 
 ```htmldjango
-{% bird:var name=None %}
-{{ vars.name|default:'cleared' }}  {# Outputs: cleared #}
+{% bird:var counter='1' %}
+{{ vars.counter }}  {# Outputs: 1 #}
+{% bird:var counter='2' %}
+{{ vars.counter }}  {# Outputs: 2 #}
 ```
+
+To reset/clear a variable, set it to None:
+
+```htmldjango
+{% bird:var message='hello' %}
+{{ vars.message }}  {# Outputs: hello #}
+{% bird:var message=None %}
+{{ vars.message }}  {# Variable is cleared #}
+```
+
+Alternatively, you can use explicit cleanup with `{% endbird:var %}` - see [Explicit Variable Cleanup](#explicit-variable-cleanup) for details.
 
 ### Appending to Variables
 
@@ -44,14 +59,6 @@ If you append to a non-existent variable, it will be created:
 {{ vars.message }}  {# Outputs: World #}
 ```
 
-Variables can also use template variables in their values:
-
-```htmldjango
-{% bird:var greeting='Hello ' %}
-{% bird:var greeting+=user.name %}
-{{ vars.greeting }}  {# Outputs: Hello John #}
-```
-
 ## Variable Scope
 
 Variables created with `{% bird:var %}` are:
@@ -61,12 +68,16 @@ Variables created with `{% bird:var %}` are:
 - Not accessible outside the component
 - Reset between renders
 
-```htmldjango
-{# button.html #}
+```{code-block} htmldjango
+:caption: templates/bird/button.html
+
 {% bird:var count='1' %}
 Count: {{ vars.count }}
+```
 
-{# template.html #}
+```{code-block} htmldjango
+:caption: template.html
+
 {% bird button %}{% endbird %}
 {% bird button %}{% endbird %}
 Outside: {{ vars.count }}  {# vars.count is not accessible here #}
@@ -113,14 +124,18 @@ You can use template variables when setting values:
 
 Variables are properly scoped in nested components:
 
-```htmldjango
-{# outer.html #}
+```{code-block} htmldjango
+:caption: templates/bird/outer.html
+
 {% bird:var message='Outer' %}
 {{ vars.message }}
 {% bird inner %}{% endbird %}
 {# vars.message still contains 'Outer' here #}
+```
 
-{# inner.html #}
+```{code-block} htmldjango
+:caption: templates/bird/inner.html
+
 {% bird:var message='Inner' %}
 {{ vars.message }}  {# Contains 'Inner', doesn't affect outer component #}
 ```
