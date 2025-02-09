@@ -104,9 +104,7 @@ class Asset:
 
     @property
     def url(self) -> str | None:
-        print(f"{self.relative_path=}")
         static_path = finders.find(str(self.relative_path))
-        print(f"{static_path=}")
         if static_path is None:
             return None
         static_relative_path = Path(static_path).relative_to(self.template_dir)
@@ -164,7 +162,6 @@ class BirdAssetFinder(BaseFinder):
         path_obj = Path(path)
 
         for asset in self.components.get_assets():
-            print(f"{asset=}")
             if path_obj == asset.relative_path:
                 matched_path = str(asset.absolute_path)
             elif asset.relative_path.is_relative_to(path_obj):
