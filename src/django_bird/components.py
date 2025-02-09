@@ -151,6 +151,7 @@ class BoundComponent:
                 "props": props,
                 "slot": slots.get(DEFAULT_SLOT),
                 "slots": slots,
+                "vars": {},
             }
         ):
             return self.component.template.template.render(context)
