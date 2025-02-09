@@ -4,4 +4,4 @@ from .apps import DjangoBirdAppConfig
 
 app_name = DjangoBirdAppConfig.label
 
-urlpatterns = []
+urlpatterns = []  # type: ignore[var-annotated]
