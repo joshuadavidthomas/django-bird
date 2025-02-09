@@ -27,6 +27,30 @@ from .utils import normalize_whitespace
 
 
 class TestComponentClass:
+    def test_get_asset(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+
+        component = Component.from_name(button.name)
+
+        assert component.get_asset(button_css.file.name)
+
+    def test_get_asset_no_asset(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+
+        component = Component.from_name(button.name)
+
+        assert component.get_asset("button.css") is None
+        assert component.get_asset("button.js") is None
+
     def test_from_abs_path_basic(self, templates_dir):
         test_component = TestComponent(
             name="button", content="<button>Click me</button>"

@@ -1,11 +1,33 @@
 from __future__ import annotations
 
 import pytest
+from django import template
 from django.template import Context
 from django.template import Template
+from django.template.base import Parser
+from django.template.base import Token
+from django.template.base import TokenType
 from django.template.exceptions import TemplateSyntaxError
 
+from django_bird.templatetags.tags.var import END_TAG
+from django_bird.templatetags.tags.var import TAG
+from django_bird.templatetags.tags.var import do_end_var
+from django_bird.templatetags.tags.var import do_var
 from tests.utils import TestComponent
+
+
+def test_do_var_no_args():
+    start_token = Token(TokenType.BLOCK, TAG)
+
+    with pytest.raises(template.TemplateSyntaxError):
+        do_var(Parser([]), start_token)
+
+
+def test_do_end_var_no_args():
+    start_token = Token(TokenType.BLOCK, END_TAG)
+
+    with pytest.raises(template.TemplateSyntaxError):
+        do_end_var(Parser([]), start_token)
 
 
 def test_basic_assignment():
