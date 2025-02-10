@@ -13,7 +13,7 @@ concurrency:
 env:
   PYTHONUNBUFFERED: "1"
   FORCE_COLOR: "1"
-  UV_VERSION: "0.4.x"
+  UV_VERSION: "0.5.x"
 
 jobs:
   generate-matrix:
