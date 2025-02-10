@@ -76,7 +76,7 @@ def print_directory_tree(root_dir: str | Path, prefix: str = ""):
     root_path = Path(root_dir)
     contents = sorted(root_path.iterdir())
     pointers = ["├── "] * (len(contents) - 1) + ["└── "]
-    for pointer, path in zip(pointers, contents):
+    for pointer, path in zip(pointers, contents, strict=False):
         print(prefix + pointer + path.name)
         if path.is_dir():
             extension = "│   " if pointer == "├── " else "    "

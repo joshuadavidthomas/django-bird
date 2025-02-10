@@ -199,8 +199,8 @@ extend-include = ["*.pyi?"]
 indent-width = 4
 # Same as Black.
 line-length = 88
-# Assume Python >3.8
-target-version = "py38"
+# Assume Python >3.10
+target-version = "py310"
 
 [tool.ruff.format]
 # Like Black, indent with spaces, rather than tabs.

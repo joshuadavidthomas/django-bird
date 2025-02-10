@@ -179,7 +179,7 @@ class NodeVisitor:
     def visit_IncludeNode(self, node: IncludeNode, context: Context) -> None:
         try:
             included_templates = node.template.resolve(context)
-            if not isinstance(included_templates, (list, tuple)):
+            if not isinstance(included_templates, list | tuple):
                 included_templates = [included_templates]
             for template_name in included_templates:
                 included_template = self.engine.get_template(template_name)
