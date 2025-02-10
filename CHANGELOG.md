@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- **Internal**: Removed the double registration of the `{% bird:var %}` and `{% endbird:var %}` tags.
+
 ## [0.14.0]
 
 🚨 This release contains some breaking changes. See the Removed section for more information. 🚨
