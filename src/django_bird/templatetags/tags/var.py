@@ -19,7 +19,6 @@ END_TAG = "endbird:var"
 OPERATOR_PATTERN = re.compile(r"(\w+)\s*(\+=|=)\s*(.+)")
 
 
-@register.tag(name=TAG)
 def do_var(parser: Parser, token: Token):
     _tag, *bits = token.split_contents()
     if not bits:
@@ -42,7 +41,6 @@ def do_var(parser: Parser, token: Token):
     return VarNode(var_name, operator, value)
 
 
-@register.tag(name=END_TAG)
 def do_end_var(_parser: Parser, token: Token):
     _tag, *bits = token.split_contents()
     if not bits:
