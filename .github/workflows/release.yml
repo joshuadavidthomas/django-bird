@@ -4,9 +4,6 @@ on:
   release:
     types: [published]
 
-env:
-  UV_VERSION: "0.5.x"
-
 jobs:
   test:
     uses: ./.github/workflows/test.yml
@@ -26,7 +23,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          version: ${{ env.UV_VERSION }}
+          pyproject-file: pyproject.toml
 
       - name: Build package
         run: |
