@@ -88,9 +88,9 @@ class Asset:
 
     @property
     def storage(self):
-        storage = StaticFilesStorage(location=str(self.template_dir))
-        storage.prefix = DjangoBirdAppConfig.label  # type: ignore[attr-defined]
-        return storage
+        return BirdAssetStorage(
+            location=str(self.template_dir), prefix=DjangoBirdAppConfig.label
+        )
 
     @property
     def template_dir(self):
@@ -116,6 +116,13 @@ class Asset:
         if asset_path.exists():
             return cls(path=asset_path, type=asset_type)
         return None
+
+
+@final
+class BirdAssetStorage(StaticFilesStorage):
+    def __init__(self, *args: Any, prefix: str, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.prefix = prefix
 
 
 @final
