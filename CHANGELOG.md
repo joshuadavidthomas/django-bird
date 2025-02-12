@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- **Internal**: Extracted `BirdAssetStorage` from `Asset` class to handle static file storage with custom prefixes
+
 ## [0.14.1]
 
 ### Fixed
