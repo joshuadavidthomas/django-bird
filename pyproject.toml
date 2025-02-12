@@ -239,4 +239,4 @@ required-imports = ["from __future__ import annotations"]
 keep-runtime-typing = true
 
 [tool.uv]
-required-version = "~=0.5.*"
+required-version = "==0.5.*"
