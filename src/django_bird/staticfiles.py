@@ -15,6 +15,7 @@ from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.finders import BaseFinder
 from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.core.checks import CheckMessage
+from django.core.files.base import File
 from django.core.files.storage import FileSystemStorage
 
 from django_bird import hookimpl
@@ -148,6 +149,35 @@ class BirdAssetStorage(StaticFilesStorage):
     def __init__(self, *args: Any, prefix: str, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.prefix = prefix
+
+    def _open(self, name: str, mode: str = "rb") -> File:
+        file = File(open(self.path(name), mode))
+        print(f"{file=}")
+        return file
+
+
+# class BirdAssetStorage(FileSystemStorage):
+#     def _open(self, name: str, mode: str = "rb") -> BirdAssetFile:
+#         return BirdAssetFile(open(self.path(name), mode))
+#
+#
+# class BirdAssetFile(File):
+#     def __init__(self, file: Any, header: str = "/* hello */\n") -> None:
+#         super().__init__(file)
+#         self.header = header
+#         self._has_read_header = False
+#
+#     def read(self, chunk_size: int | None = None) -> bytes | str:
+#         print("read")
+#         content = super().read(chunk_size)
+#         print(f"{isinstance(self.file, BytesIO)=}")
+#         print(f"{isinstance(content, bytes)=}")
+#         if not self._has_read_header:
+#             self._has_read_header = True
+#             if isinstance(content, bytes):
+#                 return self.header.encode() + content
+#             return self.header + content
+#         return content
 
 
 @final

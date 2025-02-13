@@ -134,6 +134,24 @@ class TestAssetClass:
         ):
             assert str(asset.storage.location) in str(button_css.file)
 
+    def test_storage_open(self, templates_dir, settings):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=AssetType.CSS,
+        ).create()
+
+        component = Component.from_name(button.name)
+        asset = component.get_asset(button_css.file.name)
+
+        with asset.storage.open(asset.relative_path) as f:
+            print(f"{f.read()=}")
+
+        raise AssertionError
+
     def test_template_dir(self, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
