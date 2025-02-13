@@ -110,6 +110,54 @@ class TestTemplateTag:
         assert f'<script src="/static/bird/{alert_js.file.name}"></script>' in rendered
         assert f'<script src="/static/bird/{button_js.file.name}"></script>' in rendered
 
+    def test_template_inheritence_no_bird_usage(
+        self, create_template, templates_dir, registry
+    ):
+        alert = TestComponent(
+            name="alert", content='<div class="alert">{{ slot }}</div>'
+        ).create(templates_dir)
+        alert_css = TestAsset(
+            component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+        ).create()
+        alert_js = TestAsset(
+            component=alert, content="console.log('alert');", asset_type=AssetType.JS
+        ).create()
+
+        base_path = templates_dir / "base.html"
+        base_path.write_text("""
+            <html>
+            <head>
+                <title>Test</title>
+                {% bird:css %}
+            </head>
+            <body>
+                {% bird alert %}Base Alert{% endbird %}
+                {% block content %}{% endblock %}
+                {% bird:js %}
+            </body>
+            </html>
+        """)
+
+        child_path = templates_dir / "child.html"
+        child_path.write_text("""
+            {% extends 'base.html' %}
+            {% block content %}
+                No bird component here!
+            {% endblock %}
+        """)
+
+        registry.discover_components()
+
+        template = create_template(child_path)
+
+        rendered = template.render({})
+
+        assert (
+            f'<link rel="stylesheet" href="/static/bird/{alert_css.file.name}">'
+            in rendered
+        )
+        assert f'<script src="/static/bird/{alert_js.file.name}"></script>' in rendered
+
     def test_with_no_assets(self, create_template, templates_dir):
         TestComponent(
             name="alert", content='<div class="alert">{{ slot }}</div>'
