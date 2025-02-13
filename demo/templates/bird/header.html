@@ -1,3 +1,4 @@
 <header data-slot="header">
+  {% if slots.banner %}<div data-slot="banner">{{ slot }}</div>{% endif %}
   {{ slot }}
 </header>
