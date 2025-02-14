@@ -17,7 +17,7 @@ dev = [
   "pytest-django>=4.9.0",
   "pytest-randomly>=3.15.0",
   "pytest-xdist>=3.6.1",
-  "ruff>=0.6.6"
+  "ruff>=0.6.6",
 ]
 docs = [
   "furo>=2024.8.6",
@@ -26,17 +26,17 @@ docs = [
   "sphinx-autobuild>=2024.10.3",
   "sphinx-autodoc2>=0.5.0",
   "sphinx-copybutton>=0.5.2",
-  "sphinx-inline-tabs>=2023.4.21"
+  "sphinx-inline-tabs>=2023.4.21",
 ]
 types = [
   "django-stubs>=5.1.0",
   "django-stubs-ext>=5.1.0",
   "mypy>=1.11.2",
-  "types-cachetools>=5.5.0.20240820"
+  "types-cachetools>=5.5.0.20240820",
 ]
 
 [project]
-authors = [{name = "Josh Thomas", email = "josh@joshthomas.dev"}]
+authors = [{ name = "Josh Thomas", email = "josh@joshthomas.dev" }]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Framework :: Django",
@@ -53,13 +53,13 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: Implementation :: CPython"
+  "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = ["cachetools>=5.5.0", "django>=4.2"]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
 keywords = []
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 name = "django-bird"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -93,7 +93,7 @@ root = "tests"
 commit = true
 commit_message = ":bookmark: bump version {old_version} -> {new_version}"
 current_version = "0.14.1"
-push = false  # set to false for CI
+push = false                                                              # set to false for CI
 tag = false
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 
@@ -112,7 +112,7 @@ exclude_lines = [
   "if not DEBUG:",
   "if settings.DEBUG:",
   "if TYPE_CHECKING:",
-  'def __str__\(self\)\s?\-?\>?\s?\w*\:'
+  'def __str__\(self\)\s?\-?\>?\s?\w*\:',
 ]
 fail_under = 98
 
@@ -120,8 +120,8 @@ fail_under = 98
 omit = [
   "src/django_bird/migrations/*",
   "src/django_bird/_typing.py",
-  "src/django_bird/views.py",  # TODO: remove when not empty
-  "tests/*"
+  "src/django_bird/views.py",     # TODO: remove when not empty
+  "tests/*",
 ]
 source = ["src/django_bird"]
 
@@ -133,7 +133,7 @@ strict_settings = false
 blank_line_after_tag = "endblock,endpartialdef,extends,load"
 blank_line_before_tag = "block,partialdef"
 custom_blocks = "bird,bird:slot,partialdef"
-ignore = "H031"  # Don't require `meta` tag keywords
+ignore = "H031"                                              # Don't require `meta` tag keywords
 indent = 2
 profile = "django"
 
@@ -167,7 +167,7 @@ ignore_missing_model_attributes = true
 [tool.pytest.ini_options]
 addopts = "--create-db -n auto --dist loadfile --doctest-modules"
 django_find_project = false
-markers = ["default_app_settings"]
+markers = ["default_app_settings", "slow"]
 norecursedirs = ".* bin build dist *.egg htmlcov logs node_modules templates venv"
 python_files = "tests.py test_*.py *_tests.py"
 pythonpath = "src"
@@ -193,7 +193,7 @@ exclude = [
   "dist",
   "migrations",
   "node_modules",
-  "venv"
+  "venv",
 ]
 extend-include = ["*.pyi?"]
 indent-width = 4
@@ -215,13 +215,13 @@ quote-style = "double"
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Allow autofix for all enabled rules (when `--fix`) is provided.
 fixable = ["A", "B", "C", "D", "E", "F", "I"]
-ignore = ["E501", "E741"]  # temporary
+ignore = ["E501", "E741"] # temporary
 select = [
   "B",  # flake8-bugbear
   "E",  # Pycodestyle
   "F",  # Pyflakes
   "I",  # isort
-  "UP"  # pyupgrade
+  "UP", # pyupgrade
 ]
 unfixable = []
 

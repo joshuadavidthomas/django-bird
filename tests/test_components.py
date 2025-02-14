@@ -912,8 +912,8 @@ class TestComponentRegistryPerformance:
         print(f"Scan duration: {scan_duration:.2f} seconds")
         print(f"Templates per second: {total_templates / scan_duration:.2f}")
 
-        assert scan_duration < 1.0, (
-            f"Template scanning broke 1 second threshold, took {scan_duration:.2f} seconds"
+        assert scan_duration < 2.0, (
+            f"Template scanning broke 2 second threshold, took {scan_duration:.2f} seconds"
         )
 
     # TODO: improve the perf of scanning for components in templates

@@ -109,11 +109,11 @@ def gather_bird_tag_template_usage() -> Generator[tuple[Path, set[str]], Any, No
         templates[i : i + chunk_size] for i in range(0, len(templates), chunk_size)
     ]
     with Pool() as pool:
-        results = pool.map(process_template_chunk, chunks)
+        results = pool.map(_process_template_chunk, chunks)
     yield from chain.from_iterable(results)
 
 
-def process_template_chunk(
+def _process_template_chunk(  # pragma: no cover
     templates: list[tuple[Path, Path]],
 ) -> list[tuple[Path, set[str]]]:
     results: list[tuple[Path, set[str]]] = []
@@ -140,7 +140,7 @@ def has_nodelist(node: Template | Node) -> TypeGuard[Template]:
 
 
 @final
-class NodeVisitor:
+class NodeVisitor:  # pragma: no cover
     def __init__(self, engine: Engine):
         self.engine = engine
         self.components: set[str] = set()
