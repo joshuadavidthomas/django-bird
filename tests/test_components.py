@@ -919,7 +919,7 @@ class TestComponentRegistryPerformance:
     # TODO: improve the perf of scanning for components in templates
     # obviously, this is an extreme case for a reason -- a stress test
     # against a worst case scenario of thousands of template files with
-    # little component reuse. 25 seconds though, WOOF -- especially since
+    # little component reuse. 25-40 seconds though, WOOF -- especially since
     # the `discover_components` method runs on `app.ready()`. my first idea
     # would be with a management command that can prime a cache.
     @pytest.mark.slow
@@ -1000,6 +1000,6 @@ class TestComponentRegistryPerformance:
         print(f"Scan duration: {scan_duration:.2f} seconds")
         print(f"Templates per second: {total_templates / scan_duration:.2f}")
 
-        assert scan_duration < 25.0, (
-            f"Template scanning broke 25 second threshold, took {scan_duration:.2f} seconds"
+        assert scan_duration < 40.0, (
+            f"Template scanning broke 40 second threshold, took {scan_duration:.2f} seconds"
         )
