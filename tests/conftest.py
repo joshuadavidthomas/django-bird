@@ -21,14 +21,25 @@ from .settings import DEFAULT_SETTINGS
 if TYPE_CHECKING:
     from django_bird.components import Component
 
+SLOW_MARK = "slow"
+SLOW_CLI_ARG = "--slow"
 
 pytest_plugins = []
 
 
-def pytest_configure(config):
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(SLOW_CLI_ARG, action="store_true", help="run tests marked as slow")
+
+
+def pytest_configure(config: pytest.Config) -> None:  # pyright: ignore [reportUnusedParameter]
     logging.disable(logging.CRITICAL)
 
     settings.configure(**DEFAULT_SETTINGS, **TEST_SETTINGS)
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    if SLOW_MARK in item.keywords and not item.config.getoption(SLOW_CLI_ARG):
+        pytest.skip(f"pass {SLOW_CLI_ARG} to run slow tests")
 
 
 TEST_SETTINGS = {
