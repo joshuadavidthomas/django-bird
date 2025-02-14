@@ -22,6 +22,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - **Internal**: Created `BirdAssetStorage` to handle static file storage with custom prefixes and future CSS and JS scoping.
 
+### Fixed
+
+- Fixed template inheritance scanning by switching from regex-based component detection to proper template parsing, ensuring accurate component tracking and asset rendering across parent and child templates. Assets from components used in parent templates are now properly included when rendering child templates.
+
 ## [0.14.1]
 
 ### Fixed
