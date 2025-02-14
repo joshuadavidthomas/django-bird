@@ -817,6 +817,7 @@ class TestComponentRegistryPerformance:
         # Cached access should be significantly faster
         assert cached_access < first_access / 2
 
+    @pytest.mark.slow
     def test_template_scanning_performance_realistic(self, templates_dir):
         inheritance_depth = 20
         templates_per_level = 100
