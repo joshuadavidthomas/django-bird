@@ -816,3 +816,190 @@ class TestComponentRegistryPerformance:
 
         # Cached access should be significantly faster
         assert cached_access < first_access / 2
+
+    def test_template_scanning_performance_realistic(self, templates_dir):
+        inheritance_depth = 20
+        templates_per_level = 100
+        num_of_components = 12
+
+        list_items = "\n".join(f"<li>Item {j}</li>" for j in range(20))
+        for i in range(num_of_components):
+            TestComponent(
+                name=f"component{i}",
+                content=f"""
+                    <div>
+                        Component {i}
+                    </div>
+                    {{{{ slot }}}}
+                    <ul>
+                        {list_items}
+                    </ul>
+                """,
+            ).create(templates_dir)
+
+        header_template = templates_dir / "header.html"
+        header_template.write_text("""
+            {% bird component0 %}{% endbird %}
+            {% bird component1 %}{% endbird %}
+            {% bird component2 %}{% endbird %}
+        """)
+        footer_template = templates_dir / "footer.html"
+        footer_template.write_text("""
+            {% bird component3 %}{% endbird %}
+            {% bird component4 %}{% endbird %}
+            {% bird component5 %}{% endbird %}
+        """)
+
+        for i in range(inheritance_depth):
+            # base template
+            base_path = templates_dir / f"base{i}.html"
+            content = """
+                {% load django_bird %}
+                {% include 'header.html' %}
+                {% block content %}{% endblock %}
+                {% include 'footer.html' %}
+
+                {% bird component6 %}{% endbird %}
+                {% bird component7 %}{% endbird %}
+                {% bird component8 %}{% endbird %}
+            """
+            base_path.write_text(content)
+
+            # child templates that extend the base
+            for j in range(templates_per_level):
+                child_path = templates_dir / f"child{i}_{j}.html"
+                content = f"""
+                    {{% extends 'base{i}.html' %}}
+                    {{% block content %}}
+                        {{% bird component9 %}}{{% endbird %}}
+                        {{% bird component10 %}}{{% endbird %}}
+                        {{% bird component11 %}}{{% endbird %}}
+                    {{% endblock %}}
+                """
+                child_path.write_text(content)
+
+        start_time = time.time()
+        components.discover_components()
+        scan_duration = time.time() - start_time
+
+        assert len(components._components) == num_of_components
+
+        total_templates = (
+            inheritance_depth  # base templates
+            + (inheritance_depth * templates_per_level)  # child templates
+            + 2  # includes
+        )
+
+        for i in range(num_of_components):
+            component_usage = len(components._component_usage[f"component{i}"])
+
+            if i <= 5:
+                # 0-5 used in one include, not the other
+                expected_usage = total_templates - 1
+            elif 6 <= i <= 8:
+                # 6-8 used in base and child templates, not in includes
+                expected_usage = total_templates - 2
+            else:
+                # 9-11 used in child templates, not in base templates or includes
+                expected_usage = inheritance_depth * templates_per_level
+
+            assert component_usage == expected_usage, (
+                f"Include component {i} usage mismatch (got {component_usage}, expected {expected_usage})"
+            )
+
+        print(f"Total templates: {total_templates}")
+        print(f"Total components: {num_of_components}")
+        print(f"Scan duration: {scan_duration:.2f} seconds")
+        print(f"Templates per second: {total_templates / scan_duration:.2f}")
+
+        assert scan_duration < 1.0, (
+            f"Template scanning broke 1 second threshold, took {scan_duration:.2f} seconds"
+        )
+
+    # TODO: improve the perf of scanning for components in templates
+    # obviously, this is an extreme case for a reason -- a stress test
+    # against a worst case scenario of thousands of template files with
+    # little component reuse. 25 seconds though, WOOF -- especially since
+    # the `discover_components` method runs on `app.ready()`. my first idea
+    # would be with a management command that can prime a cache.
+    @pytest.mark.slow
+    def test_template_scanning_performance_extreme(self, templates_dir):
+        inheritance_depth = 20
+        templates_per_level = 250
+        num_of_components = 50
+
+        list_items = "\n".join(f"<li>Item {j}</li>" for j in range(200))
+        for i in range(num_of_components):
+            TestComponent(
+                name=f"component{i}",
+                content=f"""
+                    <div>
+                        Component {i}
+                    </div>
+                    {{{{ slot }}}}
+                    <ul>
+                        {list_items}
+                    </ul>
+                """,
+            ).create(templates_dir)
+
+        for i in range(inheritance_depth):
+            # base templates
+            base_path = templates_dir / f"base{i}.html"
+            base_content = ""
+
+            # Add extends tag if not the root template
+            if i > 0:
+                base_content += f"{{% extends 'base{i - 1}.html' %}}"
+
+            base_content += """
+                {% block header %}{% endblock %}
+                {% block content %}{% endblock %}
+                {% block footer %}{% endblock %}
+            """
+            for j in range(num_of_components):
+                base_content += f"""
+                    {{% bird component{j} %}}
+                    Content for component {j}
+                    {{% endbird %}}
+                """
+            base_path.write_text(base_content)
+
+            # child templates
+            for j in range(templates_per_level):
+                child_path = templates_dir / f"child{i}_{j}.html"
+                child_content = f"""
+                    {{% extends 'base{i}.html' %}}
+                    {{% block header %}}Custom header{{% endblock %}}
+                    {{% block content %}}Custom main content{{% endblock %}}
+                    {{% block footer %}}Custom footer{{% endblock %}}
+                """
+                # for every fifth template, add a component
+                for k in range(0, num_of_components, 5):
+                    child_content += f"""
+                        {{% bird component{k} %}}
+                            Content for component {k}
+                        {{% endbird %}}
+                    """
+                child_path.write_text(child_content)
+
+        start_time = time.time()
+        components.discover_components()
+        scan_duration = time.time() - start_time
+
+        assert len(components._components) == num_of_components
+
+        total_templates = inheritance_depth + (inheritance_depth * templates_per_level)
+
+        for component_name in [f"component{i}" for i in range(num_of_components)]:
+            component_usage = len(components._component_usage[component_name])
+            assert component_usage == total_templates
+
+        print(f"Total templates: {total_templates}")
+        print(f"Total components: {num_of_components}")
+        print(f"Scan duration: {scan_duration:.2f} seconds")
+        print(f"Templates per second: {total_templates / scan_duration:.2f}")
+
+        assert scan_duration < 25.0, (
+            f"Template scanning broke 25 second threshold, took {scan_duration:.2f} seconds"
+        )

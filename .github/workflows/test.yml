@@ -50,7 +50,7 @@ jobs:
 
       - name: Run tests
         run: |
-          uv run nox --session "tests(python='${{ matrix.python-version }}', django='${{ matrix.django-version }}')"
+          uv run nox --session "tests(python='${{ matrix.python-version }}', django='${{ matrix.django-version }}')" -- --slow
 
   tests:
     runs-on: ubuntu-latest

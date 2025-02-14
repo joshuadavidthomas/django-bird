@@ -27,7 +27,6 @@ from .staticfiles import AssetType
 from .templates import gather_bird_tag_template_usage
 from .templates import get_component_directories
 from .templates import get_template_names
-from .templates import scan_template_for_bird_tag
 from .templatetags.tags.bird import BirdNode
 from .templatetags.tags.slot import DEFAULT_SLOT
 from .templatetags.tags.slot import SlotNode
@@ -199,13 +198,9 @@ class ComponentRegistry:
                 self._components[component.name] = component
 
         templates_using_bird_tag = gather_bird_tag_template_usage()
-        for template_abs_path, root_abs_path in templates_using_bird_tag:
-            if self._template_usage.get(template_abs_path, None) is not None:
-                continue
-
-            template_name = template_abs_path.relative_to(root_abs_path)
-            for component_name in scan_template_for_bird_tag(str(template_name)):
-                self._template_usage[template_abs_path].add(component_name)
+        for template_abs_path, component_names in templates_using_bird_tag:
+            self._template_usage[template_abs_path] = component_names
+            for component_name in component_names:
                 self._component_usage[component_name].add(template_abs_path)
 
     def reset(self) -> None:

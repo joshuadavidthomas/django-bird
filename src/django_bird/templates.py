@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-import re
+import multiprocessing
 from collections.abc import Callable
 from collections.abc import Generator
 from collections.abc import Iterator
+from itertools import chain
+from multiprocessing import Pool
 from pathlib import Path
 from typing import Any
 from typing import TypeGuard
@@ -19,12 +21,10 @@ from django.template.loader_tags import ExtendsNode
 from django.template.loader_tags import IncludeNode
 from django.template.utils import get_app_template_dirs
 
-from django_bird.utils import unique_ordered
-
 from .conf import app_settings
-from .templatetags.tags.bird import TAG
 from .templatetags.tags.bird import BirdNode
 from .utils import get_files_from_dirs
+from .utils import unique_ordered
 
 
 def get_template_names(name: str) -> list[str]:
@@ -101,38 +101,35 @@ def get_component_directories(
     ]
 
 
-BIRD_TAG_PATTERN = re.compile(rf"{{%\s*{TAG}\s+(.*?)\s*%}}", re.DOTALL)
-
-
-def scan_file_for_bird_tag(path: Path) -> Generator[str, Any, None]:
-    if not path.is_file():
-        return
-
-    with open(path) as f:
-        for line in f:
-            for match in BIRD_TAG_PATTERN.finditer(line):
-                yield match.group(1).strip("'\"")
-
-
-def gather_bird_tag_template_usage() -> Generator[tuple[Path, Path], Any, None]:
+def gather_bird_tag_template_usage() -> Generator[tuple[Path, set[str]], Any, None]:
     template_dirs = get_template_directories()
-    for path, root in get_files_from_dirs(template_dirs):
-        bird_tag_usage = [line for line in scan_file_for_bird_tag(path)]
-        if bird_tag_usage:
-            yield path, root
+    templates = list(get_files_from_dirs(template_dirs))
+    chunk_size = max(1, len(templates) // multiprocessing.cpu_count() * 2)
+    chunks = [
+        templates[i : i + chunk_size] for i in range(0, len(templates), chunk_size)
+    ]
+    with Pool() as pool:
+        results = pool.map(process_template_chunk, chunks)
+    yield from chain.from_iterable(results)
 
 
-def scan_template_for_bird_tag(template_name: str) -> set[str]:
-    engine = Engine.get_default()
-    try:
-        template = engine.get_template(template_name)
-    except (TemplateDoesNotExist, TemplateSyntaxError):
-        return set()
-    context = Context()
-    visitor = NodeVisitor(engine)
-    with context.bind_template(template):
-        visitor.visit(template, context)
-    return visitor.components
+def process_template_chunk(
+    templates: list[tuple[Path, Path]],
+) -> list[tuple[Path, set[str]]]:
+    results: list[tuple[Path, set[str]]] = []
+    for path, root in templates:
+        visitor = NodeVisitor(Engine.get_default())
+        template_name = str(path.relative_to(root))
+        try:
+            template = Engine.get_default().get_template(template_name)
+        except (TemplateDoesNotExist, TemplateSyntaxError):
+            continue
+        context = Context()
+        with context.bind_template(template):
+            visitor.visit(template, context)
+        if visitor.components:
+            results.append((path, visitor.components))
+    return results
 
 
 NodeVisitorMethod = Callable[[Template | Node, Context], None]
