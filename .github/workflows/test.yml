@@ -92,4 +92,4 @@ jobs:
 
       - name: Generate code coverage
         run: |
-          uv run nox --session "coverage"
+          uv run nox --session "coverage" -- --slow
