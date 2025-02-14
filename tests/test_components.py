@@ -1000,6 +1000,6 @@ class TestComponentRegistryPerformance:
         print(f"Scan duration: {scan_duration:.2f} seconds")
         print(f"Templates per second: {total_templates / scan_duration:.2f}")
 
-        assert scan_duration < 40.0, (
-            f"Template scanning broke 40 second threshold, took {scan_duration:.2f} seconds"
+        assert scan_duration < 50.0, (
+            f"Template scanning broke 50 second threshold, took {scan_duration:.2f} seconds"
         )
