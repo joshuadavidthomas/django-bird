@@ -55,7 +55,11 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython"
 ]
-dependencies = ["cachetools>=5.5.0", "django>=4.2"]
+dependencies = [
+  "cachetools>=5.5.0",
+  "django>=4.2",
+  "pluggy>=1.5.0"
+]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
 keywords = []
@@ -119,6 +123,7 @@ fail_under = 98
 [tool.coverage.run]
 omit = [
   "src/django_bird/migrations/*",
+  "src/django_bird/plugins/*",  # TODO: remove when plugin hooks implemented
   "src/django_bird/_typing.py",
   "src/django_bird/views.py",  # TODO: remove when not empty
   "tests/*"

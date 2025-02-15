@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added plugin system infrastructure using `pluggy`.
+
 ## [0.14.2]
 
 ### Changed
