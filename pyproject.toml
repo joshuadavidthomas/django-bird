@@ -123,6 +123,7 @@ fail_under = 98
 [tool.coverage.run]
 omit = [
   "src/django_bird/migrations/*",
+  "src/django_bird/plugins/*",  # TODO: remove when plugin hooks implemented
   "src/django_bird/_typing.py",
   "src/django_bird/views.py",  # TODO: remove when not empty
   "tests/*"
