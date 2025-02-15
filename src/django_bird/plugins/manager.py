@@ -4,13 +4,12 @@ import importlib
 
 import pluggy
 
-import django_bird
 from django_bird.plugins import hookspecs
 
-DEFAULT_PLUGINS: list[str] = []
-
-pm = pluggy.PluginManager(django_bird.__name__)
+pm = pluggy.PluginManager("django_bird")
 pm.add_hookspecs(hookspecs)
+
+DEFAULT_PLUGINS: list[str] = []
 
 for plugin in DEFAULT_PLUGINS:
     mod = importlib.import_module(plugin)
