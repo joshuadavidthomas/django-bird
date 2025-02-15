@@ -877,6 +877,34 @@ def test_attrs_and_props(templates_dir):
     assert normalize_whitespace(rendered) == test_case.expected
 
 
+def test_filter_expression_param(templates_dir):
+    test_case = TestComponentCase(
+        component=TestComponent(
+            name="button",
+            content="""
+                    {% bird:prop id="default" %}
+                    {% bird:prop class="btn" %}
+
+                    <button id="{{ props.id }}" class="{{ props.class }}" {{ attrs }}>
+                        {{ slot }}
+                    </button>
+                """,
+        ),
+        template_content="""
+            {% bird button data_test=value|default:"value" %}
+                Click me
+            {% endbird %}
+        """,
+        expected='<button id="default" class="btn" data-test="value">Click me</button>',
+    )
+    test_case.component.create(templates_dir)
+
+    template = Template(test_case.template_content)
+    rendered = template.render(Context(test_case.template_context))
+
+    assert normalize_whitespace(rendered) == test_case.expected
+
+
 class TestSlots:
     @pytest.mark.parametrize(
         "test_case",
