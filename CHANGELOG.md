@@ -21,10 +21,12 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Changed
 
 - **Internal**: Created `BirdAssetStorage` to handle static file storage with custom prefixes and future CSS and JS scoping.
+- Refactored component discovery by replacing two-pass approach (regex templatetag scan + template parsing) with single pass template parsing for more reliable detection of usage across all templates.
+- Component discovery now done using `mulitprocessing.Pool`, hopefully mitigating the cost of full template parsing of all project templates on app initialization.
 
 ### Fixed
 
-- Fixed template inheritance scanning by switching from regex-based component detection to proper template parsing, ensuring accurate component tracking and asset rendering across parent and child templates. Assets from components used in parent templates are now properly included when rendering child templates.
+- Assets from components used in parent templates (via `{% extends %}` or `{% includes %}`) are now properly included when rendering child templates, due to component discovery change (see changed section above).
 
 ## [0.14.1]
 
