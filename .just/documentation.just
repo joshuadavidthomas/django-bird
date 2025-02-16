@@ -28,4 +28,4 @@ serve PORT="8000": cog
 [no-cd]
 [private]
 cog:
-    uv run --with cogapp cog -r CONTRIBUTING.md docs/development/just.md
+    uv run --with cogapp cog -r CONTRIBUTING.md docs/development/just.md docs/plugins.md

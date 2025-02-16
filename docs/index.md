@@ -17,6 +17,7 @@ Variables <vars>
 slots
 Assets <assets>
 Organization <organization>
+Plugins <plugins>
 configuration
 ```
 
