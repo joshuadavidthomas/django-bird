@@ -11,8 +11,8 @@ settings.configure(INSTALLED_APPS=["django_bird"])
 
 import cog
 import inspect
-from typing import get_type_hints
 from django_bird.plugins import hookspecs
+from typing import get_type_hints
 
 hook_functions = [
     obj for name, obj in inspect.getmembers(hookspecs)
