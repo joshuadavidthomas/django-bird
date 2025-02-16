@@ -9,10 +9,11 @@ from django_bird.plugins import hookspecs
 pm = pluggy.PluginManager("django_bird")
 pm.add_hookspecs(hookspecs)
 
+pm.load_setuptools_entrypoints("django_bird")
+
 DEFAULT_PLUGINS: list[str] = [
     "django_bird.staticfiles",
 ]
-
 
 for plugin in DEFAULT_PLUGINS:
     mod = importlib.import_module(plugin)
