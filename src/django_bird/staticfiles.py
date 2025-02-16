@@ -16,7 +16,8 @@ from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.core.checks import CheckMessage
 from django.core.files.storage import FileSystemStorage
 
-from . import hookimpl
+from django_bird import hookimpl
+
 from ._typing import override
 from .apps import DjangoBirdAppConfig
 from .conf import app_settings
