@@ -9,7 +9,10 @@ from django_bird.plugins import hookspecs
 pm = pluggy.PluginManager("django_bird")
 pm.add_hookspecs(hookspecs)
 
-DEFAULT_PLUGINS: list[str] = []
+DEFAULT_PLUGINS: list[str] = [
+    "django_bird.plugins.file_assets",
+]
+
 
 for plugin in DEFAULT_PLUGINS:
     mod = importlib.import_module(plugin)

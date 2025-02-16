@@ -110,13 +110,6 @@ class Asset:
         static_relative_path = Path(static_path).relative_to(self.template_dir)
         return self.storage.url(str(static_relative_path))
 
-    @classmethod
-    def from_path(cls, path: Path, asset_type: AssetType):
-        asset_path = path.with_suffix(asset_type.ext)
-        if asset_path.exists():
-            return cls(path=asset_path, type=asset_type)
-        return None
-
 
 @final
 class BirdAssetStorage(StaticFilesStorage):
