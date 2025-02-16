@@ -21,6 +21,12 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Added
 
 - Added plugin system infrastructure using `pluggy`.
+- Added plugin hook for component asset collection.
+
+### Changed
+
+- **Internal**: Refactored asset collection to use plugin system instead of directly in main library.
+- **Internal**: Moved `Asset.from_path` functionality to the new file assets plugin.
 
 ## [0.14.2]
 
