@@ -5,7 +5,6 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 from typing import final
@@ -20,9 +19,6 @@ from django.core.files.storage import FileSystemStorage
 from ._typing import override
 from .apps import DjangoBirdAppConfig
 from .conf import app_settings
-
-if TYPE_CHECKING:
-    pass
 
 
 class AssetType(Enum):
