@@ -198,40 +198,6 @@ class TestAssetClass:
 
         assert asset.url is None
 
-    def test_from_path(self, templates_dir):
-        button = TestComponent(
-            name="button", content="<button>Click me</button>"
-        ).create(templates_dir)
-        button_css = TestAsset(
-            component=button,
-            content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
-        ).create()
-        button_js = TestAsset(
-            component=button, content="console.log('button');", asset_type=AssetType.JS
-        ).create()
-
-        assert Asset.from_path(button.file, button_css.asset_type) == Asset(
-            button_css.file, button_css.asset_type
-        )
-        assert Asset.from_path(button.file, button_js.asset_type) == Asset(
-            button_js.file, button_js.asset_type
-        )
-
-    def test_from_template_nested(self, templates_dir):
-        button = TestComponent(
-            name="button", content="<button>Click me</button>", sub_dir="nested"
-        ).create(templates_dir)
-        button_css = TestAsset(
-            component=button,
-            content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
-        ).create()
-
-        assert Asset.from_path(button.file, button_css.asset_type) == Asset(
-            button_css.file, button_css.asset_type
-        )
-
 
 class TestBirdAssetFinder:
     def test_check(self):

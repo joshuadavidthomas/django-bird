@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import itertools
 from collections import defaultdict
 from collections.abc import Generator
+from collections.abc import Iterable
 from dataclasses import dataclass
 from dataclasses import field
 from hashlib import md5
@@ -22,6 +24,7 @@ from .conf import app_settings
 from .params import Param
 from .params import Params
 from .params import Value
+from .plugins import pm
 from .staticfiles import Asset
 from .staticfiles import AssetType
 from .templates import gather_bird_tag_template_usage
@@ -82,17 +85,12 @@ class Component:
     def from_name(cls, name: str):
         template_names = get_template_names(name)
         template = select_template(template_names)
-        assets: list[Asset] = [
-            asset
-            for asset_type in AssetType
-            if (
-                asset := Asset.from_path(
-                    Path(template.template.origin.name), asset_type
-                )
-            )
-            is not None
-        ]
-        return cls(name=name, template=template, assets=frozenset(assets))
+        assets: list[Iterable[Asset]] = pm.hook.collect_component_assets(
+            template_path=Path(template.template.origin.name)
+        )
+        return cls(
+            name=name, template=template, assets=frozenset(itertools.chain(*assets))
+        )
 
 
 class SequenceGenerator:
