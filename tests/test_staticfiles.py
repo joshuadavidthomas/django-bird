@@ -14,6 +14,7 @@ from django_bird.components import Component
 from django_bird.staticfiles import Asset
 from django_bird.staticfiles import AssetType
 from django_bird.staticfiles import BirdAssetFinder
+from django_bird.staticfiles import collect_component_assets
 
 from .utils import TestAsset
 from .utils import TestComponent
@@ -197,6 +198,40 @@ class TestAssetClass:
         button_css.file.unlink()
 
         assert asset.url is None
+
+
+def test_asset_collection(templates_dir):
+    button = TestComponent(name="button", content="<button>Click me</button>").create(
+        templates_dir
+    )
+    button_css = TestAsset(
+        component=button,
+        content=".button { color: blue; }",
+        asset_type=AssetType.CSS,
+    ).create()
+    button_js = TestAsset(
+        component=button, content="console.log('button');", asset_type=AssetType.JS
+    ).create()
+
+    assets = collect_component_assets(button.file)
+
+    assert Asset(button_css.file, button_css.asset_type) in assets
+    assert Asset(button_js.file, button_js.asset_type) in assets
+
+
+def test_asset_collection_nested(templates_dir):
+    button = TestComponent(
+        name="button", content="<button>Click me</button>", sub_dir="nested"
+    ).create(templates_dir)
+    button_css = TestAsset(
+        component=button,
+        content=".button { color: blue; }",
+        asset_type=AssetType.CSS,
+    ).create()
+
+    assets = collect_component_assets(button.file)
+
+    assert Asset(button_css.file, button_css.asset_type) in assets
 
 
 class TestBirdAssetFinder:
