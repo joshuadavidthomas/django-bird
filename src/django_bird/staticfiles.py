@@ -16,6 +16,8 @@ from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.core.checks import CheckMessage
 from django.core.files.storage import FileSystemStorage
 
+from django_bird import hookimpl
+
 from ._typing import override
 from .apps import DjangoBirdAppConfig
 from .conf import app_settings
@@ -105,6 +107,16 @@ class Asset:
             return None
         static_relative_path = Path(static_path).relative_to(self.template_dir)
         return self.storage.url(str(static_relative_path))
+
+
+@hookimpl
+def collect_component_assets(template_path: Path) -> Iterable[Asset]:
+    assets: list[Asset] = []
+    for asset_type in AssetType:
+        asset_path = template_path.with_suffix(asset_type.ext)
+        if asset_path.exists():
+            assets.append(Asset(path=asset_path, type=asset_type))
+    return assets
 
 
 @final
