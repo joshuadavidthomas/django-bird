@@ -18,6 +18,15 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added `AssetTypes` registry to manage different types of component assets.
+- Added new plugin hook `register_asset_types` for registering custom asset types.
+
+### Changed
+
+- **Internal**: Refactored `AssetType` from an `Enum` to a `dataclass`, to allow for creating new types of assets to register with the library.
+
 ## [0.15.0]
 
 ### Added
