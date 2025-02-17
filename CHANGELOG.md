@@ -18,6 +18,14 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added new plugin hook `ready` for handling application initialization during Django's application ready phase.
+
+### Changed
+
+- **Internal**: Refactored application initialization to use internal plugin instead of direct calls in `AppConfig.ready()`.
+
 ## [0.16.0]
 
 🚨 This release contains some breaking changes. See the Changed section for more information. 🚨
