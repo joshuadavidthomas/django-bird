@@ -33,7 +33,7 @@ class TestAssetTypes:
         return AssetTypes()
 
     def test_builtin_asset_types(self, asset_types):
-        pm.hook.register_asset_types(asset_types=asset_types)
+        pm.hook.register_asset_types(register_type=asset_types.register_type)
 
         assert len(asset_types.types) == 2
 
@@ -42,12 +42,12 @@ class TestAssetTypes:
 
         class NewAssetTypePlugin:
             @hookimpl
-            def register_asset_types(self, asset_types):
-                asset_types.register_type(new_type)
+            def register_asset_types(self, register_type):
+                register_type(new_type)
 
         pm.register(NewAssetTypePlugin(), name="NewAssetTypePlugin")
 
-        pm.hook.register_asset_types(asset_types=asset_types)
+        pm.hook.register_asset_types(register_type=asset_types.register_type)
 
         assert len(asset_types.types) == 3
         assert new_type in asset_types.types

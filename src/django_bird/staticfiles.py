@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from collections.abc import Iterable
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -68,9 +69,9 @@ asset_types = AssetTypes()
 
 
 @hookimpl
-def register_asset_types(asset_types: AssetTypes):
-    asset_types.register_type(CSS)
-    asset_types.register_type(JS)
+def register_asset_types(register_type: Callable[[AssetType], None]):
+    register_type(CSS)
+    register_type(JS)
 
 
 @dataclass(frozen=True, slots=True)
