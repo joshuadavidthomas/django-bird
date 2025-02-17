@@ -15,11 +15,8 @@ class DjangoBirdAppConfig(AppConfig):
 
     @override
     def ready(self):
-        from django_bird.components import components
         from django_bird.conf import app_settings
         from django_bird.plugins import pm
-        from django_bird.staticfiles import asset_types
 
-        app_settings.autoconfigure()
-        pm.hook.register_asset_types(register_type=asset_types.register_type)
-        components.discover_components()
+        for init_handler in pm.hook.ready(app_settings=app_settings):
+            init_handler()

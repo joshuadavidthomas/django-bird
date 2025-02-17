@@ -10,13 +10,24 @@ from typing import final
 import django.template
 from django.conf import settings
 
+from django_bird import hookimpl
+
 from ._typing import override
 from .utils import unique_ordered
 
-DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 
-DJANGO_BIRD_BUILTINS = "django_bird.templatetags.django_bird"
-DJANGO_BIRD_FINDER = "django_bird.staticfiles.BirdAssetFinder"
+@hookimpl
+def ready(app_settings: AppSettings):
+    from .components import components
+    from .plugins import pm
+    from .staticfiles import asset_types
+
+    app_settings.autoconfigure()
+    pm.hook.register_asset_types(register_type=asset_types.register_type)
+    components.discover_components()
+
+
+DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 
 
 @dataclass
@@ -42,6 +53,10 @@ class AppSettings:
 
     def get_component_directory_names(self):
         return unique_ordered([*self.COMPONENT_DIRS, "bird"])
+
+
+DJANGO_BIRD_BUILTINS = "django_bird.templatetags.django_bird"
+DJANGO_BIRD_FINDER = "django_bird.staticfiles.BirdAssetFinder"
 
 
 @final

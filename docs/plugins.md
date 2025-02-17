@@ -20,6 +20,14 @@ django-bird uses a plugin system based on [pluggy](https://pluggy.readthedocs.io
 ```
 ````
 
+````{py:function} ready(app_settings: django_bird.conf.AppSettings) -> None
+:canonical: django_bird.plugins.hookspecs.ready
+
+```{autodoc2-docstring} django_bird.plugins.hookspecs.ready
+:parser: myst
+```
+````
+
 ````{py:function} register_asset_types(register_type: collections.abc.Callable[[django_bird.staticfiles.AssetType], None]) -> None
 :canonical: django_bird.plugins.hookspecs.register_asset_types
 
