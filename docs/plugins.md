@@ -12,6 +12,14 @@ django-bird uses a plugin system based on [pluggy](https://pluggy.readthedocs.io
 ```
 ````
 
+````{py:function} get_template_directories() -> list[pathlib.Path]
+:canonical: django_bird.plugins.hookspecs.get_template_directories
+
+```{autodoc2-docstring} django_bird.plugins.hookspecs.get_template_directories
+:parser: myst
+```
+````
+
 ````{py:function} register_asset_types(register_type: Callable[[AssetType], None]) -> None
 :canonical: django_bird.plugins.hookspecs.register_asset_types
 

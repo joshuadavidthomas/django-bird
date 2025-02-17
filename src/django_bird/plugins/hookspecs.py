@@ -25,6 +25,19 @@ def collect_component_assets(template_path: Path) -> Iterable[Asset]:
 
 
 @hookspec
+def get_template_directories() -> list[Path]:
+    """Return a list of all directories containing templates for a project.
+
+    This hook allows plugins to provide additional template directories beyond the default
+    Django template directories. Implementations should return a list of Path objects
+    pointing to directories that contain Django templates.
+
+    The template directories returned by this hook will be used by django-bird to discover
+    components and their associated templates.
+    """
+
+
+@hookspec
 def register_asset_types(register_type: Callable[[AssetType], None]) -> None:
     """Register a new type of asset.
 

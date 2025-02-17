@@ -22,11 +22,13 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Added `AssetTypes` registry to manage different types of component assets.
 - Added new plugin hook `register_asset_types` for registering custom asset types.
+- Added new plugin hook `get_template_directories` for plugins to provide additional template directories for component discovery.
 
 ### Changed
 
 - **Internal**: Refactored `AssetType` from an `Enum` to a `dataclass`, to allow for creating new types of assets to register with the library.
 - **Internal**: Replaced `LRUCache` with standard dict in `ComponentRegistry`, removing the `cachetools` dependency.
+- **Internal**: Refactored template directory discovery to use plugin system, moving Django's default engine and app template directory handling to a new `django_bird.templates` plugin.
 
 ## [0.15.0]
 

@@ -21,6 +21,8 @@ from django.template.loader_tags import ExtendsNode
 from django.template.loader_tags import IncludeNode
 from django.template.utils import get_app_template_dirs
 
+from django_bird import hookimpl
+
 from .conf import app_settings
 from .templatetags.tags.bird import BirdNode
 from .utils import get_files_from_dirs
@@ -80,12 +82,22 @@ def get_template_names(name: str) -> list[str]:
     return unique_ordered(template_names)
 
 
-def get_template_directories() -> Generator[Path, Any, None]:
+@hookimpl(specname="get_template_directories")
+def get_default_engine_directories() -> list[Path]:
     engine = Engine.get_default()
-    for engine_dir in engine.dirs:
-        yield Path(engine_dir)
-    for app_dir in get_app_template_dirs("templates"):
-        yield Path(app_dir)
+    return [Path(dir) for dir in engine.dirs]
+
+
+@hookimpl(specname="get_template_directories")
+def get_app_template_directories() -> list[Path]:
+    return [Path(dir) for dir in get_app_template_dirs("templates")]
+
+
+def get_template_directories() -> Generator[Path, Any, None]:
+    from django_bird.plugins import pm
+
+    for hook_result in pm.hook.get_template_directories():
+        yield from hook_result
 
 
 def get_component_directories(
