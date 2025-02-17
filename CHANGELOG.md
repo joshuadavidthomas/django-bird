@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+🚨 This release contains some breaking changes. See the Changed section for more information. 🚨
+
 ### Added
 
 - Added `AssetTypes` registry to manage different types of component assets.
@@ -29,6 +31,11 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 - **Internal**: Refactored `AssetType` from an `Enum` to a `dataclass`, to allow for creating new types of assets to register with the library.
 - **Internal**: Replaced `LRUCache` with standard dict in `ComponentRegistry`, removing the `cachetools` dependency.
 - **Internal**: Refactored template directory discovery to use plugin system, moving Django's default engine and app template directory handling to a new `django_bird.templates` plugin.
+- **Breaking**: `BirdAssetFinder.find` now returns files from all component directories that match the requested path. Previously it incorrectly applied component template resolution precedence rules to static file paths.
+
+### Fixed
+
+- Improved performance by removing component discovery scanning from `BirdAssetFinder.find`.
 
 ## [0.15.0]
 
