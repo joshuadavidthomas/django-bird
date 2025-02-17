@@ -21,5 +21,5 @@ class DjangoBirdAppConfig(AppConfig):
         from django_bird.staticfiles import asset_types
 
         app_settings.autoconfigure()
-        pm.hook.register_asset_types(asset_types=asset_types)
+        pm.hook.register_asset_types(register_type=asset_types.register_type)
         components.discover_components()

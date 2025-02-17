@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -8,7 +9,7 @@ from pluggy import HookspecMarker
 
 if TYPE_CHECKING:
     from django_bird.staticfiles import Asset
-    from django_bird.staticfiles import AssetTypes
+    from django_bird.staticfiles import AssetType
 
 hookspec = HookspecMarker("django_bird")
 
@@ -24,7 +25,7 @@ def collect_component_assets(template_path: Path) -> Iterable[Asset]:
 
 
 @hookspec
-def register_asset_types(asset_types: AssetTypes) -> None:
+def register_asset_types(register_type: Callable[[AssetType], None]) -> None:
     """Register a new type of asset.
 
     This hook allows plugins to register additional asset types beyond the default CSS
