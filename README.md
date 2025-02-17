@@ -11,8 +11,8 @@
 High-flying components for perfectionists with deadlines.
 
 <!-- docs-intro-end -->
-> [!CAUTION]
-> This is an experimental, alpha attempt at a different approach to defining components in Django templates. It is not suitable for production use yet.
+> [!IMPORTANT]
+> This library is in active development. Breaking changes may occur before 1.0. Use caution in production - pin your dependencies and test thoroughly. All changes, including breaking changes, are documented in the [CHANGELOG](CHANGELOG.md)
 
 <!-- docs-content-begin -->
 ## Requirements
