@@ -26,6 +26,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Changed
 
 - **Internal**: Refactored `AssetType` from an `Enum` to a `dataclass`, to allow for creating new types of assets to register with the library.
+- **Internal**: Replaced `LRUCache` with standard dict in `ComponentRegistry`, removing the `cachetools` dependency.
 
 ## [0.15.0]
 
