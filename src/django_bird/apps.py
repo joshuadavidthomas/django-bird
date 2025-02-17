@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from typing import final
+
 from django.apps import AppConfig
 
 from ._typing import override
 
 
+@final
 class DjangoBirdAppConfig(AppConfig):
     label = "django_bird"
     name = "django_bird"
@@ -14,6 +17,9 @@ class DjangoBirdAppConfig(AppConfig):
     def ready(self):
         from django_bird.components import components
         from django_bird.conf import app_settings
+        from django_bird.plugins import pm
+        from django_bird.staticfiles import asset_types
 
         app_settings.autoconfigure()
+        pm.hook.register_asset_types(asset_types=asset_types)
         components.discover_components()

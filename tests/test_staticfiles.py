@@ -10,25 +10,60 @@ from django.template.base import Template
 from django.template.context import Context
 from django.test import override_settings
 
+from django_bird import hookimpl
 from django_bird.components import Component
+from django_bird.plugins import pm
+from django_bird.staticfiles import CSS
+from django_bird.staticfiles import JS
 from django_bird.staticfiles import Asset
+from django_bird.staticfiles import AssetElement
 from django_bird.staticfiles import AssetType
+from django_bird.staticfiles import AssetTypes
 from django_bird.staticfiles import BirdAssetFinder
 from django_bird.staticfiles import collect_component_assets
+from django_bird.templatetags.tags.asset import AssetTag
 
 from .utils import TestAsset
 from .utils import TestComponent
 
 
+class TestAssetTypes:
+    @pytest.fixture
+    def asset_types(self):
+        return AssetTypes()
+
+    def test_builtin_asset_types(self, asset_types):
+        pm.hook.register_asset_types(asset_types=asset_types)
+
+        assert len(asset_types.types) == 2
+
+    def test_add_asset_type(self, asset_types):
+        new_type = AssetType("foo", AssetElement.STYLESHEET, AssetTag.CSS)
+
+        class NewAssetTypePlugin:
+            @hookimpl
+            def register_asset_types(self, asset_types):
+                asset_types.register_type(new_type)
+
+        pm.register(NewAssetTypePlugin(), name="NewAssetTypePlugin")
+
+        pm.hook.register_asset_types(asset_types=asset_types)
+
+        assert len(asset_types.types) == 3
+        assert new_type in asset_types.types
+
+        pm.unregister(name="NewAssetTypePlugin")
+
+
 class TestAssetClass:
     def test_hash(self):
-        asset1 = Asset(Path("static.css"), AssetType.CSS)
-        asset2 = Asset(Path("static.css"), AssetType.CSS)
+        asset1 = Asset(Path("static.css"), CSS)
+        asset2 = Asset(Path("static.css"), CSS)
 
         assert asset1 == asset2
         assert hash(asset1) == hash(asset2)
 
-        assets = {asset1, asset2, Asset(Path("other.css"), AssetType.CSS)}
+        assets = {asset1, asset2, Asset(Path("other.css"), CSS)}
 
         assert len(assets) == 2
 
@@ -36,12 +71,12 @@ class TestAssetClass:
         css_file = tmp_path / "test.css"
         css_file.touch()
 
-        asset = Asset(css_file, AssetType.CSS)
+        asset = Asset(css_file, CSS)
 
         assert asset.exists() is True
 
     def test_exists_nonexistent(self):
-        missing_asset = Asset(Path("missing.css"), AssetType.CSS)
+        missing_asset = Asset(Path("missing.css"), CSS)
 
         assert missing_asset.exists() is False
 
@@ -52,7 +87,7 @@ class TestAssetClass:
                 TestAsset(
                     component=None,
                     content=".button { color: blue; }",
-                    asset_type=AssetType.CSS,
+                    asset_type=CSS,
                 ),
                 'link rel="stylesheet" href=',
             ),
@@ -60,7 +95,7 @@ class TestAssetClass:
                 TestAsset(
                     component=None,
                     content="console.log('button');",
-                    asset_type=AssetType.JS,
+                    asset_type=JS,
                 ),
                 "script src=",
             ),
@@ -88,7 +123,7 @@ class TestAssetClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         component = Component.from_name(button.name)
@@ -106,7 +141,7 @@ class TestAssetClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         component = Component.from_name(button.name)
@@ -123,7 +158,7 @@ class TestAssetClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         component = Component.from_name(f"{button.sub_dir}.{button.name}")
@@ -138,7 +173,7 @@ class TestAssetClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         component = Component.from_name(button.name)
@@ -155,7 +190,7 @@ class TestAssetClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         component = Component.from_name(f"{button.sub_dir}.{button.name}")
@@ -171,7 +206,7 @@ class TestAssetClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         component = Component.from_name(button.name)
@@ -189,7 +224,7 @@ class TestAssetClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         component = Component.from_name(button.name)
@@ -207,10 +242,10 @@ def test_asset_collection(templates_dir):
     button_css = TestAsset(
         component=button,
         content=".button { color: blue; }",
-        asset_type=AssetType.CSS,
+        asset_type=CSS,
     ).create()
     button_js = TestAsset(
-        component=button, content="console.log('button');", asset_type=AssetType.JS
+        component=button, content="console.log('button');", asset_type=JS
     ).create()
 
     assets = collect_component_assets(button.file)
@@ -226,7 +261,7 @@ def test_asset_collection_nested(templates_dir):
     button_css = TestAsset(
         component=button,
         content=".button { color: blue; }",
-        asset_type=AssetType.CSS,
+        asset_type=CSS,
     ).create()
 
     assets = collect_component_assets(button.file)
@@ -250,22 +285,22 @@ class TestBirdAssetFinder:
             TestAsset(
                 component=button,
                 content=".button { color: blue; }",
-                asset_type=AssetType.CSS,
+                asset_type=CSS,
             ).create(),
             TestAsset(
                 component=button,
                 content="console.log('button');",
-                asset_type=AssetType.JS,
+                asset_type=JS,
             ).create(),
             TestAsset(
                 component=input,
                 content="input { border: 1px solid black; }",
-                asset_type=AssetType.CSS,
+                asset_type=CSS,
             ).create(),
             TestAsset(
                 component=input,
                 content="console.log('input');",
-                asset_type=AssetType.JS,
+                asset_type=JS,
             ).create(),
         ]
 
@@ -286,7 +321,7 @@ class TestBirdAssetFinder:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         finder = BirdAssetFinder()
@@ -306,12 +341,12 @@ class TestBirdAssetFinder:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         custom_button_css = TestAsset(
             component=custom_button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         finder = BirdAssetFinder()
@@ -335,10 +370,10 @@ class TestFindersFind:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         button_js = TestAsset(
-            component=button, content="console.log('button');", asset_type=AssetType.JS
+            component=button, content="console.log('button');", asset_type=JS
         ).create()
 
         assert finders.find("bird/button.css") == str(button_css.file)
@@ -355,12 +390,12 @@ class TestFindersFind:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         custom_button_css = TestAsset(
             component=custom_button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         with override_app_settings(COMPONENT_DIRS=["components"]):
@@ -377,7 +412,7 @@ class TestFindersFind:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         assert finders.find("bird/nested/button.css") == str(button_css.file)
@@ -386,7 +421,7 @@ class TestFindersFind:
         component = TestComponent(name="Button", content="<button>").create(
             templates_dir
         )
-        TestAsset(component=component, content="", asset_type=AssetType.CSS).create()
+        TestAsset(component=component, content="", asset_type=CSS).create()
 
         assert finders.find("bird/Button.css") is not None
         assert finders.find("bird/button.css") is None
@@ -399,7 +434,7 @@ class TestFindersFind:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         assert finders.find("bird/") is not None
@@ -414,7 +449,7 @@ class TestFindersFind:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         assert finders.find("bird/button.html") is None
@@ -430,7 +465,7 @@ class TestFindersFind:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         assert finders.find("bird/button.css", all=True) == [str(button_css.file)]
@@ -454,12 +489,12 @@ class TestStaticCollection:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         TestAsset(
             component=button,
             content="console.log('button');",
-            asset_type=AssetType.JS,
+            asset_type=JS,
         ).create()
 
         call_command("collectstatic", interactive=False, verbosity=0)
@@ -478,12 +513,12 @@ class TestStaticCollection:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         TestAsset(
             component=custom_button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         with override_app_settings(COMPONENT_DIRS=["components"]):
@@ -505,12 +540,12 @@ class TestStaticCollection:
         button1_css = TestAsset(
             component=button1,
             content=".form-button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         button2_css = TestAsset(
             component=button2,
             content=".nav-button { color: red; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         call_command("collectstatic", interactive=False, verbosity=0)
@@ -532,7 +567,7 @@ class TestStaticCollection:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         call_command("collectstatic", interactive=False, dry_run=True, verbosity=0)
@@ -546,7 +581,7 @@ class TestStaticCollection:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         call_command("collectstatic", interactive=False, verbosity=0)
@@ -558,7 +593,7 @@ class TestStaticCollection:
         TestAsset(
             component=input,
             content="input { border: 1px solid black; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         call_command("collectstatic", interactive=False, clear=True, verbosity=0)
@@ -575,7 +610,7 @@ class TestStaticTemplateTag:
         TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         template = Template(

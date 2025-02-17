@@ -18,8 +18,9 @@ from django.test import override_settings
 from django_bird.components import Component
 from django_bird.components import ComponentRegistry
 from django_bird.components import components
+from django_bird.staticfiles import CSS
+from django_bird.staticfiles import JS
 from django_bird.staticfiles import Asset
-from django_bird.staticfiles import AssetType
 
 from .utils import TestAsset
 from .utils import TestComponent
@@ -34,7 +35,7 @@ class TestComponentClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         component = Component.from_name(button.name)
@@ -80,18 +81,18 @@ class TestComponentClass:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         button_js = TestAsset(
-            component=button, content="console.log('button');", asset_type=AssetType.JS
+            component=button, content="console.log('button');", asset_type=JS
         ).create()
 
         comp = Component.from_name("button")
 
         assert comp.name == "button"
         assert len(comp.assets) == 2
-        assert Asset(button_css.file, AssetType.CSS) in comp.assets
-        assert Asset(button_js.file, AssetType.JS) in comp.assets
+        assert Asset(button_css.file, CSS) in comp.assets
+        assert Asset(button_js.file, JS) in comp.assets
 
     def test_from_name_with_partial_assets_css(self, templates_dir):
         button = TestComponent(
@@ -99,7 +100,7 @@ class TestComponentClass:
         ).create(templates_dir)
 
         button_css = TestAsset(
-            button, ".button { color: blue; }", asset_type=AssetType.CSS
+            button, ".button { color: blue; }", asset_type=CSS
         ).create()
 
         comp = Component.from_name("button")
@@ -112,9 +113,7 @@ class TestComponentClass:
         button = TestComponent(name="button", content="<button>Click me</button>")
         button.create(templates_dir)
 
-        button_js = TestAsset(
-            button, "console.log('button');", asset_type=AssetType.JS
-        ).create()
+        button_js = TestAsset(button, "console.log('button');", asset_type=JS).create()
 
         comp = Component.from_name("button")
 
@@ -453,7 +452,7 @@ class TestComponentRegistryAssets:
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         components.discover_components()
@@ -473,7 +472,7 @@ class TestComponentRegistryAssets:
         button_js = TestAsset(
             component=button,
             content="console.log('clicked');",
-            asset_type=AssetType.JS,
+            asset_type=JS,
         ).create()
 
         components.discover_components()
@@ -492,18 +491,18 @@ class TestComponentRegistryAssets:
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         button_js = TestAsset(
             component=button,
             content="console.log('loaded');",
-            asset_type=AssetType.JS,
+            asset_type=JS,
         ).create()
 
         components.discover_components()
 
-        css_assets = components.get_assets(AssetType.CSS)
-        js_assets = components.get_assets(AssetType.JS)
+        css_assets = components.get_assets(CSS)
+        js_assets = components.get_assets(JS)
 
         assert len(css_assets) == 1
         assert len(js_assets) == 1
@@ -517,12 +516,12 @@ class TestComponentRegistryAssets:
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         button_js = TestAsset(
             component=button,
             content="console.log('loaded');",
-            asset_type=AssetType.JS,
+            asset_type=JS,
         ).create()
 
         components.discover_components()
@@ -544,17 +543,17 @@ class TestComponentRegistryAssets:
         button1_css = TestAsset(
             component=button1,
             content=".button1 { color: red; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         button2_css = TestAsset(
             component=button2,
             content=".button2 { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         components.discover_components()
 
-        css_assets = components.get_assets(AssetType.CSS)
+        css_assets = components.get_assets(CSS)
 
         assert len(css_assets) == 2
         assert Asset(button1_css.file, button1_css.asset_type) in css_assets
@@ -568,7 +567,7 @@ class TestComponentRegistryAssets:
         TestAsset(
             component=button,
             content="/* Missing */",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         )
 
         components.discover_components()
@@ -621,12 +620,12 @@ class TestComponentRegistryCaching:
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
 
         with override_settings(DEBUG=debug):
             components.get_component("button")
-            css_assets = components.get_assets(AssetType.CSS)
+            css_assets = components.get_assets(CSS)
 
             assert len(css_assets) == 1
             assert Asset(button_css.file, button_css.asset_type) in css_assets

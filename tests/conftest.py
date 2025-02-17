@@ -178,7 +178,8 @@ class ExampleTemplate:
 @pytest.fixture
 def example_template(templates_dir):
     from django_bird.components import Component
-    from django_bird.staticfiles import AssetType
+    from django_bird.staticfiles import CSS
+    from django_bird.staticfiles import JS
 
     from .utils import TestAsset
     from .utils import TestComponent
@@ -189,17 +190,17 @@ def example_template(templates_dir):
     TestAsset(
         component=button,
         content=".button { color: blue; }",
-        asset_type=AssetType.CSS,
+        asset_type=CSS,
     ).create()
     TestAsset(
-        component=button, content="console.log('button');", asset_type=AssetType.JS
+        component=button, content="console.log('button');", asset_type=JS
     ).create()
 
     alert = TestComponent(
         name="alert", content='<div class="alert">{{ slot }}</div>'
     ).create(templates_dir)
     TestAsset(
-        component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+        component=alert, content=".alert { color: red; }", asset_type=CSS
     ).create()
 
     banner = TestComponent(
@@ -212,11 +213,9 @@ def example_template(templates_dir):
     TestAsset(
         component=toast,
         content=".toast { color: pink; }",
-        asset_type=AssetType.CSS,
+        asset_type=CSS,
     ).create()
-    TestAsset(
-        component=toast, content="console.log('toast');", asset_type=AssetType.JS
-    ).create()
+    TestAsset(component=toast, content="console.log('toast');", asset_type=JS).create()
 
     base_template = templates_dir / "base.html"
     base_template.write_text("""

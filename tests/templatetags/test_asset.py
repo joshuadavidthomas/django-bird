@@ -8,10 +8,10 @@ from django.template.context import Context
 from django.template.exceptions import TemplateSyntaxError
 from django.template.loader import get_template
 
-from django_bird.staticfiles import AssetType
-from django_bird.templatetags.tags.asset import CSS_TAG
-from django_bird.templatetags.tags.asset import JS_TAG
+from django_bird.staticfiles import CSS
+from django_bird.staticfiles import JS
 from django_bird.templatetags.tags.asset import AssetNode
+from django_bird.templatetags.tags.asset import AssetTag
 from django_bird.templatetags.tags.asset import do_asset
 from tests.utils import TestAsset
 from tests.utils import TestComponent
@@ -21,15 +21,15 @@ class TestTemplateTag:
     @pytest.mark.parametrize(
         "tag,expected",
         [
-            (CSS_TAG, AssetType.CSS),
-            (JS_TAG, AssetType.JS),
+            (AssetTag.CSS.value, AssetTag.CSS),
+            (AssetTag.JS.value, AssetTag.JS),
         ],
     )
     def test_asset_type(self, tag, expected):
         token = Token(TokenType.BLOCK, tag)
         parser = Parser([])
         node = do_asset(parser, token)
-        assert node.asset_type == expected
+        assert node.asset_tag == expected
 
     def test_missing_tag_name(self):
         token = Token(TokenType.BLOCK, "")
@@ -52,10 +52,10 @@ class TestTemplateTag:
             name="alert", content='<div class="alert">{{ slot }}</div>'
         ).create(templates_dir)
         alert_css = TestAsset(
-            component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+            component=alert, content=".alert { color: red; }", asset_type=CSS
         ).create()
         alert_js = TestAsset(
-            component=alert, content="console.log('alert');", asset_type=AssetType.JS
+            component=alert, content="console.log('alert');", asset_type=JS
         ).create()
 
         button = TestComponent(
@@ -64,10 +64,10 @@ class TestTemplateTag:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         button_js = TestAsset(
-            component=button, content="console.log('button');", asset_type=AssetType.JS
+            component=button, content="console.log('button');", asset_type=JS
         ).create()
 
         base_path = templates_dir / "base.html"
@@ -117,10 +117,10 @@ class TestTemplateTag:
             name="alert", content='<div class="alert">{{ slot }}</div>'
         ).create(templates_dir)
         alert_css = TestAsset(
-            component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+            component=alert, content=".alert { color: red; }", asset_type=CSS
         ).create()
         alert_js = TestAsset(
-            component=alert, content="console.log('alert');", asset_type=AssetType.JS
+            component=alert, content="console.log('alert');", asset_type=JS
         ).create()
 
         base_path = templates_dir / "base.html"
@@ -190,10 +190,10 @@ class TestTemplateTag:
             name="first", content="<div>First: {{ slot }}</div>"
         ).create(templates_dir)
         first_css = TestAsset(
-            component=first, content=".first { color: red; }", asset_type=AssetType.CSS
+            component=first, content=".first { color: red; }", asset_type=CSS
         ).create()
         first_js = TestAsset(
-            component=first, content="console.log('first');", asset_type=AssetType.JS
+            component=first, content="console.log('first');", asset_type=JS
         ).create()
 
         second = TestComponent(
@@ -202,10 +202,10 @@ class TestTemplateTag:
         second_css = TestAsset(
             component=second,
             content=".second { color: red; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         second_js = TestAsset(
-            component=second, content="console.log('second');", asset_type=AssetType.JS
+            component=second, content="console.log('second');", asset_type=JS
         ).create()
 
         template_path = templates_dir / "test.html"
@@ -256,10 +256,10 @@ class TestTemplateTag:
             name="alert", content='<div class="alert">{{ slot }}</div>'
         ).create(templates_dir)
         alert_css = TestAsset(
-            component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+            component=alert, content=".alert { color: red; }", asset_type=CSS
         ).create()
         alert_js = TestAsset(
-            component=alert, content="console.log('alert');", asset_type=AssetType.JS
+            component=alert, content="console.log('alert');", asset_type=JS
         ).create()
 
         base_path = templates_dir / "base.html"
@@ -313,10 +313,10 @@ class TestTemplateTag:
             name="alert", content='<div class="alert">{{ slot }}</div>'
         ).create(templates_dir)
         alert_css = TestAsset(
-            component=alert, content=".alert { color: red; }", asset_type=AssetType.CSS
+            component=alert, content=".alert { color: red; }", asset_type=CSS
         ).create()
         alert_js = TestAsset(
-            component=alert, content="console.log('alert');", asset_type=AssetType.JS
+            component=alert, content="console.log('alert');", asset_type=JS
         ).create()
 
         button = TestComponent(
@@ -325,10 +325,10 @@ class TestTemplateTag:
         button_css = TestAsset(
             component=button,
             content=".button { color: blue; }",
-            asset_type=AssetType.CSS,
+            asset_type=CSS,
         ).create()
         button_js = TestAsset(
-            component=button, content="console.log('button');", asset_type=AssetType.JS
+            component=button, content="console.log('button');", asset_type=JS
         ).create()
 
         base_path = templates_dir / "base.html"
@@ -377,6 +377,6 @@ class TestTemplateTag:
 
 class TestNode:
     def test_no_template(self):
-        node = AssetNode(AssetType.CSS)
+        node = AssetNode(CSS)
         context = Context({})
         assert node.render(context) == ""
