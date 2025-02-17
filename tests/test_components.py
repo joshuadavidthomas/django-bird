@@ -16,7 +16,6 @@ from django.template.exceptions import TemplateDoesNotExist
 from django.test import override_settings
 
 from django_bird.components import Component
-from django_bird.components import ComponentRegistry
 from django_bird.components import components
 from django_bird.staticfiles import CSS
 from django_bird.staticfiles import JS
@@ -630,22 +629,6 @@ class TestComponentRegistryCaching:
             assert len(css_assets) == 1
             assert Asset(button_css.file, button_css.asset_type) in css_assets
 
-    def test_lru_cache_limit(self, templates_dir):
-        small_registry = ComponentRegistry(maxsize=2)
-
-        for i in range(3):
-            TestComponent(
-                name=f"button{i}", content=f"<button>Button {i}</button>"
-            ).create(templates_dir)
-
-        small_registry.get_component("button0")
-        small_registry.get_component("button1")
-        small_registry.get_component("button2")  # This should evict button0
-
-        assert "button0" not in small_registry._components
-        assert "button1" in small_registry._components
-        assert "button2" in small_registry._components
-
     def test_cache_clear_with_reset(self, templates_dir):
         TestComponent(name="button", content="<button>Clear Me</button>").create(
             templates_dir
@@ -657,27 +640,6 @@ class TestComponentRegistryCaching:
 
             components.reset()
             assert len(components._components) == 0
-
-    def test_lru_cache_eviction_order(self, templates_dir):
-        small_registry = ComponentRegistry(maxsize=2)
-
-        for i in range(3):
-            TestComponent(
-                name=f"button{i}", content=f"<button>Button {i}</button>"
-            ).create(templates_dir)
-
-        small_registry.get_component("button0")
-        small_registry.get_component("button1")
-
-        # Access button0 again to make it more recently used than button1
-        small_registry.get_component("button0")
-
-        # Access button2, should evict button1 (least recently used)
-        small_registry.get_component("button2")
-
-        assert "button0" in small_registry._components
-        assert "button1" not in small_registry._components
-        assert "button2" in small_registry._components
 
     def test_concurrent_cache_access(self, templates_dir):
         TestComponent(name="shared_button", content="<button>Shared</button>").create(
@@ -707,19 +669,6 @@ class TestComponentRegistryCaching:
             status, result = results.get()
             assert status == "success"
             assert "Shared" in result
-
-    def test_cache_memory_limit(self, templates_dir):
-        large_registry = ComponentRegistry(maxsize=5)
-        large_content = "x" * 1_000_000  # 1MB of content
-
-        for i in range(6):
-            TestComponent(
-                name=f"large_button{i}", content=f"<button>{large_content}</button>"
-            ).create(templates_dir)
-
-            large_registry.get_component(f"large_button{i}")
-
-        assert len(large_registry._components) <= 5
 
 
 class TestComponentRegistryErrors:

@@ -11,7 +11,6 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-from cachetools import LRUCache
 from django.conf import settings
 from django.template.backends.django import Template as DjangoTemplate
 from django.template.base import Node
@@ -178,9 +177,9 @@ class BoundComponent:
 
 
 class ComponentRegistry:
-    def __init__(self, maxsize: int = 100):
+    def __init__(self):
         self._component_usage: dict[str, set[Path]] = defaultdict(set)
-        self._components: LRUCache[str, Component] = LRUCache(maxsize=maxsize)
+        self._components: dict[str, Component] = {}
         self._template_usage: dict[Path, set[str]] = defaultdict(set)
 
     def discover_components(self) -> None:
@@ -204,7 +203,7 @@ class ComponentRegistry:
     def reset(self) -> None:
         """Reset the registry, used for testing."""
         self._component_usage = defaultdict(set)
-        self._components.clear()
+        self._components = {}
         self._template_usage = defaultdict(set)
 
     def get_assets(self, asset_type: AssetType | None = None) -> frozenset[Asset]:
