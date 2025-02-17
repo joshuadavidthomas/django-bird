@@ -12,7 +12,7 @@ High-flying components for perfectionists with deadlines.
 
 <!-- docs-intro-end -->
 > [!IMPORTANT]
-> This library is in active development. Breaking changes may occur before 1.0. Use caution in production - pin your dependencies and test thoroughly. All changes, including breaking changes, are documented in the [CHANGELOG](CHANGELOG.md)
+> This library is in active development. Breaking changes may occur before v1.0.0. Use caution in production - pin your dependencies and test thoroughly. All changes, including breaking changes, are documented in the [CHANGELOG](CHANGELOG.md).
 
 <!-- docs-content-begin -->
 ## Requirements
