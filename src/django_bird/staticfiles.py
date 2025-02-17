@@ -22,6 +22,7 @@ from django_bird import hookimpl
 from ._typing import override
 from .apps import DjangoBirdAppConfig
 from .conf import app_settings
+from .templates import get_component_directories
 from .templatetags.tags.asset import AssetTag
 
 
@@ -58,7 +59,10 @@ class AssetTypes:
     def __init__(self):
         self.types: set[AssetType] = set()
 
-    def register_type(self, asset_type: AssetType):
+    def is_known_type(self, path: Path) -> bool:
+        return any(path.suffix == asset_type.suffix for asset_type in self.types)
+
+    def register_type(self, asset_type: AssetType) -> None:
         self.types.add(asset_type)
 
     def reset(self) -> None:
@@ -184,22 +188,24 @@ class BirdAssetFinder(BaseFinder):
         if find_all is None:
             find_all = all
 
-        self.components.discover_components()
-
-        matches: list[str] = []
         path_obj = Path(path)
 
-        for asset in self.components.get_assets():
-            if path_obj == asset.relative_path:
-                matched_path = str(asset.absolute_path)
-            elif asset.relative_path.is_relative_to(path_obj):
-                matched_path = str(path_obj.resolve())
-            else:
-                continue
+        # check if asset type is registered and check if it's a file
+        # (allow directories to pass through)
+        if not asset_types.is_known_type(path_obj) and path_obj.suffix:
+            return []
 
-            if not find_all:
-                return matched_path
-            matches.append(matched_path)
+        path_base_dir = path_obj.parts[0]
+        matches: list[str] = []
+
+        for component_dir in get_component_directories():
+            if component_dir.name == path_base_dir:
+                asset_path = component_dir / path_obj.relative_to(path_base_dir)
+                if asset_path.exists():
+                    matched_path = str(asset_path)
+                    if not find_all:
+                        return matched_path
+                    matches.append(matched_path)
 
         return matches
 

@@ -380,15 +380,15 @@ class TestFindersFind:
         assert finders.find("bird/button.js") == str(button_js.file)
 
     def test_find_asset_custom_dir(self, templates_dir, override_app_settings):
-        button = TestComponent(
+        bird_button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
         custom_button = TestComponent(
             name="button", content="<button>Click me</button>", parent_dir="components"
         ).create(templates_dir)
 
-        TestAsset(
-            component=button,
+        bird_button_css = TestAsset(
+            component=bird_button,
             content=".button { color: blue; }",
             asset_type=CSS,
         ).create()
@@ -399,10 +399,8 @@ class TestFindersFind:
         ).create()
 
         with override_app_settings(COMPONENT_DIRS=["components"]):
-            # components are matched like templates, dirs in
-            # `settings.DJANGO_BIRD["COMPONENT_DIRS"]` take precedence
             assert finders.find("components/button.css") == str(custom_button_css.file)
-            assert finders.find("bird/button.css") is None
+            assert finders.find("bird/button.css") == str(bird_button_css.file)
 
     def test_find_nested_asset(self, templates_dir):
         button = TestComponent(
