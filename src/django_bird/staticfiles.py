@@ -21,37 +21,56 @@ from django_bird import hookimpl
 from ._typing import override
 from .apps import DjangoBirdAppConfig
 from .conf import app_settings
+from .templatetags.tags.asset import AssetTag
 
 
-class AssetType(Enum):
-    CSS = "css"
-    JS = "js"
+class AssetElement(Enum):
+    STYLESHEET = "stylesheet"
+    SCRIPT = "script"
+
+
+@dataclass(frozen=True, slots=True)
+class AssetType:
+    element: AssetElement
+    extension: str
+    tag: AssetTag
 
     @property
-    def content_type(self):
-        match self:
-            case AssetType.CSS:
-                return "text/css"
-            case AssetType.JS:
-                return "application/javascript"
+    def suffix(self):
+        return f".{self.extension}"
 
-    @property
-    def ext(self):
-        return f".{self.value}"
 
-    @classmethod
-    def from_tag_name(cls, tag_name: str):
-        try:
-            asset_type = tag_name.split(":")[1]
-            match asset_type:
-                case "css":
-                    return cls.CSS
-                case "js":
-                    return cls.JS
-                case _:
-                    raise ValueError(f"Unknown asset type: {asset_type}")
-        except IndexError as e:
-            raise ValueError(f"Invalid tag name: {tag_name}") from e
+CSS = AssetType(
+    element=AssetElement.STYLESHEET,
+    extension="css",
+    tag=AssetTag.CSS,
+)
+JS = AssetType(
+    element=AssetElement.SCRIPT,
+    extension="js",
+    tag=AssetTag.JS,
+)
+
+
+@final
+class AssetTypes:
+    def __init__(self):
+        self.types: set[AssetType] = set()
+
+    def register_type(self, asset_type: AssetType):
+        self.types.add(asset_type)
+
+    def reset(self) -> None:
+        self.types.clear()
+
+
+asset_types = AssetTypes()
+
+
+@hookimpl
+def register_asset_types(asset_types: AssetTypes):
+    asset_types.register_type(CSS)
+    asset_types.register_type(JS)
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,10 +89,10 @@ class Asset:
         if self.url is None:
             return ""
 
-        match self.type:
-            case AssetType.CSS:
+        match self.type.element:
+            case AssetElement.STYLESHEET:
                 return f'<link rel="stylesheet" href="{self.url}">'
-            case AssetType.JS:
+            case AssetElement.SCRIPT:
                 return f'<script src="{self.url}"></script>'
 
     @property
@@ -112,8 +131,8 @@ class Asset:
 @hookimpl
 def collect_component_assets(template_path: Path) -> Iterable[Asset]:
     assets: list[Asset] = []
-    for asset_type in AssetType:
-        asset_path = template_path.with_suffix(asset_type.ext)
+    for asset_type in asset_types.types:
+        asset_path = template_path.with_suffix(asset_type.suffix)
         if asset_path.exists():
             assets.append(Asset(path=asset_path, type=asset_type))
     return assets

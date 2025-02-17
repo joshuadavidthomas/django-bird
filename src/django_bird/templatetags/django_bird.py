@@ -11,8 +11,8 @@ from .tags import var
 register = template.Library()
 
 
-register.tag(asset.CSS_TAG, asset.do_asset)
-register.tag(asset.JS_TAG, asset.do_asset)
+register.tag(asset.AssetTag.CSS.value, asset.do_asset)
+register.tag(asset.AssetTag.JS.value, asset.do_asset)
 register.tag(bird.TAG, bird.do_bird)
 register.tag(prop.TAG, prop.do_prop)
 register.tag(slot.TAG, slot.do_slot)

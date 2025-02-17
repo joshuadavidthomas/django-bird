@@ -53,7 +53,7 @@ class TestAsset:
         component_dir = self.component.file.parent
         component_name = self.component.file.stem
 
-        asset_file = component_dir / f"{component_name}{self.asset_type.ext}"
+        asset_file = component_dir / f"{component_name}.{self.asset_type.extension}"
         asset_file.write_text(self.content)
 
         self.file = asset_file
