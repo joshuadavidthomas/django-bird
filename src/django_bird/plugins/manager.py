@@ -12,6 +12,7 @@ pm.add_hookspecs(hookspecs)
 pm.load_setuptools_entrypoints("django_bird")
 
 DEFAULT_PLUGINS: list[str] = [
+    "django_bird.conf",
     "django_bird.staticfiles",
     "django_bird.templates",
 ]
