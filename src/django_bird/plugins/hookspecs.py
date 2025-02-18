@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from pluggy import HookspecMarker
 
 if TYPE_CHECKING:
-    from django_bird.conf import AppSettings
     from django_bird.staticfiles import Asset
     from django_bird.staticfiles import AssetType
 
@@ -39,12 +38,12 @@ def get_template_directories() -> list[Path]:
 
 
 @hookspec
-def ready(app_settings: AppSettings) -> None:
+def ready() -> None:
     """Called when the django-bird application is ready.
 
-    This hook is called during Django's application ready phase,
-    allowing plugins to perform necessary setup like configuring
-    settings, registering features, or any other initialization tasks.
+    This hook is called during Django's application ready phase, allowing plugins to perform
+    necessary setup like configuring settings, registering features, or any other
+    initialization tasks.
     """
 
 
