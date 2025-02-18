@@ -22,6 +22,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Added new plugin hook `pre_ready` for handling initialization of library, but run before any internal setup. Needed for django-bird-autoconf to autoconfigure projects, e.g, add to template builtins.
 
+### Fixed
+
+- Added `app_settings.autoconfigure()` call back to the library's `ready` method, in order to preserve previous behavior before deprecation of autoconfiguration.
+
 ## [0.16.1]
 
 ### Added
