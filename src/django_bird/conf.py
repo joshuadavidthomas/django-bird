@@ -15,18 +15,6 @@ from django_bird import hookimpl
 from ._typing import override
 from .utils import unique_ordered
 
-
-@hookimpl
-def ready(app_settings: AppSettings):
-    from .components import components
-    from .plugins import pm
-    from .staticfiles import asset_types
-
-    app_settings.autoconfigure()
-    pm.hook.register_asset_types(register_type=asset_types.register_type)
-    components.discover_components()
-
-
 DJANGO_BIRD_SETTINGS_NAME = "DJANGO_BIRD"
 
 
@@ -53,6 +41,11 @@ class AppSettings:
 
     def get_component_directory_names(self):
         return unique_ordered([*self.COMPONENT_DIRS, "bird"])
+
+
+@hookimpl
+def ready(app_settings: AppSettings):
+    app_settings.autoconfigure()
 
 
 DJANGO_BIRD_BUILTINS = "django_bird.templatetags.django_bird"
