@@ -19,7 +19,11 @@ class DjangoBirdAppConfig(AppConfig):
         from django_bird.plugins import pm
         from django_bird.staticfiles import asset_types
 
+        for pre_ready in pm.hook.pre_ready():
+            pre_ready()
+
         pm.hook.register_asset_types(register_type=asset_types.register_type)
         components.discover_components()
+
         for ready in pm.hook.ready():
             ready()

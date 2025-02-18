@@ -38,12 +38,29 @@ def get_template_directories() -> list[Path]:
 
 
 @hookspec
-def ready() -> None:
-    """Called when the django-bird application is ready.
+def pre_ready() -> None:
+    """Called before django-bird begins its internal setup.
 
-    This hook is called during Django's application ready phase, allowing plugins to perform
-    necessary setup like configuring settings, registering features, or any other
-    initialization tasks.
+    This hook runs at the start of django-bird's initialization, before any internal
+    components are configured or discovered. Plugins can use this hook to perform early
+    configuration of:
+
+    - Django settings
+    - Template directories
+    - Template builtins
+    """
+
+
+@hookspec
+def ready() -> None:
+    """Called after django-bird application has completed its internal setup and is ready.
+
+    This hook is called during Django's application ready phase, after django-bird's own
+    initialization is complete. Plugins can:
+
+    - Access fully configured components
+    - Register additional features that depend on django-bird being ready
+    - Perform cleanup or post-initialization tasks
     """
 
 
