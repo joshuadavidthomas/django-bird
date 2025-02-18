@@ -24,7 +24,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Changed
 
-- **Internal**: Refactored application initialization to use internal plugin instead of direct calls in `AppConfig.ready()`.
+- **Internal**: Refactored app initialization to use internal plugin for autoconfiguration instead of in `AppConfig.ready()`.
 
 ## [0.16.0]
 
