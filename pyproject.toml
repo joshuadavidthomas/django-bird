@@ -28,7 +28,12 @@ docs = [
   "sphinx-copybutton>=0.5.2",
   "sphinx-inline-tabs>=2023.4.21"
 ]
-types = ["django-stubs>=5.1.0", "django-stubs-ext>=5.1.0", "mypy>=1.11.2"]
+types = [
+  "basedpyright>=1.27.1",
+  "django-stubs>=5.1.0",
+  "django-stubs-ext>=5.1.0",
+  "mypy>=1.11.2"
+]
 
 [project]
 authors = [{name = "Josh Thomas", email = "josh@joshthomas.dev"}]
@@ -72,11 +77,16 @@ reportExplicitAny = false
 reportUnusedCallResult = false
 
 [[tool.basedpyright.executionEnvironments]]
+reportUnreachable = false
+root = "src/django_bird/_typing.py"
+
+[[tool.basedpyright.executionEnvironments]]
 reportReturnType = false
-reportUnusedParameter = false
 root = "src/django_bird/plugins/hookspecs.py"
 
 [[tool.basedpyright.executionEnvironments]]
+# TODO: fix import cycles by rearchitecting modules, at some point
+reportImportCycles = false
 root = "src"
 
 [[tool.basedpyright.executionEnvironments]]

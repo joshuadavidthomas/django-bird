@@ -39,9 +39,10 @@ class AppSettings:
             return
 
         warnings.warn(
-            "Autoconfiguration of django-bird is deprecated and has been moved to the django-bird-autoconf plugin. "
-            "Please install the new plugin from PyPI in your project if you wish to keep this behavior, as this "
-            "will be removed from the core library in a future version.",
+            "Autoconfiguration of django-bird is deprecated and has been moved to the "
+            "django-bird-autoconf plugin. Please install the new plugin from PyPI in your "
+            "project if you wish to keep this behavior, as this will be removed from the "
+            "core library in a future version.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -90,7 +91,7 @@ class AutoConfigurator:
         # Force re-evaluation of settings.TEMPLATES because EngineHandler caches it.
         with suppress(AttributeError):  # pragma: no cover
             del django.template.engines.templates
-            django.template.engines._engines = {}  # type: ignore[attr-defined]
+            django.template.engines._engines = {}  # type:ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
 
     def configure_builtins(self, options: dict[str, Any]) -> None:
         builtins = options.setdefault("builtins", [])
