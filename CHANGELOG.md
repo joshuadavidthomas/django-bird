@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.16.2]
+
 ### Added
 
 - Added new plugin hook `pre_ready` for handling initialization of library, but run before any internal setup. Needed for django-bird-autoconf to autoconfigure projects, e.g, add to template builtins.
@@ -415,7 +417,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.16.1...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.16.2...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -452,3 +454,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.15.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.15.0
 [0.16.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.16.0
 [0.16.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.16.1
+[0.16.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.16.2
