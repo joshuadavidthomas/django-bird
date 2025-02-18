@@ -21,5 +21,5 @@ class DjangoBirdAppConfig(AppConfig):
 
         pm.hook.register_asset_types(register_type=asset_types.register_type)
         components.discover_components()
-        for init_handler in pm.hook.ready():
-            init_handler()
+        for ready in pm.hook.ready():
+            ready()
