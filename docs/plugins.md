@@ -20,6 +20,14 @@ django-bird uses a plugin system based on [pluggy](https://pluggy.readthedocs.io
 ```
 ````
 
+````{py:function} pre_ready() -> None
+:canonical: django_bird.plugins.hookspecs.pre_ready
+
+```{autodoc2-docstring} django_bird.plugins.hookspecs.pre_ready
+:parser: myst
+```
+````
+
 ````{py:function} ready() -> None
 :canonical: django_bird.plugins.hookspecs.ready
 
