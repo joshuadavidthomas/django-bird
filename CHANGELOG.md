@@ -26,6 +26,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - **Internal**: Refactored app initialization to use internal plugin for autoconfiguration instead of in `AppConfig.ready()`.
 
+### Deprecated
+
+- The `ENABLE_AUTO_CONFIG` setting and autoconfiguration of the library and the Django project the library is installed in is deprecated and will be removed in a future version. The behavior has been moved to a new plugin, django-bird-autoconf, so if you wish to continue to allow autoconfiguration please install that library.
+
 ## [0.16.0]
 
 🚨 This release contains some breaking changes. See the Changed section for more information. 🚨

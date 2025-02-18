@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from contextlib import suppress
 from dataclasses import dataclass
 from dataclasses import field
@@ -37,6 +38,13 @@ class AppSettings:
         if not self.ENABLE_AUTO_CONFIG:
             return
 
+        warnings.warn(
+            "Autoconfiguration of django-bird is deprecated and has been moved to the django-bird-autoconf plugin. "
+            "Please install the new plugin from PyPI in your project if you wish to keep this behavior, as this "
+            "will be removed from the core library in a future version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self._configurator.autoconfigure()
 
     def get_component_directory_names(self):
