@@ -154,7 +154,7 @@ def coverage(session):
 
 
 @nox.session
-def types(session):
+def mypy(session):
     session.run_install(
         "uv",
         "sync",
@@ -167,6 +167,29 @@ def types(session):
     )
 
     command = ["python", "-m", "mypy", "."]
+    if session.posargs:
+        args = []
+        for arg in session.posargs:
+            if arg:
+                args.extend(arg.split(" "))
+        command.extend(args)
+    session.run(*command)
+
+
+@nox.session
+def pyright(session):
+    session.run_install(
+        "uv",
+        "sync",
+        "--group",
+        "types",
+        "--frozen",
+        "--python",
+        PY_LATEST,
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
+
+    command = ["basedpyright"]
     if session.posargs:
         args = []
         for arg in session.posargs:

@@ -56,11 +56,14 @@ manage *COMMAND:
     settings.configure(INSTALLED_APPS=["django_bird"])
     execute_from_command_line(sys.argv + "{{ COMMAND }}".split(" "))
 
+mypy *ARGS:
+    @just nox mypy {{ ARGS }}
+
+pyright *ARGS:
+    @just nox pyright {{ ARGS }}
+
 test *ARGS:
     @just nox test {{ ARGS }}
 
 testall *ARGS:
     @just nox tests {{ ARGS }}
-
-types *ARGS:
-    @just nox types {{ ARGS }}

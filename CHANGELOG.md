@@ -25,6 +25,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Changed
 
 - **Internal**: Refactored app initialization to use internal plugin for autoconfiguration instead of in `AppConfig.ready()`.
+- **Internal**: Changed a few internal development things related to type checking:
+    - Added basedpyright to types `[dependency-group]` table in `pyproject.toml`, as well as a new nox session in `noxfile.py`.
+    - Renamed `types` nox session to `mypy`.
+    - Adjusted just recipes in `Justfile` to reflect the above.
 
 ### Deprecated
 

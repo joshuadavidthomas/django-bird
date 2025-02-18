@@ -176,7 +176,7 @@ class BirdAssetFinder(BaseFinder):
     @overload
     def find(self, path: str, *, find_all: Literal[True]) -> list[str]: ...
     @override
-    def find(
+    def find(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
         path: str,
         all: bool = False,
