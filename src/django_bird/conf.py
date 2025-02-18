@@ -44,7 +44,7 @@ class AppSettings:
 
 
 @hookimpl
-def ready(app_settings: AppSettings):
+def ready():
     app_settings.autoconfigure()
 
 

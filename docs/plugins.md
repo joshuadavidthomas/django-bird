@@ -20,7 +20,7 @@ django-bird uses a plugin system based on [pluggy](https://pluggy.readthedocs.io
 ```
 ````
 
-````{py:function} ready(app_settings: django_bird.conf.AppSettings) -> None
+````{py:function} ready() -> None
 :canonical: django_bird.plugins.hookspecs.ready
 
 ```{autodoc2-docstring} django_bird.plugins.hookspecs.ready
