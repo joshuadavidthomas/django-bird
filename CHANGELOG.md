@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.17.3]
+
 ### Added
 
 - Added new `ADD_ASSET_PREFIX` setting to control how the app label prefix is added to asset URLs. This setting provides more flexibility than the previous DEBUG-based behavior, especially useful in test environments.
@@ -470,7 +472,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.17.2...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.17.3...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -511,3 +513,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.17.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.17.0
 [0.17.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.17.1
 [0.17.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.17.2
+[0.17.3]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.17.3
