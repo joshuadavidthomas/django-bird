@@ -15,7 +15,7 @@ from django_bird.manifest import save_asset_manifest
 @final
 class Command(BaseCommand):
     help: str = (
-        "Generates a manifest of component usage in templates for asset optimization"
+        "Generates a manifest of component usage in templates for loading assets"
     )
 
     @override
@@ -24,20 +24,14 @@ class Command(BaseCommand):
             "--output",
             type=str,
             default=None,
-            help="Path where the manifest file should be saved. Defaults to STATIC_ROOT/django_bird/asset-manifest.json",
-        )
-        parser.add_argument(
-            "--pretty",
-            action="store_true",
-            help="Format the manifest JSON with indentation for better readability",
+            help="Path where the manifest file should be saved. Defaults to STATIC_ROOT/django_bird/manifest.json",
         )
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
         manifest_data = generate_asset_manifest()
         output_path = options["output"] or default_manifest_path()
-        indent = 2 if options["pretty"] else None
-        save_asset_manifest(manifest_data, output_path, indent=indent)
+        save_asset_manifest(manifest_data, output_path)
         self.stdout.write(
             self.style.SUCCESS(
                 f"Asset manifest generated successfully at {output_path}"
