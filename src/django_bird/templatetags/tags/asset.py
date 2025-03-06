@@ -12,6 +12,7 @@ from django.template.context import Context
 
 from django_bird._typing import override
 from django_bird.manifest import load_asset_manifest
+from django_bird.manifest import normalize_path
 
 
 class AssetTag(Enum):
@@ -51,9 +52,9 @@ class AssetNode(template.Node):
         # Only use manifest in production mode
         if not settings.DEBUG:
             manifest = load_asset_manifest()
-            if manifest and template_path in manifest:
-                # Use manifest for component names in production
-                component_names = manifest[template_path]
+            normalized_path = normalize_path(template_path)
+            if manifest and normalized_path in manifest:
+                component_names = manifest[normalized_path]
                 used_components = [
                     components.get_component(name) for name in component_names
                 ]
