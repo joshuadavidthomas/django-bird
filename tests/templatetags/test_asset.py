@@ -103,15 +103,21 @@ class TestTemplateTag:
         rendered = template.render({})
 
         assert (
-            f'<link rel="stylesheet" href="/static/bird/{alert_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/django_bird/bird/{alert_css.file.name}">'
             in rendered
         )
         assert (
-            f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/django_bird/bird/{button_css.file.name}">'
             in rendered
         )
-        assert f'<script src="/static/bird/{alert_js.file.name}"></script>' in rendered
-        assert f'<script src="/static/bird/{button_js.file.name}"></script>' in rendered
+        assert (
+            f'<script src="/static/django_bird/bird/{alert_js.file.name}"></script>'
+            in rendered
+        )
+        assert (
+            f'<script src="/static/django_bird/bird/{button_js.file.name}"></script>'
+            in rendered
+        )
 
     def test_template_inheritence_no_bird_usage(
         self, create_template, templates_dir, registry
@@ -154,10 +160,13 @@ class TestTemplateTag:
         rendered = template.render({})
 
         assert (
-            f'<link rel="stylesheet" href="/static/bird/{alert_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/django_bird/bird/{alert_css.file.name}">'
             in rendered
         )
-        assert f'<script src="/static/bird/{alert_js.file.name}"></script>' in rendered
+        assert (
+            f'<script src="/static/django_bird/bird/{alert_js.file.name}"></script>'
+            in rendered
+        )
 
     def test_with_no_assets(self, create_template, templates_dir):
         TestComponent(
@@ -232,21 +241,21 @@ class TestTemplateTag:
 
         head_end = rendered.find("</head>")
         assert (
-            f'<link rel="stylesheet" href="/static/bird/{first_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/django_bird/bird/{first_css.file.name}">'
             in rendered[:head_end]
         )
         assert (
-            f'<link rel="stylesheet" href="/static/bird/{second_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/django_bird/bird/{second_css.file.name}">'
             in rendered[:head_end]
         )
 
         body_start = rendered.find("<body")
         assert (
-            f'<script src="/static/bird/{first_js.file.name}"></script>'
+            f'<script src="/static/django_bird/bird/{first_js.file.name}"></script>'
             in rendered[body_start:]
         )
         assert (
-            f'<script src="/static/bird/{second_js.file.name}"></script>'
+            f'<script src="/static/django_bird/bird/{second_js.file.name}"></script>'
             in rendered[body_start:]
         )
 
@@ -294,12 +303,14 @@ class TestTemplateTag:
 
         assert (
             rendered.count(
-                f'<link rel="stylesheet" href="/static/bird/{alert_css.file.name}">'
+                f'<link rel="stylesheet" href="/static/django_bird/bird/{alert_css.file.name}">'
             )
             == 1
         )
         assert (
-            rendered.count(f'<script src="/static/bird/{alert_js.file.name}"></script>')
+            rendered.count(
+                f'<script src="/static/django_bird/bird/{alert_js.file.name}"></script>'
+            )
             == 1
         )
 
@@ -356,16 +367,19 @@ class TestTemplateTag:
         rendered = template.render({})
 
         assert (
-            f'<link rel="stylesheet" href="/static/bird/{alert_css.file.name}">'
+            f'<link rel="stylesheet" href="/static/django_bird/bird/{alert_css.file.name}">'
             in rendered
         )
-        assert f'<script src="/static/bird/{alert_js.file.name}"></script>' in rendered
         assert (
-            f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+            f'<script src="/static/django_bird/bird/{alert_js.file.name}"></script>'
+            in rendered
+        )
+        assert (
+            f'<link rel="stylesheet" href="/static/django_bird/bird/{button_css.file.name}">'
             not in rendered
         )
         assert (
-            f'<script src="/static/bird/{button_js.file.name}"></script>'
+            f'<script src="/static/django_bird/bird/{button_js.file.name}"></script>'
             not in rendered
         )
 
@@ -425,7 +439,7 @@ class TestManifest:
             rendered = template.render({})
 
             assert (
-                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                f'<link rel="stylesheet" href="/static/django_bird/bird/{button_css.file.name}">'
                 in rendered
             )
 
@@ -466,7 +480,7 @@ class TestManifest:
             rendered = template.render({})
 
             assert (
-                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                f'<link rel="stylesheet" href="/static/django_bird/bird/{button_css.file.name}">'
                 in rendered
             )
 
@@ -513,7 +527,7 @@ class TestManifest:
             rendered = template.render({})
 
             assert (
-                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                f'<link rel="stylesheet" href="/static/django_bird/bird/{button_css.file.name}">'
                 in rendered
             )
 

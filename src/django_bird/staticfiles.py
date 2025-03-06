@@ -174,6 +174,14 @@ class BirdAssetStorage(StaticFilesStorage):
         super().__init__(*args, **kwargs)
         self.prefix = prefix
 
+    @override
+    def url(self, name: str | None) -> str:
+        if name is None:
+            return super().url(name)
+        if not name.startswith(f"{self.prefix}/"):
+            name = f"{self.prefix}/{name}"
+        return super().url(name)
+
 
 @final
 class BirdAssetFinder(BaseFinder):
