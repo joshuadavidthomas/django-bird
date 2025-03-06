@@ -3,6 +3,8 @@ from __future__ import annotations
 import pytest
 from django.test import override_settings
 
+from django_bird.templates import find_components_in_template
+from django_bird.templates import gather_bird_tag_template_usage
 from django_bird.templates import get_template_names
 
 
@@ -68,3 +70,27 @@ def test_get_template_names_duplicates():
 
         for _, count in template_counts.items():
             assert count == 1
+
+
+def test_find_components_handles_errors():
+    result = find_components_in_template("non_existent_template.html")
+    assert result == set()
+
+
+def test_find_components_handles_encoding_errors(templates_dir):
+    binary_file = templates_dir / "binary_file.html"
+    with open(binary_file, "wb") as f:
+        f.write(b"\x80\x81\x82invalid binary content\xfe\xff")
+
+    valid_file = templates_dir / "valid_file.html"
+    valid_file.write_text("""
+    <html>
+    <body>
+        {% bird button %}Button{% endbird %}
+    </body>
+    </html>
+    """)
+
+    results = list(gather_bird_tag_template_usage())
+
+    assert all(str(valid_file) in str(path) for path, _ in results)
