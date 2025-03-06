@@ -18,9 +18,9 @@ _manifest_cache = None
 class PathPrefix(str, Enum):
     """Path prefixes used for normalizing template paths."""
 
-    PKG = "pkg:"
-    APP = "app:"
-    EXT = "ext:"
+    PKG = "pkg"
+    APP = "app"
+    EXT = "ext"
 
     def prepend_to(self, path: str) -> str:
         """Generate a prefixed path string by prepending this prefix to a path.
@@ -31,7 +31,7 @@ class PathPrefix(str, Enum):
         Returns:
             str: A string with this prefix and the path
         """
-        return f"{self.value}{path}"
+        return f"{self.value}:{path}"
 
     @classmethod
     def has_prefix(cls, path: str) -> bool:
@@ -43,7 +43,7 @@ class PathPrefix(str, Enum):
         Returns:
             bool: True if the path starts with any of the recognized prefixes
         """
-        return any(path.startswith(prefix.value) for prefix in cls)
+        return any(path.startswith(f"{prefix.value}:") for prefix in cls)
 
 
 def normalize_path(path: str) -> str:
