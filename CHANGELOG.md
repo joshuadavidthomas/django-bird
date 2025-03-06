@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed path normalization in asset manifest to prevent double-prefixing of already normalized paths (e.g., preventing "app:app:templates/file.html").
+
 ## [0.17.2]
 
 ### Security
