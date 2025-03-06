@@ -25,47 +25,43 @@ def reset_manifest_cache():
     django_bird.manifest._manifest_cache = None
 
 
-def test_load_asset_manifest_with_asset_manifest_setting(tmp_path):
-    """Test loading manifest from a file specified in ASSET_MANIFEST setting."""
-    # Create test manifest data
-    test_manifest_data = {
-        "/path/to/template1.html": ["button", "card"],
-        "/path/to/template2.html": ["accordion", "tab"],
-    }
-
-    # Create manifest file
-    manifest_path = tmp_path / "test-manifest.json"
-    with open(manifest_path, "w") as f:
-        json.dump(test_manifest_data, f)
-
-    # Test loading with ASSET_MANIFEST setting
-    with override_settings(DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}):
-        loaded_manifest = load_asset_manifest()
-        assert loaded_manifest == test_manifest_data
+# We don't need the test_load_asset_manifest_with_asset_manifest_setting test anymore
+# since we no longer support the ASSET_MANIFEST setting.
 
 
 def test_load_asset_manifest_nonexistent():
     """Test loading manifest from a nonexistent file."""
-    with override_settings(
-        DJANGO_BIRD={"ASSET_MANIFEST": "/nonexistent/path/manifest.json"}
-    ):
+    with override_settings(STATIC_ROOT="/nonexistent/path/"):
         loaded_manifest = load_asset_manifest()
         assert loaded_manifest is None
 
 
 def test_load_asset_manifest_invalid_json(tmp_path):
     """Test handling of invalid JSON in manifest file."""
-    invalid_json_file = tmp_path / "invalid.json"
-    invalid_json_file.write_text("{ this is not valid JSON }")
+    # Create STATIC_ROOT structure with invalid JSON
+    static_root = tmp_path / "static-invalid"
+    static_root.mkdir()
+    django_bird_dir = static_root / "django_bird"
+    django_bird_dir.mkdir()
 
-    with override_settings(DJANGO_BIRD={"ASSET_MANIFEST": str(invalid_json_file)}):
+    manifest_path = django_bird_dir / "asset-manifest.json"
+    manifest_path.write_text("{ this is not valid JSON }")
+
+    with override_settings(STATIC_ROOT=str(static_root)):
         loaded_manifest = load_asset_manifest()
         assert loaded_manifest is None
 
 
 def test_load_asset_manifest_permission_error(tmp_path, monkeypatch):
     """Test handling of permission errors when loading the manifest."""
-    manifest_path = tmp_path / "permission-error.json"
+    # Set up STATIC_ROOT for the test
+    static_root = tmp_path / "static-with-permissions"
+    static_root.mkdir()
+    django_bird_dir = static_root / "django_bird"
+    django_bird_dir.mkdir()
+
+    # Create manifest file
+    manifest_path = django_bird_dir / "asset-manifest.json"
     manifest_path.write_text("{}")
 
     # Mock open to raise a permission error
@@ -77,14 +73,21 @@ def test_load_asset_manifest_permission_error(tmp_path, monkeypatch):
     # Apply the mock
     monkeypatch.setattr("builtins.open", mock_open_with_error)
 
-    with override_settings(DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}):
+    with override_settings(STATIC_ROOT=str(static_root)):
         loaded_manifest = load_asset_manifest()
         assert loaded_manifest is None
 
 
 def test_load_asset_manifest_os_error(tmp_path, monkeypatch):
     """Test handling of OS errors when loading the manifest."""
-    manifest_path = tmp_path / "os-error.json"
+    # Set up STATIC_ROOT for the test
+    static_root = tmp_path / "static-with-os-error"
+    static_root.mkdir()
+    django_bird_dir = static_root / "django_bird"
+    django_bird_dir.mkdir()
+
+    # Create manifest file
+    manifest_path = django_bird_dir / "asset-manifest.json"
     manifest_path.write_text("{}")
 
     # Mock open to raise an OS error
@@ -96,7 +99,7 @@ def test_load_asset_manifest_os_error(tmp_path, monkeypatch):
     # Apply the mock
     monkeypatch.setattr("builtins.open", mock_open_with_error)
 
-    with override_settings(DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}):
+    with override_settings(STATIC_ROOT=str(static_root)):
         loaded_manifest = load_asset_manifest()
         assert loaded_manifest is None
 
@@ -257,10 +260,9 @@ def test_save_and_load_asset_manifest(tmp_path):
 
     assert loaded_data == test_manifest_data
 
-    # Also verify using the load_asset_manifest function
-    with override_settings(DJANGO_BIRD={"ASSET_MANIFEST": str(output_path)}):
-        loaded_manifest = load_asset_manifest()
-        assert loaded_manifest == test_manifest_data
+    # Note: We can't test this via load_asset_manifest function directly
+    # since it now only looks in STATIC_ROOT. We already test that in
+    # test_load_asset_manifest_from_static_root.
 
 
 def test_default_manifest_path():

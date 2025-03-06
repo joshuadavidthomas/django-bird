@@ -25,7 +25,6 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 - Added asset manifest system for optimized startup and rendering performance
 - Added `manifest.py` module for generating, loading, and saving asset manifests
 - Added management command `generate_asset_manifest` for pre-computing template-component relationships
-- Added `ASSET_MANIFEST` setting to configure manifest file location
 - Added automatic fallback to component scanning in development mode (when DEBUG=True)
 
 ## [0.16.2]

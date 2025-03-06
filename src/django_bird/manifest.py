@@ -6,7 +6,6 @@ from pathlib import Path
 
 from django.conf import settings
 
-from django_bird.conf import app_settings
 from django_bird.templates import gather_bird_tag_template_usage
 
 logger = logging.getLogger("django_bird.assets")
@@ -16,7 +15,7 @@ _manifest_cache = None
 
 
 def load_asset_manifest() -> dict[str, list[str]] | None:
-    """Load asset manifest from configured locations.
+    """Load asset manifest from the default location.
 
     Returns a simple dict mapping template paths to lists of component names.
     If the manifest cannot be loaded, returns None and falls back to runtime scanning.
@@ -30,45 +29,23 @@ def load_asset_manifest() -> dict[str, list[str]] | None:
     if _manifest_cache is not None:
         return _manifest_cache
 
-    # Check configured path first
-    if app_settings.ASSET_MANIFEST:
-        path = Path(app_settings.ASSET_MANIFEST)
-        if path.exists():
-            try:
-                with open(path) as f:
-                    manifest_data = json.load(f)
-                    _manifest_cache = manifest_data
-                    return manifest_data
-            except json.JSONDecodeError:
-                logger.warning(
-                    f"Asset manifest at {path} contains invalid JSON. Falling back to registry."
-                )
-                return None
-            except (OSError, PermissionError) as e:
-                logger.warning(
-                    f"Error reading asset manifest at {path}: {str(e)}. Falling back to registry."
-                )
-                return None
-
     # Try default path in STATIC_ROOT
     if hasattr(settings, "STATIC_ROOT") and settings.STATIC_ROOT:
-        default_path = (
-            Path(settings.STATIC_ROOT) / "django_bird" / "asset-manifest.json"
-        )
-        if default_path.exists():
+        manifest_path = default_manifest_path()
+        if manifest_path.exists():
             try:
-                with open(default_path) as f:
+                with open(manifest_path) as f:
                     manifest_data = json.load(f)
                     _manifest_cache = manifest_data
                     return manifest_data
             except json.JSONDecodeError:
                 logger.warning(
-                    f"Asset manifest at {default_path} contains invalid JSON. Falling back to registry."
+                    f"Asset manifest at {manifest_path} contains invalid JSON. Falling back to registry."
                 )
                 return None
             except (OSError, PermissionError) as e:
                 logger.warning(
-                    f"Error reading asset manifest at {default_path}: {str(e)}. Falling back to registry."
+                    f"Error reading asset manifest at {manifest_path}: {str(e)}. Falling back to registry."
                 )
                 return None
 

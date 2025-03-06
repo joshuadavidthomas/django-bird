@@ -24,7 +24,6 @@ class AppSettings:
     COMPONENT_DIRS: list[Path | str] = field(default_factory=list)
     ENABLE_AUTO_CONFIG: bool = True
     ENABLE_BIRD_ATTRS: bool = True
-    ASSET_MANIFEST: str | Path | None = None
     _configurator: AutoConfigurator = field(init=False)
 
     def __post_init__(self):

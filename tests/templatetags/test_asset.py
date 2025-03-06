@@ -421,14 +421,15 @@ class TestNode:
         # Generate a real manifest
         manifest_data = generate_asset_manifest()
 
-        # Save it to a temporary file
-        manifest_path = tmp_path / "asset-manifest.json"
-        save_asset_manifest(manifest_data, manifest_path)
+        # Save it to STATIC_ROOT
+        static_root = tmp_path / "static_root"
+        static_root.mkdir(parents=True)
+        manifest_path = static_root / "django_bird"
+        manifest_path.mkdir(parents=True)
+        save_asset_manifest(manifest_data, manifest_path / "asset-manifest.json")
 
         # Test with DEBUG=False to use the manifest
-        with override_settings(
-            DEBUG=False, DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}
-        ):
+        with override_settings(DEBUG=False, STATIC_ROOT=str(static_root)):
             # Create template and render
             template = create_template(template_path)
             rendered = template.render({})
@@ -478,14 +479,15 @@ class TestNode:
         # Generate a real manifest with wrong data (this should be ignored in debug mode)
         manifest_data = {"not/a/real/template.html": ["not-button"]}
 
-        # Save it to a temporary file
-        manifest_path = tmp_path / "debug-asset-manifest.json"
-        save_asset_manifest(manifest_data, manifest_path)
+        # Save it to STATIC_ROOT
+        static_root = tmp_path / "static_root_debug"
+        static_root.mkdir(parents=True)
+        manifest_path = static_root / "django_bird"
+        manifest_path.mkdir(parents=True)
+        save_asset_manifest(manifest_data, manifest_path / "asset-manifest.json")
 
         # Test with DEBUG=True to bypass the manifest
-        with override_settings(
-            DEBUG=True, DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}
-        ):
+        with override_settings(DEBUG=True, STATIC_ROOT=str(static_root)):
             # Create template and render
             template = create_template(template_path)
             rendered = template.render({})
@@ -541,14 +543,15 @@ class TestNode:
         # Create manifest with a different template
         manifest_data = {str(other_path): ["button"]}
 
-        # Save it to a temporary file
-        manifest_path = tmp_path / "fallback-manifest.json"
-        save_asset_manifest(manifest_data, manifest_path)
+        # Save it to STATIC_ROOT
+        static_root = tmp_path / "static_root_fallback"
+        static_root.mkdir(parents=True)
+        manifest_path = static_root / "django_bird"
+        manifest_path.mkdir(parents=True)
+        save_asset_manifest(manifest_data, manifest_path / "asset-manifest.json")
 
         # Test with DEBUG=False to try to use the manifest
-        with override_settings(
-            DEBUG=False, DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}
-        ):
+        with override_settings(DEBUG=False, STATIC_ROOT=str(static_root)):
             # Create template and render
             template = create_template(template_path)
             rendered = template.render({})
