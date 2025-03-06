@@ -480,7 +480,7 @@ class TestManifest:
             rendered = template.render({})
 
             assert (
-                f'<link rel="stylesheet" href="/static/django_bird/bird/{button_css.file.name}">'
+                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
                 in rendered
             )
 

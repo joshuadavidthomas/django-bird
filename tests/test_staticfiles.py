@@ -198,7 +198,14 @@ class TestAssetClass:
 
         assert asset.relative_path == Path("bird/nested/button.css")
 
-    def test_url(self, templates_dir):
+    @pytest.mark.parametrize(
+        "DEBUG,expected_prefix",
+        [
+            (False, "/static/django_bird"),
+            (True, "/static"),
+        ],
+    )
+    def test_url(self, DEBUG, expected_prefix, templates_dir):
         button = TestComponent(
             name="button",
             content="<button>Click me</button>",
@@ -212,10 +219,11 @@ class TestAssetClass:
         component = Component.from_name(button.name)
         asset = component.get_asset(button_css.file.name)
 
-        assert (
-            asset.url
-            == f"/static/django_bird/{button_css.file.parent.name}/{button_css.file.name}"
-        )
+        with override_settings(DEBUG=DEBUG):
+            assert (
+                asset.url
+                == f"{expected_prefix}/{button_css.file.parent.name}/{button_css.file.name}"
+            )
 
     def test_url_nonexistent(self, templates_dir):
         button = TestComponent(

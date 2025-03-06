@@ -12,6 +12,7 @@ from typing import Literal
 from typing import final
 from typing import overload
 
+from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.finders import BaseFinder
 from django.contrib.staticfiles.storage import StaticFilesStorage
@@ -178,7 +179,11 @@ class BirdAssetStorage(StaticFilesStorage):
     def url(self, name: str | None) -> str:
         if name is None:
             return super().url(name)
-        if not name.startswith(f"{self.prefix}/"):
+        # Only add prefix in production (when DEBUG is False)
+        # In development, asset paths don't include the app label prefix
+        # because they come directly from source directories and in production,
+        # assets are collected to STATIC_ROOT/django_bird/
+        if not settings.DEBUG and not name.startswith(f"{self.prefix}/"):
             name = f"{self.prefix}/{name}"
         return super().url(name)
 

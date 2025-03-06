@@ -22,6 +22,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Normalize paths in asset manifest to prevent leaking system-specific information like Python version and installation paths
 
+### Fixed
+
+- Fixed asset URL handling in development mode to exclude the "django_bird/" prefix, matching the actual file paths in development environments. Production mode (DEBUG=False) still uses the prefix to maintain compatibility with collected static files.
+
 ## [0.17.1]
 
 ### Fixed
