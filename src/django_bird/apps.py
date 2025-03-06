@@ -25,10 +25,5 @@ class DjangoBirdAppConfig(AppConfig):
         app_settings.autoconfigure()
         pm.hook.register_asset_types(register_type=asset_types.register_type)
 
-        # We no longer call components.discover_components() here
-        # - In production, we use the asset manifest
-        # - In development, we discover components on-demand when needed
-        # - For components rendering (via {% bird %} tag), discovery happens only when needed
-
         for ready in pm.hook.ready():
             ready()
