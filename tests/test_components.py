@@ -269,80 +269,170 @@ class TestBoundComponent:
 
 
 class TestComponentRegistryProject:
-    def test_discover_components(self, templates_dir):
-        TestComponent(name="button", content="<button>Click me</button>").create(
+    def test_on_demand_component_loading(self, templates_dir):
+        # Create test components
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        alert = TestComponent(name="alert", content="<div>Alert</div>").create(
             templates_dir
         )
-        TestComponent(name="alert", content="<div>Alert</div>").create(templates_dir)
 
-        components.discover_components()
+        # Create a template that uses these components
+        test_template = templates_dir / "test_template.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        {% bird alert %}Warning{% endbird %}
+        """)
 
-        assert "button" in components._components
-        assert "alert" in components._components
+        # Get components used in the template - should trigger on-demand loading
+        used_components = components.get_component_names_used_in_template(test_template)
+
+        # Verify components were loaded on-demand
+        assert "button" in used_components
+        assert "alert" in used_components
+
+        # Verify components can be retrieved
+        assert components.get_component("button").name == "button"
+        assert components.get_component("alert").name == "alert"
 
     def test_custom_dir(self, templates_dir, override_app_settings):
-        TestComponent(
+        # Create component in custom directory
+        button = TestComponent(
             name="button", content="<button>Click me</button>", parent_dir="components"
         ).create(templates_dir)
 
-        with override_app_settings(COMPONENT_DIRS=["components"]):
-            components.discover_components()
+        # Create template that uses this component
+        test_template = templates_dir / "test_custom_dir.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
-        assert "button" in components._components
+        # Use custom component directory
+        with override_app_settings(COMPONENT_DIRS=["components"]):
+            # Get components used in the template
+            used_components = components.get_component_names_used_in_template(
+                test_template
+            )
+
+            # Verify component was found
+            assert "button" in used_components
+
+            # Verify component can be retrieved
+            component = components.get_component("button")
+            assert component.name == "button"
 
     def test_missing_dir(self, override_app_settings):
+        # Set a nonexistent component directory
         with override_app_settings(COMPONENT_DIRS=["nonexistent"]):
-            components.discover_components()
-
-        assert len(components._components) == 0
+            # Try to get a component that doesn't exist
+            with pytest.raises(TemplateDoesNotExist):
+                components.get_component("nonexistent")
 
     def test_non_html_files(self, templates_dir):
-        (templates_dir / "README.md").write_text("# Components")
-        (templates_dir / "ignored.txt").write_text("Not a component")
+        # Create non-HTML files
+        (templates_dir / "bird").mkdir(exist_ok=True)
+        (templates_dir / "bird" / "README.md").write_text("# Components")
+        (templates_dir / "bird" / "ignored.txt").write_text("Not a component")
 
-        components.discover_components()
+        # Create a template referencing a non-existent component
+        test_template = templates_dir / "test_non_html.html"
+        test_template.write_text("""
+        {% bird README %}Not a component{% endbird %}
+        """)
 
-        assert len(components._components) == 0
+        # This should not fail, but the component won't be found in files
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "README" in used_components
+
+        # Attempting to get the component should raise an exception
+        with pytest.raises(TemplateDoesNotExist):
+            components.get_component("README")
 
     def test_empty_dirs(self, templates_dir):
+        # Create empty directories
         bird_dir = templates_dir / "bird"
-        bird_dir.mkdir(parents=True)
-        (bird_dir / "empty").mkdir()
+        bird_dir.mkdir(parents=True, exist_ok=True)
+        (bird_dir / "empty").mkdir(exist_ok=True)
 
-        components.discover_components()
+        # Create a template referencing a non-existent component
+        test_template = templates_dir / "test_empty_dirs.html"
+        test_template.write_text("""
+        {% bird empty %}Empty component{% endbird %}
+        """)
 
-        assert len(components._components) == 0
+        # The component will be mentioned in the template
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "empty" in used_components
+
+        # But attempting to get the component should raise an exception
+        with pytest.raises(TemplateDoesNotExist):
+            components.get_component("empty")
 
     def test_nested_components(self, templates_dir):
-        TestComponent(
+        # Create a nested component
+        nested_button = TestComponent(
             name="button",
             content="<button>Nested</button>",
             sub_dir="nested",
         ).create(templates_dir)
 
-        components.discover_components()
+        # Create a template that uses this nested component
+        test_template = templates_dir / "test_nested.html"
+        test_template.write_text("""
+        {% bird nested.button %}Nested button{% endbird %}
+        """)
 
-        assert "nested.button" in components._components
+        # Get components used in the template
+        used_components = components.get_component_names_used_in_template(test_template)
+
+        # Verify nested component was found
+        assert "nested.button" in used_components
+
+        # Verify component can be retrieved
+        component = components.get_component("nested.button")
+        assert component.name == "nested.button"
 
     def test_component_name_collision(self, templates_dir, override_app_settings):
-        TestComponent(
+        # Create two components with the same name in different directories
+        first_button = TestComponent(
             name="button", content="<button>First</button>", parent_dir="first"
         ).create(templates_dir)
 
-        TestComponent(
+        second_button = TestComponent(
             name="button", content="<button>Second</button>", parent_dir="second"
         ).create(templates_dir)
 
+        # Create a template that uses the button component
+        test_template = templates_dir / "test_collision.html"
+        test_template.write_text("""
+        {% bird button %}Button{% endbird %}
+        """)
+
+        # First directory should take precedence
         with override_app_settings(COMPONENT_DIRS=["first", "second"]):
-            components.discover_components()
+            # Get components used in the template
+            used_components = components.get_component_names_used_in_template(
+                test_template
+            )
+            assert "button" in used_components
+
+            # First component should be found
             component = components.get_component("button")
             assert "First" in component.template.template.source
             assert "Second" not in component.template.template.source
 
         components.reset()
 
+        # Second directory should take precedence when order is changed
         with override_app_settings(COMPONENT_DIRS=["second", "first"]):
-            components.discover_components()
+            # Get components used in the template
+            used_components = components.get_component_names_used_in_template(
+                test_template
+            )
+            assert "button" in used_components
+
+            # Second component should be found
             component = components.get_component("button")
             assert "Second" in component.template.template.source
             assert "First" not in component.template.template.source
@@ -378,72 +468,154 @@ class {app_dir.name.capitalize()}Config(AppConfig):
         sys.path.remove(str(cls.tmp_path))
         shutil.rmtree(cls.tmp_dir)
 
-    def test_discover_components_from_app(self):
+    def test_components_from_app(self):
         app1_templates = self.app1_dir / "templates"
 
-        TestComponent(name="app1_button", content="<button>App1</button>").create(
-            app1_templates
-        )
+        # Create component in app1
+        app1_button = TestComponent(
+            name="app1_button", content="<button>App1</button>"
+        ).create(app1_templates)
+
+        # Create a template that uses the app component
+        test_template = app1_templates / "test_app_component.html"
+        test_template.write_text("""
+        {% bird app1_button %}App Button{% endbird %}
+        """)
 
         with override_settings(INSTALLED_APPS=["test_app1"]):
-            components.discover_components()
+            # Get components used in the template
+            template_path = (
+                Path(self.app1_dir) / "templates" / "test_app_component.html"
+            )
+            used_components = components.get_component_names_used_in_template(
+                template_path
+            )
 
-        assert "app1_button" in components._components
+            # Verify component was found
+            assert "app1_button" in used_components
+
+            # Verify component can be retrieved
+            component = components.get_component("app1_button")
+            assert component.name == "app1_button"
 
     def test_multiple_apps_components(self):
-        TestComponent(name="app1_button", content="<button>App1</button>").create(
-            self.app1_dir / "templates"
-        )
+        # Create components in both apps
+        app1_button = TestComponent(
+            name="app1_button", content="<button>App1</button>"
+        ).create(self.app1_dir / "templates")
 
-        TestComponent(name="app2_button", content="<button>App2</button>").create(
-            self.app2_dir / "templates"
-        )
+        app2_button = TestComponent(
+            name="app2_button", content="<button>App2</button>"
+        ).create(self.app2_dir / "templates")
+
+        # Create a template that uses both app components
+        test_template = self.app1_dir / "templates" / "test_multiple_apps.html"
+        test_template.write_text("""
+        {% bird app1_button %}App1 Button{% endbird %}
+        {% bird app2_button %}App2 Button{% endbird %}
+        """)
 
         with override_settings(INSTALLED_APPS=["test_app1", "test_app2"]):
-            components.discover_components()
+            # Get components used in the template
+            template_path = (
+                Path(self.app1_dir) / "templates" / "test_multiple_apps.html"
+            )
+            used_components = components.get_component_names_used_in_template(
+                template_path
+            )
 
-        assert "app1_button" in components._components
-        assert "app2_button" in components._components
+            # Verify components were found
+            assert "app1_button" in used_components
+            assert "app2_button" in used_components
+
+            # Verify components can be retrieved
+            component1 = components.get_component("app1_button")
+            component2 = components.get_component("app2_button")
+            assert component1.name == "app1_button"
+            assert component2.name == "app2_button"
 
     def test_app_component_override_project(self, templates_dir):
-        TestComponent(name="button", content="<button>Project</button>").create(
-            templates_dir
-        )
-        TestComponent(name="button", content="<button>App</button>").create(
-            self.app1_dir / "templates"
-        )
+        # Create same-named component in both project and app
+        project_button = TestComponent(
+            name="button", content="<button>Project</button>"
+        ).create(templates_dir)
+
+        app_button = TestComponent(
+            name="button", content="<button>App</button>"
+        ).create(self.app1_dir / "templates")
+
+        # Create a template that uses the button component
+        test_template = templates_dir / "test_override.html"
+        test_template.write_text("""
+        {% bird button %}Button{% endbird %}
+        """)
 
         with override_settings(INSTALLED_APPS=["test_app1"]):
-            components.discover_components()
+            # Get components used in the template
+            used_components = components.get_component_names_used_in_template(
+                test_template
+            )
+            assert "button" in used_components
+
+            # Project component should take precedence over app component
             component = components.get_component("button")
             assert "Project" in component.template.template.source
             assert "App" not in component.template.template.source
 
     def test_app_order_precedence(self):
-        TestComponent(name="button", content="<button>App1</button>").create(
-            self.app1_dir / "templates"
-        )
-        TestComponent(name="button", content="<button>App2</button>").create(
-            self.app2_dir / "templates"
-        )
+        # Create same-named component in both apps
+        app1_button = TestComponent(
+            name="button", content="<button>App1</button>"
+        ).create(self.app1_dir / "templates")
 
+        app2_button = TestComponent(
+            name="button", content="<button>App2</button>"
+        ).create(self.app2_dir / "templates")
+
+        # Create a template that uses the button component
+        test_template = self.app1_dir / "templates" / "test_app_precedence.html"
+        test_template.write_text("""
+        {% bird button %}Button{% endbird %}
+        """)
+
+        # First app should take precedence
         with override_settings(INSTALLED_APPS=["test_app1", "test_app2"]):
-            components.discover_components()
+            # Get components used in the template
+            template_path = (
+                Path(self.app1_dir) / "templates" / "test_app_precedence.html"
+            )
+            used_components = components.get_component_names_used_in_template(
+                template_path
+            )
+            assert "button" in used_components
+
+            # App1 component should be found
             component = components.get_component("button")
             assert "App1" in component.template.template.source
             assert "App2" not in component.template.template.source
 
         components.reset()
 
+        # Change app order, second app should take precedence
         with override_settings(INSTALLED_APPS=["test_app2", "test_app1"]):
-            components.discover_components()
+            # Get components used in the template
+            template_path = (
+                Path(self.app1_dir) / "templates" / "test_app_precedence.html"
+            )
+            used_components = components.get_component_names_used_in_template(
+                template_path
+            )
+            assert "button" in used_components
+
+            # App2 component should be found
             component = components.get_component("button")
             assert "App2" in component.template.template.source
             assert "App1" not in component.template.template.source
 
 
 class TestComponentRegistryAssets:
-    def test_discover_component_with_css(self, templates_dir):
+    def test_component_with_css(self, templates_dir):
+        # Create component with CSS asset
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
@@ -454,16 +626,26 @@ class TestComponentRegistryAssets:
             asset_type=CSS,
         ).create()
 
-        components.discover_components()
+        # Create a template that uses this component
+        test_template = templates_dir / "test_css.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
-        assert "button" in components._components
+        # Get components used in the template
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
 
-        component = components._components["button"]
+        # Get the component and check its assets
+        component = components.get_component("button")
+        assert component.name == "button"
 
+        # Verify that CSS asset was found
         assert len(component.assets) == 1
         assert Asset(button_css.file, button_css.asset_type) in component.assets
 
-    def test_discover_component_with_js(self, templates_dir):
+    def test_component_with_js(self, templates_dir):
+        # Create component with JS asset
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
@@ -474,64 +656,106 @@ class TestComponentRegistryAssets:
             asset_type=JS,
         ).create()
 
-        components.discover_components()
+        # Create a template that uses this component
+        test_template = templates_dir / "test_js.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
-        assert "button" in components._components
+        # Get components used in the template
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
 
-        component = components._components["button"]
+        # Get the component and check its assets
+        component = components.get_component("button")
+        assert component.name == "button"
 
+        # Verify that JS asset was found
         assert len(component.assets) == 1
         assert Asset(button_js.file, button_js.asset_type) in component.assets
 
     def test_get_assets_by_type(self, templates_dir):
+        # Create component with multiple asset types
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
+
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
             asset_type=CSS,
         ).create()
+
         button_js = TestAsset(
             component=button,
             content="console.log('loaded');",
             asset_type=JS,
         ).create()
 
-        components.discover_components()
+        # Create a template that uses this component
+        test_template = templates_dir / "test_assets_by_type.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
+        # Get components used in the template
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
+
+        # Load the component
+        component = components.get_component("button")
+
+        # Get assets by type
         css_assets = components.get_assets(CSS)
         js_assets = components.get_assets(JS)
 
+        # Verify assets were found by type
         assert len(css_assets) == 1
         assert len(js_assets) == 1
         assert Asset(button_css.file, button_css.asset_type) in css_assets
         assert Asset(button_js.file, button_js.asset_type) in js_assets
 
     def test_get_assets_all(self, templates_dir):
+        # Create component with multiple asset types
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
+
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
             asset_type=CSS,
         ).create()
+
         button_js = TestAsset(
             component=button,
             content="console.log('loaded');",
             asset_type=JS,
         ).create()
 
-        components.discover_components()
+        # Create a template that uses this component
+        test_template = templates_dir / "test_assets_all.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
+        # Get components used in the template
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
+
+        # Load the component
+        component = components.get_component("button")
+
+        # Get all assets
         assets = components.get_assets()
 
+        # Verify all assets were found
         assert len(assets) == 2
         assert Asset(button_css.file, button_css.asset_type) in assets
         assert Asset(button_js.file, button_js.asset_type) in assets
 
     def test_assets_from_multiple_components(self, templates_dir):
+        # Create multiple components with assets
         button1 = TestComponent(name="button1", content="<button>One</button>").create(
             templates_dir
         )
@@ -544,37 +768,64 @@ class TestComponentRegistryAssets:
             content=".button1 { color: red; }",
             asset_type=CSS,
         ).create()
+
         button2_css = TestAsset(
             component=button2,
             content=".button2 { color: blue; }",
             asset_type=CSS,
         ).create()
 
-        components.discover_components()
+        # Create a template that uses both components
+        test_template = templates_dir / "test_multiple_assets.html"
+        test_template.write_text("""
+        {% bird button1 %}One{% endbird %}
+        {% bird button2 %}Two{% endbird %}
+        """)
 
+        # Get components used in the template
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button1" in used_components
+        assert "button2" in used_components
+
+        # Load the components
+        components.get_component("button1")
+        components.get_component("button2")
+
+        # Get CSS assets
         css_assets = components.get_assets(CSS)
 
+        # Verify assets from both components were found
         assert len(css_assets) == 2
         assert Asset(button1_css.file, button1_css.asset_type) in css_assets
         assert Asset(button2_css.file, button2_css.asset_type) in css_assets
 
     def test_missing_asset_file(self, templates_dir):
+        # Create component but don't actually create the asset file
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
 
+        # Create asset object but don't call create() to actually write the file
         TestAsset(
             component=button,
             content="/* Missing */",
             asset_type=CSS,
         )
 
-        components.discover_components()
+        # Create a template that uses this component
+        test_template = templates_dir / "test_missing_asset.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
-        assert "button" in components._components
+        # Get components used in the template
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
 
-        component = components._components["button"]
+        # Get the component
+        component = components.get_component("button")
 
+        # Verify that no assets were found (since file wasn't created)
         assert len(component.assets) == 0
 
 
@@ -673,79 +924,62 @@ class TestComponentRegistryCaching:
 
 class TestComponentRegistryErrors:
     def test_invalid_template_syntax(self, templates_dir):
+        # Create an invalid template
         invalid_template = templates_dir / "invalid.html"
         invalid_template.write_text("{% invalid syntax %}")
 
-        components.discover_components()
+        # Create a template that tries to use an invalid component
+        test_template = templates_dir / "test_invalid.html"
+        test_template.write_text("""
+        {% bird invalid %}Invalid{% endbird %}
+        """)
 
+        # Scanning the template shouldn't fail but components.get_component should
+        components.get_component_names_used_in_template(test_template)
+
+        # Trying to get the non-existent component should fail
         with pytest.raises(TemplateDoesNotExist):
             components.get_component("invalid")
 
     def test_missing_required_template(self):
-        components.discover_components()
-
+        # Directly try to get a non-existent component
         with pytest.raises(TemplateDoesNotExist):
             components.get_component("nonexistent")
 
     def test_invalid_asset_reference(self, templates_dir):
+        # Create a component but with an invalid asset type
         button = TestComponent(name="button", content="<button>Error</button>").create(
             templates_dir
         )
 
+        # Create an asset with an invalid type
         TestAsset(
             component=button,
             content="/* Invalid */",
             asset_type="invalid_type",
         )
 
-        components.discover_components()
+        # Create a template that uses this component
+        test_template = templates_dir / "test_invalid_asset.html"
+        test_template.write_text("""
+        {% bird button %}Button{% endbird %}
+        """)
 
-        assert "button" in components._components
+        # Get components used in the template
+        components.get_component_names_used_in_template(test_template)
 
-        component = components._components["button"]
+        # Load the component
+        component = components.get_component("button")
 
+        # Verify the component was loaded but the invalid asset was ignored
+        assert component.name == "button"
         assert len(component.assets) == 0
 
 
 class TestComponentRegistryPerformance:
-    def test_large_directory_scan(self, templates_dir):
-        for i in range(100):
-            TestComponent(
-                name=f"button{i}", content=f"<button>Button {i}</button>"
-            ).create(templates_dir)
-
-        start_time = time.time()
-
-        components.discover_components()
-
-        end_time = time.time()
-        scan_duration = end_time - start_time
-
-        assert len(components._components) == 100
-        assert scan_duration < 1.0
-
-    def test_deep_directory_structure(self, templates_dir):
-        current_dir = templates_dir
-        depth = 10
-
-        for i in range(depth):
-            current_dir = current_dir / f"level{i}"
-            current_dir.mkdir()
-            TestComponent(
-                name=f"button{i}",
-                content=f"<button>Nested level {i}</button>",
-                sub_dir="/".join(f"level{j}" for j in range(i + 1)),
-            ).create(templates_dir)
-
-        start_time = time.time()
-
-        components.discover_components()
-
-        end_time = time.time()
-        scan_duration = end_time - start_time
-
-        assert len(components._components) == depth
-        assert scan_duration < 1.0
+    # Removed test_large_directory_scan and test_deep_directory_structure
+    # as they were specifically testing the performance of bulk component discovery,
+    # which has been removed in favor of on-demand discovery
 
     def test_repeated_access_performance(self, templates_dir):
         TestComponent(name="button", content="<button>Performance</button>").create(

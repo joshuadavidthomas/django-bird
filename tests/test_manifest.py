@@ -179,8 +179,6 @@ def test_generate_asset_manifest(templates_dir, registry):
         templates_dir
     )
 
-    registry.discover_components()
-
     manifest = generate_asset_manifest()
 
     all_keys = list(manifest.keys())
@@ -222,9 +220,7 @@ def test_default_manifest_path():
 class TestManagementCommand:
     """Tests for the generate_asset_manifest management command."""
 
-    def test_generate_asset_manifest_command_default(
-        self, static_root, templates_dir, registry
-    ):
+    def test_generate_asset_manifest_command_default(self, static_root, templates_dir):
         TestComponent(name="test_cmd", content="<div>{{ slot }}</div>").create(
             templates_dir
         )
@@ -237,8 +233,6 @@ class TestManagementCommand:
         </body>
         </html>
         """)
-
-        registry.discover_components()
 
         stdout = StringIO()
 
@@ -261,7 +255,7 @@ class TestManagementCommand:
         assert "test_cmd" in manifest_data[template_keys[0]]
 
     def test_generate_asset_manifest_command_with_options(
-        self, tmp_path, templates_dir, registry
+        self, tmp_path, templates_dir
     ):
         TestComponent(name="test_cmd2", content="<div>{{ slot }}</div>").create(
             templates_dir
@@ -275,8 +269,6 @@ class TestManagementCommand:
         </body>
         </html>
         """)
-
-        registry.discover_components()
 
         custom_output = tmp_path / "custom" / "manifest.json"
 

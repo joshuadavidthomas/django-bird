@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from collections.abc import Iterable
-from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -22,9 +21,11 @@ from django_bird import hookimpl
 
 from ._typing import override
 from .apps import DjangoBirdAppConfig
+from .components import Component
 from .conf import app_settings
 from .templates import get_component_directories
 from .templatetags.tags.asset import AssetTag
+from .utils import get_files_from_dirs
 
 if TYPE_CHECKING:
     from .components import Component
@@ -174,14 +175,6 @@ class BirdAssetStorage(StaticFilesStorage):
 
 @final
 class BirdAssetFinder(BaseFinder):
-    def __init__(
-        self, app_names: Sequence[str] | None = None, *args: Any, **kwargs: Any
-    ) -> None:
-        from .components import components
-
-        self.components = components
-        super().__init__(*args, **kwargs)
-
     @override
     def check(self, **kwargs: Any) -> list[CheckMessage]:
         return []
@@ -238,11 +231,53 @@ class BirdAssetFinder(BaseFinder):
         """
         Return (relative_path, storage) pairs for all assets.
         """
-        self.components.discover_components()
+        component_dirs = get_component_directories()
+        component_dir_names = app_settings.get_component_directory_names()
 
-        for asset in self.components.get_assets():
+        seen_component_paths = set()
+
+        all_assets = []
+
+        # Process components in the order of component directories
+        for path, root in get_files_from_dirs(component_dirs):
+            if path.suffix != ".html":
+                continue
+
+            # Create a unique key for this component's path to respect subdirectories
+            component_path_key = str(path)
+
+            if component_path_key in seen_component_paths:
+                continue
+
+            component_dir_match = False
+            for component_dir in component_dir_names:
+                if f"/{component_dir}/" in str(path) or str(path).endswith(
+                    f"/{component_dir}"
+                ):
+                    component_dir_match = True
+                    break
+
+            if not component_dir_match:
+                continue
+
+            try:
+                component = Component.from_abs_path(path, root)
+                seen_component_paths.add(component_path_key)
+                all_assets.extend(component.assets)
+            except Exception:
+                continue
+
+        seen_asset_paths = set()
+
+        for asset in all_assets:
             if ignore_patterns and any(
                 asset.relative_path.match(pattern) for pattern in set(ignore_patterns)
             ):
                 continue
-            yield str(asset.relative_path), asset.storage
+
+            asset_path = str(asset.relative_path)
+            if asset_path in seen_asset_paths:
+                continue
+
+            seen_asset_paths.add(asset_path)
+            yield asset_path, asset.storage

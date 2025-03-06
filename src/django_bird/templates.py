@@ -130,18 +130,34 @@ def _process_template_chunk(  # pragma: no cover
 ) -> list[tuple[Path, set[str]]]:
     results: list[tuple[Path, set[str]]] = []
     for path, root in templates:
-        visitor = NodeVisitor(Engine.get_default())
         template_name = str(path.relative_to(root))
-        try:
-            template = Engine.get_default().get_template(template_name)
-        except (TemplateDoesNotExist, TemplateSyntaxError):
-            continue
+        components = find_components_in_template(template_name)
+        if components:
+            results.append((path, components))
+    return results
+
+
+def find_components_in_template(template_path: str | Path) -> set[str]:
+    """Find all component names used in a specific template.
+
+    Args:
+        template_path: Path to the template file or template name
+
+    Returns:
+        set[str]: Set of component names used in the template
+    """
+    template_name = str(template_path)
+
+    visitor = NodeVisitor(Engine.get_default())
+    try:
+        template = Engine.get_default().get_template(template_name)
         context = Context()
         with context.bind_template(template):
             visitor.visit(template, context)
-        if visitor.components:
-            results.append((path, visitor.components))
-    return results
+        return visitor.components
+    except (TemplateDoesNotExist, TemplateSyntaxError):
+        # If we can't load the template, return an empty set
+        return set()
 
 
 NodeVisitorMethod = Callable[[Template | Node, Context], None]
