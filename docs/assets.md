@@ -133,3 +133,18 @@ python manage.py collectstatic
 ```
 
 This will collect all component assets into your static files directory, allowing you to serve them via your web server, [WhiteNoise](https://whitenoise.readthedocs.io), or a CDN.
+
+## Asset Manifest
+
+For production deployments, django-bird provides a management command to generate an asset manifest:
+
+```bash
+python manage.py generate_asset_manifest
+```
+
+This command creates a manifest file at `STATIC_ROOT/django_bird/manifest.json` that maps templates to their used components. In production mode, this manifest is used to load assets without scanning templates at runtime.
+
+To include this in your deployment:
+
+1. Run the command during your build/deploy process
+2. Make sure the generated manifest file is included with your static files
