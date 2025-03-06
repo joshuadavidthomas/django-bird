@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -21,11 +22,12 @@ from django_bird import hookimpl
 
 from ._typing import override
 from .apps import DjangoBirdAppConfig
-from .components import Component
 from .conf import app_settings
 from .templates import get_component_directories
 from .templatetags.tags.asset import AssetTag
 from .utils import get_files_from_dirs
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .components import Component
@@ -230,54 +232,34 @@ class BirdAssetFinder(BaseFinder):
     ) -> Iterable[tuple[str, FileSystemStorage]]:
         """
         Return (relative_path, storage) pairs for all assets.
+
+        This method is used by Django's collectstatic command to find
+        all assets that should be collected.
         """
+
+        from django_bird.components import Component
+
         component_dirs = get_component_directories()
-        component_dir_names = app_settings.get_component_directory_names()
 
-        seen_component_paths = set()
-
-        all_assets = []
-
-        # Process components in the order of component directories
-        for path, root in get_files_from_dirs(component_dirs):
+        for path, _ in get_files_from_dirs(component_dirs):
             if path.suffix != ".html":
                 continue
 
-            # Create a unique key for this component's path to respect subdirectories
-            component_path_key = str(path)
-
-            if component_path_key in seen_component_paths:
-                continue
-
-            component_dir_match = False
-            for component_dir in component_dir_names:
-                if f"/{component_dir}/" in str(path) or str(path).endswith(
-                    f"/{component_dir}"
-                ):
-                    component_dir_match = True
-                    break
-
-            if not component_dir_match:
-                continue
-
             try:
-                component = Component.from_abs_path(path, root)
-                seen_component_paths.add(component_path_key)
-                all_assets.extend(component.assets)
-            except Exception:
+                component = Component.from_abs_path(path)
+
+                for asset in component.assets:
+                    if ignore_patterns and any(
+                        asset.relative_path.match(pattern)
+                        for pattern in set(ignore_patterns)
+                    ):
+                        logger.debug(
+                            f"Skipping asset {asset.path} due to ignore pattern"
+                        )
+                        continue
+
+                    yield str(asset.relative_path), asset.storage
+
+            except Exception as e:
+                logger.error(f"Error loading component {path}: {e}")
                 continue
-
-        seen_asset_paths = set()
-
-        for asset in all_assets:
-            if ignore_patterns and any(
-                asset.relative_path.match(pattern) for pattern in set(ignore_patterns)
-            ):
-                continue
-
-            asset_path = str(asset.relative_path)
-            if asset_path in seen_asset_paths:
-                continue
-
-            seen_asset_paths.add(asset_path)
-            yield asset_path, asset.storage

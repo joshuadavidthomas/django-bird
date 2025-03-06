@@ -335,7 +335,9 @@ class TestBirdAssetFinder:
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
         custom_button = TestComponent(
-            name="button", content="<button>Click me</button>", parent_dir="components"
+            name="button",
+            content="<button>Click me</button>",
+            parent_dir="components",
         ).create(templates_dir)
 
         button_css = TestAsset(
@@ -354,11 +356,12 @@ class TestBirdAssetFinder:
         with override_app_settings(COMPONENT_DIRS=["components"]):
             listed_assets = list(finder.list(None))
 
-        assert len(listed_assets) == 1
-        # components are matched like templates, dirs in
-        # `settings.DJANGO_BIRD["COMPONENT_DIRS"]` take precedence
-        assert listed_assets[0][0] in str(custom_button_css.file)
-        assert listed_assets[0][0] not in str(button_css.file)
+        assert len(listed_assets) == 2
+
+        asset_files = [asset_tuple[0] for asset_tuple in listed_assets]
+
+        assert str(button_css.relative_file_path) in asset_files
+        assert str(custom_button_css.relative_file_path) in asset_files
 
 
 class TestFindersFind:
@@ -522,10 +525,10 @@ class TestStaticCollection:
         with override_app_settings(COMPONENT_DIRS=["components"]):
             call_command("collectstatic", interactive=False, verbosity=0)
 
-            # components are matched like templates, dirs in
-            # `settings.DJANGO_BIRD["COMPONENT_DIRS"]` take precedence
+            # Both assets should be collected - all components exist on disk
+            # and should have their assets available
             assert (static_root / "django_bird/components/button.css").exists()
-            assert not (static_root / "django_bird/bird/button.css").exists()
+            assert (static_root / "django_bird/bird/button.css").exists()
 
     def test_same_named_assets(self, templates_dir, static_root):
         button1 = TestComponent(

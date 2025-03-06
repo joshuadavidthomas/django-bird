@@ -27,6 +27,7 @@ from .plugins import pm
 from .staticfiles import Asset
 from .staticfiles import AssetType
 from .templates import find_components_in_template
+from .templates import get_component_directories
 from .templates import get_template_names
 from .templatetags.tags.bird import BirdNode
 from .templatetags.tags.slot import DEFAULT_SLOT
@@ -74,17 +75,34 @@ class Component:
         return self.template.template.source
 
     @classmethod
-    def from_abs_path(cls, path: Path, root: Path) -> Component:
-        name = str(path.relative_to(root).with_suffix("")).replace("/", ".")
-        return cls.from_name(name)
+    def from_abs_path(cls, path: Path) -> Component:
+        template = select_template([str(path)])
+        return cls.from_template(template)
 
     @classmethod
-    def from_name(cls, name: str):
+    def from_name(cls, name: str) -> Component:
         template_names = get_template_names(name)
         template = select_template(template_names)
+        return cls.from_template(template)
+
+    @classmethod
+    def from_template(cls, template: DjangoTemplate) -> Component:
+        template_path = Path(template.template.origin.name)
+
+        for component_dir in get_component_directories():
+            try:
+                relative_path = template_path.relative_to(component_dir)
+                name = str(relative_path.with_suffix("")).replace("/", ".")
+                break
+            except ValueError:
+                continue
+        else:
+            name = template_path.stem
+
         assets: list[Iterable[Asset]] = pm.hook.collect_component_assets(
             template_path=Path(template.template.origin.name)
         )
+
         return cls(
             name=name, template=template, assets=frozenset(itertools.chain(*assets))
         )

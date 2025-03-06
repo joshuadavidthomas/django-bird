@@ -27,6 +27,14 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 - Added management command `generate_asset_manifest` for pre-computing template-component relationships
 - Added automatic fallback to component scanning in development mode (when DEBUG=True)
 
+### Changed
+
+- Improved static file collection to include assets from all component directories
+
+### Fixed
+
+- Fixed bug where assets from components with the same name in different directories weren't being properly collected
+
 ### Removed
 
 - Removed automatic component scanning at application startup for faster initialization
