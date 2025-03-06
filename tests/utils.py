@@ -60,6 +60,13 @@ class TestAsset:
 
         return self
 
+    @property
+    def relative_file_path(self):
+        component_dir = Path(self.component.parent_dir)
+        if self.component.sub_dir:
+            component_dir = component_dir / self.component.sub_dir
+        return Path(component_dir / self.file.name)
+
 
 @dataclass
 class TestComponentCase:

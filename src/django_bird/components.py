@@ -26,13 +26,12 @@ from .params import Value
 from .plugins import pm
 from .staticfiles import Asset
 from .staticfiles import AssetType
-from .templates import gather_bird_tag_template_usage
+from .templates import find_components_in_template
 from .templates import get_component_directories
 from .templates import get_template_names
 from .templatetags.tags.bird import BirdNode
 from .templatetags.tags.slot import DEFAULT_SLOT
 from .templatetags.tags.slot import SlotNode
-from .utils import get_files_from_dirs
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,17 +75,34 @@ class Component:
         return self.template.template.source
 
     @classmethod
-    def from_abs_path(cls, path: Path, root: Path) -> Component:
-        name = str(path.relative_to(root).with_suffix("")).replace("/", ".")
-        return cls.from_name(name)
+    def from_abs_path(cls, path: Path) -> Component:
+        template = select_template([str(path)])
+        return cls.from_template(template)
 
     @classmethod
-    def from_name(cls, name: str):
+    def from_name(cls, name: str) -> Component:
         template_names = get_template_names(name)
         template = select_template(template_names)
+        return cls.from_template(template)
+
+    @classmethod
+    def from_template(cls, template: DjangoTemplate) -> Component:
+        template_path = Path(template.template.origin.name)
+
+        for component_dir in get_component_directories():
+            try:
+                relative_path = template_path.relative_to(component_dir)
+                name = str(relative_path.with_suffix("")).replace("/", ".")
+                break
+            except ValueError:
+                continue
+        else:
+            name = template_path.stem
+
         assets: list[Iterable[Asset]] = pm.hook.collect_component_assets(
             template_path=Path(template.template.origin.name)
         )
+
         return cls(
             name=name, template=template, assets=frozenset(itertools.chain(*assets))
         )
@@ -182,24 +198,6 @@ class ComponentRegistry:
         self._components: dict[str, Component] = {}
         self._template_usage: dict[Path, set[str]] = defaultdict(set)
 
-    def discover_components(self) -> None:
-        component_dirs = get_component_directories()
-        component_paths = get_files_from_dirs(component_dirs)
-        for component_abs_path, root_abs_path in component_paths:
-            if component_abs_path.suffix != ".html":
-                continue
-
-            component = Component.from_abs_path(component_abs_path, root_abs_path)
-
-            if component.name not in self._components:
-                self._components[component.name] = component
-
-        templates_using_bird_tag = gather_bird_tag_template_usage()
-        for template_abs_path, component_names in templates_using_bird_tag:
-            self._template_usage[template_abs_path] = component_names
-            for component_name in component_names:
-                self._component_usage[component_name].add(template_abs_path)
-
     def reset(self) -> None:
         """Reset the registry, used for testing."""
         self._component_usage = defaultdict(set)
@@ -227,8 +225,19 @@ class ComponentRegistry:
         self, template_path: str | Path
     ) -> set[str]:
         """Get names of components used in a template."""
-        path = Path(template_path) if isinstance(template_path, str) else template_path
-        return self._template_usage.get(path, set())
+
+        path = Path(template_path)
+
+        if path in self._template_usage:
+            return self._template_usage[path]
+
+        components = find_components_in_template(template_path)
+
+        self._template_usage[path] = components
+        for component_name in components:
+            self._component_usage[component_name].add(path)
+
+        return components
 
     def get_component_usage(
         self, template_path: str | Path

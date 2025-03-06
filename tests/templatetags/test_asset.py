@@ -98,8 +98,6 @@ class TestTemplateTag:
             {% endblock %}
         """)
 
-        registry.discover_components()
-
         template = create_template(child_path)
 
         rendered = template.render({})
@@ -150,8 +148,6 @@ class TestTemplateTag:
                 No bird component here!
             {% endblock %}
         """)
-
-        registry.discover_components()
 
         template = create_template(child_path)
 
@@ -230,8 +226,6 @@ class TestTemplateTag:
             </html>
         """)
 
-        registry.discover_components()
-
         template = create_template(template_path)
 
         rendered = template.render({})
@@ -293,8 +287,6 @@ class TestTemplateTag:
                 {% bird alert %}Base Alert{% endbird %}
             {% endblock %}
         """)
-
-        registry.discover_components()
 
         template = get_template(child_path.name)
 
@@ -359,8 +351,6 @@ class TestTemplateTag:
             {% endblock %}
         """)
 
-        registry.discover_components()
-
         template = create_template(child_path)
 
         rendered = template.render({})
@@ -424,8 +414,6 @@ class TestManifest:
         </html>
         """)
 
-        registry.discover_components()
-
         manifest_data = generate_asset_manifest()
 
         manifest_path = static_root / "django_bird"
@@ -466,8 +454,6 @@ class TestManifest:
         </body>
         </html>
         """)
-
-        registry.discover_components()
 
         manifest_data = {"not/a/real/template.html": ["not-button"]}
 
@@ -515,8 +501,6 @@ class TestManifest:
         other_path.write_text("""
         <html><body>Other template</body></html>
         """)
-
-        registry.discover_components()
 
         manifest_data = {str(other_path): ["button"]}
 

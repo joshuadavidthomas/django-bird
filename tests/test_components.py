@@ -56,9 +56,7 @@ class TestComponentClass:
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
 
-        component = Component.from_abs_path(
-            test_component.file, test_component.file.parent
-        )
+        component = Component.from_abs_path(test_component.file)
 
         assert component is not None
 
@@ -269,49 +267,82 @@ class TestBoundComponent:
 
 
 class TestComponentRegistryProject:
-    def test_discover_components(self, templates_dir):
+    def test_on_demand_component_loading(self, templates_dir):
         TestComponent(name="button", content="<button>Click me</button>").create(
             templates_dir
         )
         TestComponent(name="alert", content="<div>Alert</div>").create(templates_dir)
 
-        components.discover_components()
+        test_template = templates_dir / "test_template.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        {% bird alert %}Warning{% endbird %}
+        """)
 
-        assert "button" in components._components
-        assert "alert" in components._components
+        used_components = components.get_component_names_used_in_template(test_template)
+
+        assert "button" in used_components
+        assert "alert" in used_components
+        assert components.get_component("button").name == "button"
+        assert components.get_component("alert").name == "alert"
 
     def test_custom_dir(self, templates_dir, override_app_settings):
         TestComponent(
             name="button", content="<button>Click me</button>", parent_dir="components"
         ).create(templates_dir)
 
-        with override_app_settings(COMPONENT_DIRS=["components"]):
-            components.discover_components()
+        test_template = templates_dir / "test_custom_dir.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
-        assert "button" in components._components
+        with override_app_settings(COMPONENT_DIRS=["components"]):
+            used_components = components.get_component_names_used_in_template(
+                test_template
+            )
+            component = components.get_component("button")
+
+        assert "button" in used_components
+        assert component.name == "button"
 
     def test_missing_dir(self, override_app_settings):
         with override_app_settings(COMPONENT_DIRS=["nonexistent"]):
-            components.discover_components()
-
-        assert len(components._components) == 0
+            with pytest.raises(TemplateDoesNotExist):
+                components.get_component("nonexistent")
 
     def test_non_html_files(self, templates_dir):
-        (templates_dir / "README.md").write_text("# Components")
-        (templates_dir / "ignored.txt").write_text("Not a component")
+        (templates_dir / "bird").mkdir(exist_ok=True)
+        (templates_dir / "bird" / "README.md").write_text("# Components")
+        (templates_dir / "bird" / "ignored.txt").write_text("Not a component")
 
-        components.discover_components()
+        test_template = templates_dir / "test_non_html.html"
+        test_template.write_text("""
+        {% bird README %}Not a component{% endbird %}
+        """)
 
-        assert len(components._components) == 0
+        used_components = components.get_component_names_used_in_template(test_template)
+
+        assert "README" in used_components
+
+        with pytest.raises(TemplateDoesNotExist):
+            components.get_component("README")
 
     def test_empty_dirs(self, templates_dir):
         bird_dir = templates_dir / "bird"
-        bird_dir.mkdir(parents=True)
-        (bird_dir / "empty").mkdir()
+        bird_dir.mkdir(parents=True, exist_ok=True)
+        (bird_dir / "empty").mkdir(exist_ok=True)
 
-        components.discover_components()
+        test_template = templates_dir / "test_empty_dirs.html"
+        test_template.write_text("""
+        {% bird empty %}Empty component{% endbird %}
+        """)
 
-        assert len(components._components) == 0
+        used_components = components.get_component_names_used_in_template(test_template)
+
+        assert "empty" in used_components
+
+        with pytest.raises(TemplateDoesNotExist):
+            components.get_component("empty")
 
     def test_nested_components(self, templates_dir):
         TestComponent(
@@ -320,32 +351,54 @@ class TestComponentRegistryProject:
             sub_dir="nested",
         ).create(templates_dir)
 
-        components.discover_components()
+        test_template = templates_dir / "test_nested.html"
+        test_template.write_text("""
+        {% bird nested.button %}Nested button{% endbird %}
+        """)
 
-        assert "nested.button" in components._components
+        used_components = components.get_component_names_used_in_template(test_template)
+
+        assert "nested.button" in used_components
+
+        component = components.get_component("nested.button")
+
+        assert component.name == "nested.button"
 
     def test_component_name_collision(self, templates_dir, override_app_settings):
         TestComponent(
             name="button", content="<button>First</button>", parent_dir="first"
         ).create(templates_dir)
-
         TestComponent(
             name="button", content="<button>Second</button>", parent_dir="second"
         ).create(templates_dir)
 
+        test_template = templates_dir / "test_collision.html"
+        test_template.write_text("""
+        {% bird button %}Button{% endbird %}
+        """)
+
         with override_app_settings(COMPONENT_DIRS=["first", "second"]):
-            components.discover_components()
+            used_components = components.get_component_names_used_in_template(
+                test_template
+            )
             component = components.get_component("button")
-            assert "First" in component.template.template.source
-            assert "Second" not in component.template.template.source
+
+        assert "button" in used_components
+
+        assert "First" in component.template.template.source
+        assert "Second" not in component.template.template.source
 
         components.reset()
 
         with override_app_settings(COMPONENT_DIRS=["second", "first"]):
-            components.discover_components()
+            used_components = components.get_component_names_used_in_template(
+                test_template
+            )
             component = components.get_component("button")
-            assert "Second" in component.template.template.source
-            assert "First" not in component.template.template.source
+
+        assert "button" in used_components
+        assert "Second" in component.template.template.source
+        assert "First" not in component.template.template.source
 
 
 class TestComponentRegistryApps:
@@ -378,32 +431,52 @@ class {app_dir.name.capitalize()}Config(AppConfig):
         sys.path.remove(str(cls.tmp_path))
         shutil.rmtree(cls.tmp_dir)
 
-    def test_discover_components_from_app(self):
+    def test_components_from_app(self):
         app1_templates = self.app1_dir / "templates"
 
         TestComponent(name="app1_button", content="<button>App1</button>").create(
             app1_templates
         )
 
-        with override_settings(INSTALLED_APPS=["test_app1"]):
-            components.discover_components()
+        test_template = app1_templates / "test_app_component.html"
+        test_template.write_text("""
+        {% bird app1_button %}App Button{% endbird %}
+        """)
 
-        assert "app1_button" in components._components
+        with override_settings(INSTALLED_APPS=["test_app1"]):
+            used_components = components.get_component_names_used_in_template(
+                Path(self.app1_dir) / "templates" / "test_app_component.html"
+            )
+            component = components.get_component("app1_button")
+
+        assert "app1_button" in used_components
+        assert component.name == "app1_button"
 
     def test_multiple_apps_components(self):
         TestComponent(name="app1_button", content="<button>App1</button>").create(
             self.app1_dir / "templates"
         )
-
         TestComponent(name="app2_button", content="<button>App2</button>").create(
             self.app2_dir / "templates"
         )
 
-        with override_settings(INSTALLED_APPS=["test_app1", "test_app2"]):
-            components.discover_components()
+        test_template = self.app1_dir / "templates" / "test_multiple_apps.html"
+        test_template.write_text("""
+        {% bird app1_button %}App1 Button{% endbird %}
+        {% bird app2_button %}App2 Button{% endbird %}
+        """)
 
-        assert "app1_button" in components._components
-        assert "app2_button" in components._components
+        with override_settings(INSTALLED_APPS=["test_app1", "test_app2"]):
+            used_components = components.get_component_names_used_in_template(
+                Path(self.app1_dir) / "templates" / "test_multiple_apps.html"
+            )
+            component1 = components.get_component("app1_button")
+            component2 = components.get_component("app2_button")
+
+        assert "app1_button" in used_components
+        assert "app2_button" in used_components
+        assert component1.name == "app1_button"
+        assert component2.name == "app2_button"
 
     def test_app_component_override_project(self, templates_dir):
         TestComponent(name="button", content="<button>Project</button>").create(
@@ -413,11 +486,20 @@ class {app_dir.name.capitalize()}Config(AppConfig):
             self.app1_dir / "templates"
         )
 
+        test_template = templates_dir / "test_override.html"
+        test_template.write_text("""
+        {% bird button %}Button{% endbird %}
+        """)
+
         with override_settings(INSTALLED_APPS=["test_app1"]):
-            components.discover_components()
+            used_components = components.get_component_names_used_in_template(
+                test_template
+            )
             component = components.get_component("button")
-            assert "Project" in component.template.template.source
-            assert "App" not in component.template.template.source
+
+        assert "button" in used_components
+        assert "Project" in component.template.template.source
+        assert "App" not in component.template.template.source
 
     def test_app_order_precedence(self):
         TestComponent(name="button", content="<button>App1</button>").create(
@@ -427,59 +509,78 @@ class {app_dir.name.capitalize()}Config(AppConfig):
             self.app2_dir / "templates"
         )
 
+        test_template = self.app1_dir / "templates" / "test_app_precedence.html"
+        test_template.write_text("""
+        {% bird button %}Button{% endbird %}
+        """)
+
         with override_settings(INSTALLED_APPS=["test_app1", "test_app2"]):
-            components.discover_components()
+            used_components = components.get_component_names_used_in_template(
+                Path(self.app1_dir) / "templates" / "test_app_precedence.html"
+            )
             component = components.get_component("button")
-            assert "App1" in component.template.template.source
-            assert "App2" not in component.template.template.source
+
+        assert "button" in used_components
+        assert "App1" in component.template.template.source
+        assert "App2" not in component.template.template.source
 
         components.reset()
 
         with override_settings(INSTALLED_APPS=["test_app2", "test_app1"]):
-            components.discover_components()
+            used_components = components.get_component_names_used_in_template(
+                Path(self.app1_dir) / "templates" / "test_app_precedence.html"
+            )
             component = components.get_component("button")
-            assert "App2" in component.template.template.source
-            assert "App1" not in component.template.template.source
+
+        assert "button" in used_components
+        assert "App2" in component.template.template.source
+        assert "App1" not in component.template.template.source
 
 
 class TestComponentRegistryAssets:
-    def test_discover_component_with_css(self, templates_dir):
+    def test_component_with_css(self, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
-
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
             asset_type=CSS,
         ).create()
 
-        components.discover_components()
+        test_template = templates_dir / "test_css.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
-        assert "button" in components._components
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
 
-        component = components._components["button"]
-
+        component = components.get_component("button")
+        assert component.name == "button"
         assert len(component.assets) == 1
         assert Asset(button_css.file, button_css.asset_type) in component.assets
 
-    def test_discover_component_with_js(self, templates_dir):
+    def test_component_with_js(self, templates_dir):
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
-
         button_js = TestAsset(
             component=button,
             content="console.log('clicked');",
             asset_type=JS,
         ).create()
 
-        components.discover_components()
+        test_template = templates_dir / "test_js.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
-        assert "button" in components._components
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
 
-        component = components._components["button"]
-
+        component = components.get_component("button")
+        assert component.name == "button"
         assert len(component.assets) == 1
         assert Asset(button_js.file, button_js.asset_type) in component.assets
 
@@ -498,7 +599,15 @@ class TestComponentRegistryAssets:
             asset_type=JS,
         ).create()
 
-        components.discover_components()
+        test_template = templates_dir / "test_assets_by_type.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
+
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
+
+        components.get_component("button")
 
         css_assets = components.get_assets(CSS)
         js_assets = components.get_assets(JS)
@@ -523,8 +632,15 @@ class TestComponentRegistryAssets:
             asset_type=JS,
         ).create()
 
-        components.discover_components()
+        test_template = templates_dir / "test_assets_all.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
+
+        components.get_component("button")
         assets = components.get_assets()
 
         assert len(assets) == 2
@@ -550,7 +666,18 @@ class TestComponentRegistryAssets:
             asset_type=CSS,
         ).create()
 
-        components.discover_components()
+        test_template = templates_dir / "test_multiple_assets.html"
+        test_template.write_text("""
+        {% bird button1 %}One{% endbird %}
+        {% bird button2 %}Two{% endbird %}
+        """)
+
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button1" in used_components
+        assert "button2" in used_components
+
+        components.get_component("button1")
+        components.get_component("button2")
 
         css_assets = components.get_assets(CSS)
 
@@ -562,18 +689,21 @@ class TestComponentRegistryAssets:
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
-
         TestAsset(
             component=button,
             content="/* Missing */",
             asset_type=CSS,
         )
 
-        components.discover_components()
+        test_template = templates_dir / "test_missing_asset.html"
+        test_template.write_text("""
+        {% bird button %}Click me{% endbird %}
+        """)
 
-        assert "button" in components._components
+        used_components = components.get_component_names_used_in_template(test_template)
+        assert "button" in used_components
 
-        component = components._components["button"]
+        component = components.get_component("button")
 
         assert len(component.assets) == 0
 
@@ -615,7 +745,6 @@ class TestComponentRegistryCaching:
         button = TestComponent(
             name="button", content="<button>Click me</button>"
         ).create(templates_dir)
-
         button_css = TestAsset(
             component=button,
             content=".button { color: red; }",
@@ -626,8 +755,8 @@ class TestComponentRegistryCaching:
             components.get_component("button")
             css_assets = components.get_assets(CSS)
 
-            assert len(css_assets) == 1
-            assert Asset(button_css.file, button_css.asset_type) in css_assets
+        assert len(css_assets) == 1
+        assert Asset(button_css.file, button_css.asset_type) in css_assets
 
     def test_cache_clear_with_reset(self, templates_dir):
         TestComponent(name="button", content="<button>Clear Me</button>").create(
@@ -636,10 +765,12 @@ class TestComponentRegistryCaching:
 
         with override_settings(DEBUG=False):
             components.get_component("button")
-            assert "button" in components._components
 
-            components.reset()
-            assert len(components._components) == 0
+        assert "button" in components._components
+
+        components.reset()
+
+        assert len(components._components) == 0
 
     def test_concurrent_cache_access(self, templates_dir):
         TestComponent(name="shared_button", content="<button>Shared</button>").create(
@@ -676,14 +807,17 @@ class TestComponentRegistryErrors:
         invalid_template = templates_dir / "invalid.html"
         invalid_template.write_text("{% invalid syntax %}")
 
-        components.discover_components()
+        test_template = templates_dir / "test_invalid.html"
+        test_template.write_text("""
+        {% bird invalid %}Invalid{% endbird %}
+        """)
+
+        components.get_component_names_used_in_template(test_template)
 
         with pytest.raises(TemplateDoesNotExist):
             components.get_component("invalid")
 
     def test_missing_required_template(self):
-        components.discover_components()
-
         with pytest.raises(TemplateDoesNotExist):
             components.get_component("nonexistent")
 
@@ -691,62 +825,26 @@ class TestComponentRegistryErrors:
         button = TestComponent(name="button", content="<button>Error</button>").create(
             templates_dir
         )
-
         TestAsset(
             component=button,
             content="/* Invalid */",
             asset_type="invalid_type",
         )
 
-        components.discover_components()
+        test_template = templates_dir / "test_invalid_asset.html"
+        test_template.write_text("""
+        {% bird button %}Button{% endbird %}
+        """)
 
-        assert "button" in components._components
+        components.get_component_names_used_in_template(test_template)
 
-        component = components._components["button"]
+        component = components.get_component("button")
 
+        assert component.name == "button"
         assert len(component.assets) == 0
 
 
 class TestComponentRegistryPerformance:
-    def test_large_directory_scan(self, templates_dir):
-        for i in range(100):
-            TestComponent(
-                name=f"button{i}", content=f"<button>Button {i}</button>"
-            ).create(templates_dir)
-
-        start_time = time.time()
-
-        components.discover_components()
-
-        end_time = time.time()
-        scan_duration = end_time - start_time
-
-        assert len(components._components) == 100
-        assert scan_duration < 1.0
-
-    def test_deep_directory_structure(self, templates_dir):
-        current_dir = templates_dir
-        depth = 10
-
-        for i in range(depth):
-            current_dir = current_dir / f"level{i}"
-            current_dir.mkdir()
-            TestComponent(
-                name=f"button{i}",
-                content=f"<button>Nested level {i}</button>",
-                sub_dir="/".join(f"level{j}" for j in range(i + 1)),
-            ).create(templates_dir)
-
-        start_time = time.time()
-
-        components.discover_components()
-
-        end_time = time.time()
-        scan_duration = end_time - start_time
-
-        assert len(components._components) == depth
-        assert scan_duration < 1.0
-
     def test_repeated_access_performance(self, templates_dir):
         TestComponent(name="button", content="<button>Performance</button>").create(
             templates_dir
@@ -764,191 +862,3 @@ class TestComponentRegistryPerformance:
 
         # Cached access should be significantly faster
         assert cached_access < first_access / 2
-
-    @pytest.mark.slow
-    def test_template_scanning_performance_realistic(self, templates_dir):
-        inheritance_depth = 20
-        templates_per_level = 100
-        num_of_components = 12
-
-        list_items = "\n".join(f"<li>Item {j}</li>" for j in range(20))
-        for i in range(num_of_components):
-            TestComponent(
-                name=f"component{i}",
-                content=f"""
-                    <div>
-                        Component {i}
-                    </div>
-                    {{{{ slot }}}}
-                    <ul>
-                        {list_items}
-                    </ul>
-                """,
-            ).create(templates_dir)
-
-        header_template = templates_dir / "header.html"
-        header_template.write_text("""
-            {% bird component0 %}{% endbird %}
-            {% bird component1 %}{% endbird %}
-            {% bird component2 %}{% endbird %}
-        """)
-        footer_template = templates_dir / "footer.html"
-        footer_template.write_text("""
-            {% bird component3 %}{% endbird %}
-            {% bird component4 %}{% endbird %}
-            {% bird component5 %}{% endbird %}
-        """)
-
-        for i in range(inheritance_depth):
-            # base template
-            base_path = templates_dir / f"base{i}.html"
-            content = """
-                {% load django_bird %}
-                {% include 'header.html' %}
-                {% block content %}{% endblock %}
-                {% include 'footer.html' %}
-
-                {% bird component6 %}{% endbird %}
-                {% bird component7 %}{% endbird %}
-                {% bird component8 %}{% endbird %}
-            """
-            base_path.write_text(content)
-
-            # child templates that extend the base
-            for j in range(templates_per_level):
-                child_path = templates_dir / f"child{i}_{j}.html"
-                content = f"""
-                    {{% extends 'base{i}.html' %}}
-                    {{% block content %}}
-                        {{% bird component9 %}}{{% endbird %}}
-                        {{% bird component10 %}}{{% endbird %}}
-                        {{% bird component11 %}}{{% endbird %}}
-                    {{% endblock %}}
-                """
-                child_path.write_text(content)
-
-        start_time = time.time()
-        components.discover_components()
-        scan_duration = time.time() - start_time
-
-        assert len(components._components) == num_of_components
-
-        total_templates = (
-            inheritance_depth  # base templates
-            + (inheritance_depth * templates_per_level)  # child templates
-            + 2  # includes
-        )
-
-        for i in range(num_of_components):
-            component_usage = len(components._component_usage[f"component{i}"])
-
-            if i <= 5:
-                # 0-5 used in one include, not the other
-                expected_usage = total_templates - 1
-            elif 6 <= i <= 8:
-                # 6-8 used in base and child templates, not in includes
-                expected_usage = total_templates - 2
-            else:
-                # 9-11 used in child templates, not in base templates or includes
-                expected_usage = inheritance_depth * templates_per_level
-
-            assert component_usage == expected_usage, (
-                f"Include component {i} usage mismatch (got {component_usage}, expected {expected_usage})"
-            )
-
-        print(f"Total templates: {total_templates}")
-        print(f"Total components: {num_of_components}")
-        print(f"Scan duration: {scan_duration:.2f} seconds")
-        print(f"Templates per second: {total_templates / scan_duration:.2f}")
-
-        assert scan_duration < 2.0, (
-            f"Template scanning broke 2 second threshold, took {scan_duration:.2f} seconds"
-        )
-
-    # TODO: improve the perf of scanning for components in templates
-    # obviously, this is an extreme case for a reason -- a stress test
-    # against a worst case scenario of thousands of template files with
-    # little component reuse. 25-40 seconds though, WOOF -- especially since
-    # the `discover_components` method runs on `app.ready()`. my first idea
-    # would be with a management command that can prime a cache.
-    @pytest.mark.slow
-    def test_template_scanning_performance_extreme(self, templates_dir):
-        inheritance_depth = 20
-        templates_per_level = 250
-        num_of_components = 50
-
-        list_items = "\n".join(f"<li>Item {j}</li>" for j in range(200))
-        for i in range(num_of_components):
-            TestComponent(
-                name=f"component{i}",
-                content=f"""
-                    <div>
-                        Component {i}
-                    </div>
-                    {{{{ slot }}}}
-                    <ul>
-                        {list_items}
-                    </ul>
-                """,
-            ).create(templates_dir)
-
-        for i in range(inheritance_depth):
-            # base templates
-            base_path = templates_dir / f"base{i}.html"
-            base_content = ""
-
-            # Add extends tag if not the root template
-            if i > 0:
-                base_content += f"{{% extends 'base{i - 1}.html' %}}"
-
-            base_content += """
-                {% block header %}{% endblock %}
-                {% block content %}{% endblock %}
-                {% block footer %}{% endblock %}
-            """
-            for j in range(num_of_components):
-                base_content += f"""
-                    {{% bird component{j} %}}
-                    Content for component {j}
-                    {{% endbird %}}
-                """
-            base_path.write_text(base_content)
-
-            # child templates
-            for j in range(templates_per_level):
-                child_path = templates_dir / f"child{i}_{j}.html"
-                child_content = f"""
-                    {{% extends 'base{i}.html' %}}
-                    {{% block header %}}Custom header{{% endblock %}}
-                    {{% block content %}}Custom main content{{% endblock %}}
-                    {{% block footer %}}Custom footer{{% endblock %}}
-                """
-                # for every fifth template, add a component
-                for k in range(0, num_of_components, 5):
-                    child_content += f"""
-                        {{% bird component{k} %}}
-                            Content for component {k}
-                        {{% endbird %}}
-                    """
-                child_path.write_text(child_content)
-
-        start_time = time.time()
-        components.discover_components()
-        scan_duration = time.time() - start_time
-
-        assert len(components._components) == num_of_components
-
-        total_templates = inheritance_depth + (inheritance_depth * templates_per_level)
-
-        for component_name in [f"component{i}" for i in range(num_of_components)]:
-            component_usage = len(components._component_usage[component_name])
-            assert component_usage == total_templates
-
-        print(f"Total templates: {total_templates}")
-        print(f"Total components: {num_of_components}")
-        print(f"Scan duration: {scan_duration:.2f} seconds")
-        print(f"Templates per second: {total_templates / scan_duration:.2f}")
-
-        assert scan_duration < 50.0, (
-            f"Template scanning broke 50 second threshold, took {scan_duration:.2f} seconds"
-        )
