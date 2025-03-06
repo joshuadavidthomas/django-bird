@@ -1,69 +1,11 @@
 # Configuration
 
-Configuration of django-bird is done through a `DJANGO_BIRD` dictionary in your Django settings.
-
-All settings are optional. Here is an example configuration with the types and default values shown:
-
-```{code-block} python
-:caption: settings.py
-
-from pathlib import Path
-
-DJANGO_BIRD = {
-    "COMPONENT_DIRS": list[Path | str] = [],
-    "ENABLE_BIRD_ATTRS": bool = True,
-}
-```
-
-## `COMPONENT_DIRS`
-
-Additional directories to scan for components. Takes a list of paths relative to the base directory of your project's templates directory. A path can either be a `str` or `Path`.
-
-By default, django-bird will look for components in a `bird` directory. Any directories specified here will take precedence and take priority when performing template resolution for components.
-
-### Example
-
-Suppose you want to store your components in a `components` directory, you're using a third-party library that provides its own bird components, and you have an alternate templates directory.
-
-You can configure django-bird to look in all these locations:
-
-```{code-block} python
-:caption: settings.py
-
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve(strict=True).parent
-
-DJANGO_BIRD = {
-    "COMPONENT_DIRS": [
-        "components",
-        Path("third_party_library/components"),
-        BASE_DIR / "alternate_templates" / "bird",
-    ]
-}
-```
-
-In this configuration:
-
-- `"components"` is a string path relative to your project's templates directory.
-- `Path("third_party_library/components")` uses the `Path` object for the third-party library's components.
-- `BASE_DIR / "alternate_templates" / "bird"` constructs a path using Django's `BASE_DIR` setting, similar to how other Django settings can be configured.
-
-With this setup, django-bird will search for components in the following order:
-
-1. `components`
-2. `third_party_library/components`
-3. `alternate_templates/bird`
-4. The default `bird` directory
-
-The default `bird` directory will always be checked last, ensuring that your custom directories take precedence in template resolution.
-
-## Configuration
+## Django settings
 
 To use django-bird, you need to configure a few settings in your project:
 
-1. Add django-bird's template tags to Django's built-ins.
-2. Add django-bird's static file finder to your STATICFILES_FINDERS.
+1. Add django-bird's static file finder to your STATICFILES_FINDERS.
+2. Add django-bird's template tags to Django's built-ins. **Note**: This is not required, but if you do not do this you will need to use `{% load django_bird %}` in any templates using components.
 
 ```{admonition} Auto Configuration
 :class: tip
@@ -102,8 +44,68 @@ STATICFILES_FINDERS = [
 ```
 
 This configuration ensures that django-bird's templatetags are available globally and component assets can be properly discovered.
+Configuration of django-bird is done through a `DJANGO_BIRD` dictionary in your Django settings.
 
-## `ENABLE_BIRD_ATTRS`
+## Application settings
+
+All app settings are optional. Here is an example configuration with the types and default values shown:
+
+```{code-block} python
+:caption: settings.py
+
+from pathlib import Path
+
+DJANGO_BIRD = {
+    "COMPONENT_DIRS": list[Path | str] = [],
+    "ENABLE_BIRD_ATTRS": bool = True,
+}
+```
+
+### `COMPONENT_DIRS`
+
+Additional directories to scan for components. Takes a list of paths relative to the base directory of your project's templates directory. A path can either be a `str` or `Path`.
+
+By default, django-bird will look for components in a `bird` directory. Any directories specified here will take precedence and take priority when performing template resolution for components.
+
+#### Example
+
+Suppose you want to store your components in a `components` directory, you're using a third-party library that provides its own bird components, and you have an alternate templates directory.
+
+You can configure django-bird to look in all these locations:
+
+```{code-block} python
+:caption: settings.py
+
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve(strict=True).parent
+
+DJANGO_BIRD = {
+    "COMPONENT_DIRS": [
+        "components",
+        Path("third_party_library/components"),
+        BASE_DIR / "alternate_templates" / "bird",
+    ]
+}
+```
+
+In this configuration:
+
+- `"components"` is a string path relative to your project's templates directory.
+- `Path("third_party_library/components")` uses the `Path` object for the third-party library's components.
+- `BASE_DIR / "alternate_templates" / "bird"` constructs a path using Django's `BASE_DIR` setting, similar to how other Django settings can be configured.
+
+With this setup, django-bird will search for components in the following order:
+
+1. `components`
+2. `third_party_library/components`
+3. `alternate_templates/bird`
+4. The default `bird` directory
+
+The default `bird` directory will always be checked last, ensuring that your custom directories take precedence in template resolution.
+
+
+### `ENABLE_BIRD_ATTRS`
 
 Controls whether components automatically receive data attributes related to django-bird in its `attrs` template context variable. Defaults to `True`.
 
