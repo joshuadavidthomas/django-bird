@@ -18,6 +18,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [0.17.1]
+
 ### Fixed
 
 - Fixed static asset URLs to properly include the 'django_bird' prefix, ensuring URLs match the actual file paths during collection
@@ -450,7 +452,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Josh Thomas <josh@joshthomas.dev> (maintainer)
 
-[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.17.0...HEAD
+[unreleased]: https://github.com/joshuadavidthomas/django-bird/compare/v0.17.1...HEAD
 [0.1.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.0
 [0.1.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.1.1
 [0.2.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.2.0
@@ -489,3 +491,4 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 [0.16.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.16.1
 [0.16.2]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.16.2
 [0.17.0]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.17.0
+[0.17.1]: https://github.com/joshuadavidthomas/django-bird/releases/tag/v0.17.1
