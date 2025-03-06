@@ -20,7 +20,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Security
 
-- Normalize paths in asset manifest to prevent leaking system information like Python version and installation paths
+- Normalize paths in asset manifest to prevent leaking system-specific information like Python version and installation paths
 
 ## [0.17.1]
 
