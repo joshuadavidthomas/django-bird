@@ -23,13 +23,11 @@ def normalize_path(path: str) -> str:
     Returns:
         str: A normalized path without system-specific details
     """
-    # Handle site-packages paths (installed packages)
     if "site-packages" in path:
         parts = path.split("site-packages/")
         if len(parts) > 1:
             return f"pkg:{parts[1]}"
 
-    # Handle project paths - try to make them relative to project root
     if hasattr(settings, "BASE_DIR") and settings.BASE_DIR:
         base_dir = Path(settings.BASE_DIR).resolve()
         abs_path = Path(path).resolve()
@@ -41,7 +39,6 @@ def normalize_path(path: str) -> str:
             # Path is not relative to BASE_DIR
             pass
 
-    # Hash other paths to obscure them
     if path.startswith("/"):
         hash_val = hashlib.md5(path.encode()).hexdigest()[:8]
         filename = Path(path).name
@@ -95,6 +92,7 @@ def generate_asset_manifest() -> dict[str, list[str]]:
         dict[str, list[str]]: A dictionary mapping template paths to lists of component names.
     """
     template_component_map: dict[str, set[str]] = {}
+
     for template_path, component_names in gather_bird_tag_template_usage():
         # Convert Path objects to strings for JSON and normalize
         original_path = str(template_path)
@@ -119,8 +117,8 @@ def save_asset_manifest(manifest_data: dict[str, list[str]], path: Path | str) -
     path_obj = Path(path)
     path_obj.parent.mkdir(parents=True, exist_ok=True)
 
-    # Normalize paths in the manifest data
     normalized_manifest = {}
+
     for template_path, components in manifest_data.items():
         normalized_path = normalize_path(template_path)
         normalized_manifest[normalized_path] = components

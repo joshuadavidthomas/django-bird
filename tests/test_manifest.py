@@ -12,6 +12,7 @@ from django.test import override_settings
 from django_bird.manifest import default_manifest_path
 from django_bird.manifest import generate_asset_manifest
 from django_bird.manifest import load_asset_manifest
+from django_bird.manifest import normalize_path
 from django_bird.manifest import save_asset_manifest
 from tests.utils import TestComponent
 
@@ -139,35 +140,41 @@ def test_load_asset_manifest_static_root_permission_error(static_root, monkeypat
     assert loaded_manifest is None
 
 
-def test_normalize_path():
-    # Test site-packages normalization
-    site_pkg_path = "/usr/local/lib/python3.12/site-packages/django_twc_ui/components/templates/bird/modal/modal.html"
-    from django_bird.manifest import normalize_path
+def test_normalize_path_site_packages():
+    site_pkg_path = "/usr/local/lib/python3.12/site-packages/django_third_party_pkg/components/templates/bird/button.html"
+
+    normalized = normalize_path(site_pkg_path)
 
     assert (
-        normalize_path(site_pkg_path)
-        == "pkg:django_twc_ui/components/templates/bird/modal/modal.html"
+        normalized == "pkg:django_third_party_pkg/components/templates/bird/button.html"
     )
 
-    # Test project path normalization (with BASE_DIR)
-    with override_settings(BASE_DIR="/var/home/user/project"):
-        project_path = (
-            "/var/home/user/project/app/templates/invoices/pending_invoice_list.html"
-        )
-        assert (
-            normalize_path(project_path)
-            == "app:app/templates/invoices/pending_invoice_list.html"
-        )
 
-    # Test other absolute path normalization
+def test_normalize_path_project_base_dir():
+    base_dir = "/home/user/project"
+    project_path = f"{base_dir}/app/templates/invoices/pending_invoice_list.html"
+
+    with override_settings(BASE_DIR=base_dir):
+        normalized = normalize_path(project_path)
+
+    assert normalized == "app:app/templates/invoices/pending_invoice_list.html"
+
+
+def test_normalize_path_other_absolute_dir():
     other_path = "/some/random/external/path.html"
+
     normalized = normalize_path(other_path)
+
     assert normalized.startswith("ext:")
     assert "path.html" in normalized
 
-    # Test relative path remains unchanged
+
+def test_normalize_path_relative_dir():
     rel_path = "relative/path.html"
-    assert normalize_path(rel_path) == rel_path
+
+    normalized = normalize_path(rel_path)
+
+    assert normalized == rel_path
 
 
 def test_generate_asset_manifest(templates_dir, registry):
@@ -212,12 +219,10 @@ def test_generate_asset_manifest(templates_dir, registry):
 
     manifest = generate_asset_manifest()
 
-    # Check for normalized paths
     for key in manifest.keys():
         # Keys should not be absolute paths starting with /
         assert not key.startswith("/"), f"Found absolute path in manifest: {key}"
 
-    # Find the templates by looking for partial matches in the normalized paths
     template1_components = []
     template2_components = []
 
@@ -232,14 +237,11 @@ def test_generate_asset_manifest(templates_dir, registry):
 
 
 def test_save_and_load_asset_manifest(tmp_path):
-    from django_bird.manifest import normalize_path
-
     test_manifest_data = {
         "/path/to/template1.html": ["button", "card"],
         "/path/to/template2.html": ["accordion", "tab"],
     }
 
-    # Create the expected normalized data
     expected_normalized_data = {
         normalize_path("/path/to/template1.html"): ["button", "card"],
         normalize_path("/path/to/template2.html"): ["accordion", "tab"],
