@@ -58,6 +58,7 @@ from pathlib import Path
 DJANGO_BIRD = {
     "COMPONENT_DIRS": list[Path | str] = [],
     "ENABLE_BIRD_ATTRS": bool = True,
+    "ADD_ASSET_PREFIX": bool | None = None,
 }
 ```
 
@@ -110,3 +111,25 @@ The default `bird` directory will always be checked last, ensuring that your cus
 Controls whether components automatically receive data attributes related to django-bird in its `attrs` template context variable. Defaults to `True`.
 
 See [Component ID Attribute](params.md#component-id-attribute) for more details on how this works.
+
+### `ADD_ASSET_PREFIX`
+
+Controls whether the app label prefix (`django_bird/`) is added to component asset URLs. This setting has three possible values:
+
+- `None` (default): Automatically add the prefix in production (when `DEBUG = False`) but not in development mode. This matches Django's standard behavior where staticfiles are served directly from source directories in development but collected into a central location in production.
+
+- `True`: Always add the prefix, regardless of the `DEBUG` setting. This is useful if you want consistent URL paths in all environments.
+
+- `False`: Never add the prefix, regardless of the `DEBUG` setting. This is useful for custom static file configurations or when you're manually managing the directory structure.
+
+#### Example Use Cases
+
+- **Testing Environment**: In test environments, especially with Playwright or Selenium e2e tests, you may want to set:
+
+  ```python
+  DJANGO_BIRD = {"ADD_ASSET_PREFIX": False}
+  ```
+
+  This ensures your tests can find static assets without the prefix, even when `DEBUG = False`.
+
+- **Custom Static File Handling**: If you have a custom static file setup that doesn't follow Django's conventions, you can configure the appropriate value based on your needs.

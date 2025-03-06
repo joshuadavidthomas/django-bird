@@ -225,6 +225,40 @@ class TestAssetClass:
                 == f"{expected_prefix}/{button_css.file.parent.name}/{button_css.file.name}"
             )
 
+    @pytest.mark.parametrize(
+        "add_prefix,DEBUG,expected_prefix",
+        [
+            (None, False, "/static/django_bird"),
+            (None, True, "/static"),
+            (True, False, "/static/django_bird"),
+            (True, True, "/static/django_bird"),
+            (False, False, "/static"),
+            (False, True, "/static"),
+        ],
+    )
+    def test_url_with_add_asset_prefix(
+        self, add_prefix, DEBUG, expected_prefix, templates_dir, override_app_settings
+    ):
+        button = TestComponent(
+            name="button",
+            content="<button>Click me</button>",
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        component = Component.from_name(button.name)
+        asset = component.get_asset(button_css.file.name)
+
+        with override_settings(DEBUG=DEBUG):
+            with override_app_settings(ADD_ASSET_PREFIX=add_prefix):
+                assert (
+                    asset.url
+                    == f"{expected_prefix}/{button_css.file.parent.name}/{button_css.file.name}"
+                )
+
     def test_url_nonexistent(self, templates_dir):
         button = TestComponent(
             name="button",
