@@ -5,11 +5,13 @@ from enum import Enum
 from typing import final
 
 from django import template
+from django.conf import settings
 from django.template.base import Parser
 from django.template.base import Token
 from django.template.context import Context
 
 from django_bird._typing import override
+from django_bird.manifest import load_asset_manifest
 
 
 class AssetTag(Enum):
@@ -34,10 +36,8 @@ class AssetNode(template.Node):
 
     @override
     def render(self, context: Context) -> str:
-        from django.conf import settings
-
         from django_bird.components import components
-        from django_bird.manifest import load_asset_manifest
+        from django_bird.staticfiles import Asset
         from django_bird.staticfiles import get_component_assets
 
         template = getattr(context, "template", None)
@@ -46,7 +46,6 @@ class AssetNode(template.Node):
 
         template_path = template.origin.name
 
-        # Get components used in this template - either from manifest or registry
         used_components = []
 
         # Only use manifest in production mode
@@ -62,9 +61,6 @@ class AssetNode(template.Node):
         # If we're in development or there was no manifest data, use registry
         if not used_components:
             used_components = list(components.get_component_usage(template_path))
-
-        # Collect assets from all components
-        from django_bird.staticfiles import Asset
 
         assets: set[Asset] = set()
         for component in used_components:

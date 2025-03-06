@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+
 import pytest
 from django.template.base import Parser
 from django.template.base import Token
@@ -7,7 +9,10 @@ from django.template.base import TokenType
 from django.template.context import Context
 from django.template.exceptions import TemplateSyntaxError
 from django.template.loader import get_template
+from django.test import override_settings
 
+from django_bird.manifest import generate_asset_manifest
+from django_bird.manifest import save_asset_manifest
 from django_bird.staticfiles import CSS
 from django_bird.staticfiles import JS
 from django_bird.templatetags.tags.asset import AssetNode
@@ -381,16 +386,21 @@ class TestNode:
         context = Context({})
         assert node.render(context) == ""
 
+
+class TestManifest:
+    @pytest.fixture
+    def static_root(self, tmp_path):
+        static_dir = tmp_path / "static"
+        static_dir.mkdir()
+
+        with override_settings(STATIC_ROOT=str(static_dir)):
+            yield static_dir
+
+        shutil.rmtree(static_dir)
+
     def test_asset_tag_with_manifest_in_production(
-        self, create_template, templates_dir, registry, tmp_path
+        self, create_template, templates_dir, static_root, registry
     ):
-        """Test that asset tag works with manifest in production mode."""
-        from django.test import override_settings
-
-        from django_bird.manifest import generate_asset_manifest
-        from django_bird.manifest import save_asset_manifest
-
-        # Create button component for testing
         button = TestComponent(
             name="button", content="<button>{{ slot }}</button>"
         ).create(templates_dir)
@@ -401,7 +411,6 @@ class TestNode:
             asset_type=CSS,
         ).create()
 
-        # Create the test template
         template_path = templates_dir / "manifest_test.html"
         template_path.write_text("""
         <html>
@@ -415,40 +424,26 @@ class TestNode:
         </html>
         """)
 
-        # Make sure components are discovered
         registry.discover_components()
 
-        # Generate a real manifest
         manifest_data = generate_asset_manifest()
 
-        # Save it to STATIC_ROOT
-        static_root = tmp_path / "static_root"
-        static_root.mkdir(parents=True)
         manifest_path = static_root / "django_bird"
         manifest_path.mkdir(parents=True)
-        save_asset_manifest(manifest_data, manifest_path / "asset-manifest.json")
+        save_asset_manifest(manifest_data, manifest_path / "manifest.json")
 
-        # Test with DEBUG=False to use the manifest
-        with override_settings(DEBUG=False, STATIC_ROOT=str(static_root)):
-            # Create template and render
+        with override_settings(DEBUG=False):
             template = create_template(template_path)
             rendered = template.render({})
 
-            # Verify the assets are included from the manifest
             assert (
                 f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
                 in rendered
             )
 
     def test_asset_tag_in_debug_mode(
-        self, create_template, templates_dir, registry, tmp_path
+        self, create_template, templates_dir, static_root, registry
     ):
-        """Test that asset tag bypasses manifest in debug mode."""
-        from django.test import override_settings
-
-        from django_bird.manifest import save_asset_manifest
-
-        # Create button component for testing
         button = TestComponent(
             name="button", content="<button>{{ slot }}</button>"
         ).create(templates_dir)
@@ -459,7 +454,6 @@ class TestNode:
             asset_type=CSS,
         ).create()
 
-        # Create the test template
         template_path = templates_dir / "debug_test.html"
         template_path.write_text("""
         <html>
@@ -473,40 +467,26 @@ class TestNode:
         </html>
         """)
 
-        # Make sure components are discovered
         registry.discover_components()
 
-        # Generate a real manifest with wrong data (this should be ignored in debug mode)
         manifest_data = {"not/a/real/template.html": ["not-button"]}
 
-        # Save it to STATIC_ROOT
-        static_root = tmp_path / "static_root_debug"
-        static_root.mkdir(parents=True)
         manifest_path = static_root / "django_bird"
         manifest_path.mkdir(parents=True)
-        save_asset_manifest(manifest_data, manifest_path / "asset-manifest.json")
+        save_asset_manifest(manifest_data, manifest_path / "manifest.json")
 
-        # Test with DEBUG=True to bypass the manifest
-        with override_settings(DEBUG=True, STATIC_ROOT=str(static_root)):
-            # Create template and render
+        with override_settings(DEBUG=True):
             template = create_template(template_path)
             rendered = template.render({})
 
-            # Verify the assets are still included despite wrong manifest data (registry fallback)
             assert (
                 f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
                 in rendered
             )
 
     def test_asset_tag_fallback_when_template_not_in_manifest(
-        self, create_template, templates_dir, registry, tmp_path
+        self, create_template, templates_dir, static_root, registry
     ):
-        """Test that asset tag falls back to registry when template not in manifest."""
-        from django.test import override_settings
-
-        from django_bird.manifest import save_asset_manifest
-
-        # Create button component for testing
         button = TestComponent(
             name="button", content="<button>{{ slot }}</button>"
         ).create(templates_dir)
@@ -517,7 +497,6 @@ class TestNode:
             asset_type=CSS,
         ).create()
 
-        # Create the test template
         template_path = templates_dir / "not_in_manifest.html"
         template_path.write_text("""
         <html>
@@ -537,36 +516,26 @@ class TestNode:
         <html><body>Other template</body></html>
         """)
 
-        # Make sure components are discovered
         registry.discover_components()
 
-        # Create manifest with a different template
         manifest_data = {str(other_path): ["button"]}
 
-        # Save it to STATIC_ROOT
-        static_root = tmp_path / "static_root_fallback"
-        static_root.mkdir(parents=True)
         manifest_path = static_root / "django_bird"
         manifest_path.mkdir(parents=True)
-        save_asset_manifest(manifest_data, manifest_path / "asset-manifest.json")
+        save_asset_manifest(manifest_data, manifest_path / "manifest.json")
 
-        # Test with DEBUG=False to try to use the manifest
-        with override_settings(DEBUG=False, STATIC_ROOT=str(static_root)):
-            # Create template and render
+        with override_settings(DEBUG=False):
             template = create_template(template_path)
             rendered = template.render({})
 
-            # Verify the assets are included via registry fallback even though template isn't in manifest
             assert (
                 f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
                 in rendered
             )
 
     def test_asset_tag_renders_nothing_when_no_component_found(
-        self, create_template, templates_dir, registry
+        self, create_template, templates_dir
     ):
-        """Test asset tag renders nothing when no component is found for a given template."""
-        # Create a test template with no component tags
         template_path = templates_dir / "no_components.html"
         template_path.write_text("""
         <html>
@@ -581,10 +550,8 @@ class TestNode:
         </html>
         """)
 
-        # Render template
         template = create_template(template_path)
         rendered = template.render({})
 
-        # Both asset tags should render nothing
         assert '<link rel="stylesheet"' not in rendered
         assert "<script src=" not in rendered
