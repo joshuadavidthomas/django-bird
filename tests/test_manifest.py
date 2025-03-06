@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+from io import StringIO
 from pathlib import Path
 
 import pytest
+from django.core.management import call_command
 from django.test import override_settings
 
+from django_bird.manifest import default_manifest_path
 from django_bird.manifest import generate_asset_manifest
 from django_bird.manifest import load_asset_manifest
 from django_bird.manifest import save_asset_manifest
@@ -60,6 +63,44 @@ def test_load_asset_manifest_invalid_json(tmp_path):
         assert loaded_manifest is None
 
 
+def test_load_asset_manifest_permission_error(tmp_path, monkeypatch):
+    """Test handling of permission errors when loading the manifest."""
+    manifest_path = tmp_path / "permission-error.json"
+    manifest_path.write_text("{}")
+
+    # Mock open to raise a permission error
+    def mock_open_with_error(*args, **kwargs):
+        if str(manifest_path) in str(args[0]):
+            raise PermissionError("Permission denied")
+        return open(*args, **kwargs)
+
+    # Apply the mock
+    monkeypatch.setattr("builtins.open", mock_open_with_error)
+
+    with override_settings(DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}):
+        loaded_manifest = load_asset_manifest()
+        assert loaded_manifest is None
+
+
+def test_load_asset_manifest_os_error(tmp_path, monkeypatch):
+    """Test handling of OS errors when loading the manifest."""
+    manifest_path = tmp_path / "os-error.json"
+    manifest_path.write_text("{}")
+
+    # Mock open to raise an OS error
+    def mock_open_with_error(*args, **kwargs):
+        if str(manifest_path) in str(args[0]):
+            raise OSError("I/O error")
+        return open(*args, **kwargs)
+
+    # Apply the mock
+    monkeypatch.setattr("builtins.open", mock_open_with_error)
+
+    with override_settings(DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}):
+        loaded_manifest = load_asset_manifest()
+        assert loaded_manifest is None
+
+
 def test_load_asset_manifest_from_static_root(tmp_path):
     """Test loading manifest from the default STATIC_ROOT path."""
     # Create test manifest data
@@ -83,6 +124,50 @@ def test_load_asset_manifest_from_static_root(tmp_path):
     with override_settings(STATIC_ROOT=str(static_root), DJANGO_BIRD={}):
         loaded_manifest = load_asset_manifest()
         assert loaded_manifest == test_manifest_data
+
+
+def test_load_asset_manifest_static_root_invalid_json(tmp_path):
+    """Test handling invalid JSON in STATIC_ROOT manifest."""
+    # Create STATIC_ROOT structure
+    static_root = tmp_path / "static-invalid"
+    static_root.mkdir()
+    django_bird_dir = static_root / "django_bird"
+    django_bird_dir.mkdir()
+
+    # Create invalid JSON manifest
+    manifest_path = django_bird_dir / "asset-manifest.json"
+    manifest_path.write_text("{ invalid json here }")
+
+    # Test loading with invalid JSON
+    with override_settings(STATIC_ROOT=str(static_root), DJANGO_BIRD={}):
+        loaded_manifest = load_asset_manifest()
+        assert loaded_manifest is None
+
+
+def test_load_asset_manifest_static_root_permission_error(tmp_path, monkeypatch):
+    """Test handling permission errors with STATIC_ROOT manifest."""
+    # Create STATIC_ROOT structure
+    static_root = tmp_path / "static-perm-error"
+    static_root.mkdir()
+    django_bird_dir = static_root / "django_bird"
+    django_bird_dir.mkdir()
+
+    # Create manifest file
+    manifest_path = django_bird_dir / "asset-manifest.json"
+    manifest_path.write_text("{}")
+
+    # Mock open to raise permission error for this specific path
+    def mock_open_with_error(*args, **kwargs):
+        if str(manifest_path) in str(args[0]):
+            raise PermissionError("Permission denied")
+        return open(*args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", mock_open_with_error)
+
+    # Test loading with permission error
+    with override_settings(STATIC_ROOT=str(static_root), DJANGO_BIRD={}):
+        loaded_manifest = load_asset_manifest()
+        assert loaded_manifest is None
 
 
 def test_generate_asset_manifest(tmp_path, templates_dir, registry):
@@ -180,7 +265,6 @@ def test_save_and_load_asset_manifest(tmp_path):
 
 def test_default_manifest_path():
     """Test the default_manifest_path function."""
-    from django_bird.manifest import default_manifest_path
 
     # Test with STATIC_ROOT
     with override_settings(STATIC_ROOT="/path/to/static"):
@@ -191,3 +275,121 @@ def test_default_manifest_path():
     with override_settings(STATIC_ROOT=None):
         path = default_manifest_path()
         assert path == Path("django_bird-asset-manifest.json")
+
+
+class TestManagementCommand:
+    """Tests for the generate_asset_manifest management command."""
+
+    def test_generate_asset_manifest_command_default(
+        self, tmp_path, templates_dir, registry
+    ):
+        """Test running the command with default options."""
+        # Create a test component
+        from tests.utils import TestComponent
+
+        TestComponent(name="test_cmd", content="<div>{{ slot }}</div>").create(
+            templates_dir
+        )
+
+        # Create a template that uses the component
+        template_path = templates_dir / "manifest_cmd_test.html"
+        template_path.write_text("""
+        <html>
+        <body>
+            {% bird test_cmd %}Test Command{% endbird %}
+        </body>
+        </html>
+        """)
+
+        # Discover components
+        registry.discover_components()
+
+        # Set up STATIC_ROOT for the test
+        static_root = tmp_path / "static_root"
+        static_root.mkdir()
+
+        # Capture command output
+        stdout = StringIO()
+
+        # Run the command
+        with override_settings(STATIC_ROOT=str(static_root)):
+            call_command("generate_asset_manifest", stdout=stdout)
+
+        # Check output message
+        output = stdout.getvalue()
+        assert "Asset manifest generated successfully" in output
+
+        # Check that the manifest file was created
+        manifest_path = static_root / "django_bird" / "asset-manifest.json"
+        assert manifest_path.exists()
+
+        # Check manifest content
+        with open(manifest_path) as f:
+            manifest_data = json.load(f)
+
+        # Find the test template in the manifest
+        template_keys = [
+            k for k in manifest_data.keys() if "manifest_cmd_test.html" in k
+        ]
+        assert len(template_keys) == 1
+        assert "test_cmd" in manifest_data[template_keys[0]]
+
+    def test_generate_asset_manifest_command_with_options(
+        self, tmp_path, templates_dir, registry
+    ):
+        """Test running the command with custom output path and pretty option."""
+        # Create a test component
+        from tests.utils import TestComponent
+
+        TestComponent(name="test_cmd2", content="<div>{{ slot }}</div>").create(
+            templates_dir
+        )
+
+        # Create a template that uses the component
+        template_path = templates_dir / "manifest_cmd_options.html"
+        template_path.write_text("""
+        <html>
+        <body>
+            {% bird test_cmd2 %}Test Command 2{% endbird %}
+        </body>
+        </html>
+        """)
+
+        # Discover components
+        registry.discover_components()
+
+        # Define custom output path
+        custom_output = tmp_path / "custom" / "asset-manifest.json"
+
+        # Capture command output
+        stdout = StringIO()
+
+        # Run the command with custom options
+        call_command(
+            "generate_asset_manifest",
+            output=str(custom_output),
+            pretty=True,
+            stdout=stdout,
+        )
+
+        # Check output message
+        output = stdout.getvalue()
+        assert f"Asset manifest generated successfully at {custom_output}" in output
+
+        # Check that the manifest file was created
+        assert custom_output.exists()
+
+        # Check manifest content
+        with open(custom_output) as f:
+            content = f.read()
+            manifest_data = json.loads(content)
+
+        # Verify it's pretty-printed (has newlines)
+        assert "\n" in content
+
+        # Find the test template in the manifest
+        template_keys = [
+            k for k in manifest_data.keys() if "manifest_cmd_options.html" in k
+        ]
+        assert len(template_keys) == 1
+        assert "test_cmd2" in manifest_data[template_keys[0]]

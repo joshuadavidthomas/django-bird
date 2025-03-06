@@ -83,13 +83,13 @@ def generate_asset_manifest() -> dict[str, list[str]]:
         dict[str, list[str]]: A dictionary mapping template paths to lists of component names.
     """
     # Get template-component map from Components domain
-    template_component_map = {}
+    template_component_map: dict[str, set[str]] = {}
     for template_path, component_names in gather_bird_tag_template_usage():
         # Convert Path objects to strings for JSON compatibility
         template_component_map[str(template_path)] = component_names
 
     # Convert to final manifest format (lists instead of sets)
-    manifest = {
+    manifest: dict[str, list[str]] = {
         template: list(components)
         for template, components in template_component_map.items()
     }

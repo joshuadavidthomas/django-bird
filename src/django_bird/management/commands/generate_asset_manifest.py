@@ -1,16 +1,25 @@
 from __future__ import annotations
 
+from argparse import ArgumentParser
+from typing import Any
+from typing import final
+
 from django.core.management.base import BaseCommand
 
+from django_bird._typing import override
 from django_bird.manifest import default_manifest_path
 from django_bird.manifest import generate_asset_manifest
 from django_bird.manifest import save_asset_manifest
 
 
+@final
 class Command(BaseCommand):
-    help = "Generates a manifest of component usage in templates for asset optimization"
+    help: str = (
+        "Generates a manifest of component usage in templates for asset optimization"
+    )
 
-    def add_arguments(self, parser):
+    @override
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--output",
             type=str,
@@ -23,7 +32,8 @@ class Command(BaseCommand):
             help="Format the manifest JSON with indentation for better readability",
         )
 
-    def handle(self, *args, **options):
+    @override
+    def handle(self, *args: Any, **options: Any) -> None:
         # Generate the manifest
         manifest_data = generate_asset_manifest()
 

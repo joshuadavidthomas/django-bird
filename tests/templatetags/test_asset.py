@@ -558,3 +558,30 @@ class TestNode:
                 f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
                 in rendered
             )
+
+    def test_asset_tag_renders_nothing_when_no_component_found(
+        self, create_template, templates_dir, registry
+    ):
+        """Test asset tag renders nothing when no component is found for a given template."""
+        # Create a test template with no component tags
+        template_path = templates_dir / "no_components.html"
+        template_path.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            No bird components here
+            {% bird:js %}
+        </body>
+        </html>
+        """)
+
+        # Render template
+        template = create_template(template_path)
+        rendered = template.render({})
+
+        # Both asset tags should render nothing
+        assert '<link rel="stylesheet"' not in rendered
+        assert "<script src=" not in rendered
