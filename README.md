@@ -67,9 +67,10 @@ High-flying components for perfectionists with deadlines.
    ]
    ```
 
-   For automatic configuration, you can use the [django-bird-autoconf](https://pypi.org/project/django-bird-autoconf/) plugin.
-
    For detailed instructions, please refer to the [Configuration](https://django-bird.readthedocs.io/configuration.html#configuration) section in the documentation.
+
+   > [!TIP]
+   > For automatic configuration, you can use the [django-bird-autoconf](https://pypi.org/project/django-bird-autoconf/) plugin.
 
 ## Getting Started
 
