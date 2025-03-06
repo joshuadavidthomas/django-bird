@@ -27,6 +27,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Fixed
 
 - Fixed asset URL handling in development mode to exclude the "django_bird/" prefix, matching the actual file paths in development environments. Production mode (DEBUG=False) still uses the prefix to maintain compatibility with collected static files.
+- Fixed path normalization in asset manifest to prevent double-prefixing of already normalized paths (e.g., preventing "app:app:templates/file.html").
 
 ## [0.17.1]
 

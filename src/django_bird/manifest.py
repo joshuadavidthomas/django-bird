@@ -23,6 +23,10 @@ def normalize_path(path: str) -> str:
     Returns:
         str: A normalized path without system-specific details
     """
+    # Check if path is already normalized (has a prefix)
+    if path.startswith(("pkg:", "app:", "ext:")):
+        return path
+
     if "site-packages" in path:
         parts = path.split("site-packages/")
         if len(parts) > 1:
@@ -117,14 +121,10 @@ def save_asset_manifest(manifest_data: dict[str, list[str]], path: Path | str) -
     path_obj = Path(path)
     path_obj.parent.mkdir(parents=True, exist_ok=True)
 
-    normalized_manifest = {}
-
-    for template_path, components in manifest_data.items():
-        normalized_path = normalize_path(template_path)
-        normalized_manifest[normalized_path] = components
-
+    # The paths in manifest_data should already be normalized from the generate_asset_manifest
+    # function, so we can just save it directly
     with open(path_obj, "w") as f:
-        json.dump(normalized_manifest, f, indent=2)
+        json.dump(manifest_data, f, indent=2)
 
 
 def default_manifest_path() -> Path:
