@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed static asset URLs to properly include the 'django_bird' prefix, ensuring URLs match the actual file paths during collection
+
 ## [0.17.0]
 
 🚨 This release contains some breaking changes. See the Removed section for more information. 🚨

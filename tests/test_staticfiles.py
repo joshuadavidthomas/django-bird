@@ -213,7 +213,8 @@ class TestAssetClass:
         asset = component.get_asset(button_css.file.name)
 
         assert (
-            asset.url == f"/static/{button_css.file.parent.name}/{button_css.file.name}"
+            asset.url
+            == f"/static/django_bird/{button_css.file.parent.name}/{button_css.file.name}"
         )
 
     def test_url_nonexistent(self, templates_dir):
