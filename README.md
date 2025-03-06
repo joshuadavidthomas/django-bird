@@ -43,11 +43,34 @@ High-flying components for perfectionists with deadlines.
     ]
     ```
 
-3. django-bird will automatically configure the necessary settings in your project.
+3. Set up django-bird in your project settings:
 
-   If you need to customize the configuration or prefer to set up django-bird manually, you can set `DJANGO_BIRD["ENABLE_AUTO_CONFIG"] = False` in your settings.
+   ```python
+   # Required: Add the asset finder to handle component assets
+   STATICFILES_FINDERS = [
+       "django.contrib.staticfiles.finders.FileSystemFinder",
+       "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+       "django_bird.staticfiles.BirdAssetFinder",
+   ]
 
-   For detailed instructions, please refer to the [Manual Setup](https://django-bird.readthedocs.io/configuration.html#manual-setup) section within the Configuration documentation.
+   # Optional: Add templatetags to builtins for convenience
+   # (otherwise you'll need to {% load django_bird %} in each template)
+   TEMPLATES = [
+       {
+           # ... other settings ...
+           "OPTIONS": {
+               "builtins": [
+                   "django_bird.templatetags.django_bird",
+               ],
+           },
+       }
+   ]
+   ```
+
+   For detailed instructions, please refer to the [Configuration](https://django-bird.readthedocs.io/configuration.html#configuration) section in the documentation.
+
+   > [!TIP]
+   > For automatic configuration, you can use the [django-bird-autoconf](https://pypi.org/project/django-bird-autoconf/) plugin.
 
 ## Getting Started
 

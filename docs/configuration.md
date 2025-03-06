@@ -1,8 +1,54 @@
 # Configuration
 
+## Django settings
+
+To use django-bird, you need to configure a few settings in your project:
+
+1. Add django-bird's static file finder to your STATICFILES_FINDERS.
+2. Add django-bird's template tags to Django's built-ins. **Note**: This is not required, but if you do not do this you will need to use `{% load django_bird %}` in any templates using components.
+
+```{admonition} Auto Configuration
+:class: tip
+
+For automatic configuration of these settings, you can use the [django-bird-autoconf](https://pypi.org/project/django-bird-autoconf/) plugin. This plugin will handle all the setup for you automatically.
+```
+
+The complete setup in your settings file should look like this:
+
+```{code-block} python
+:caption: settings.py
+
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve(strict=True).parent
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [
+            BASE_DIR / "templates",
+        ],
+        "OPTIONS": {
+            "builtins": [
+                "django_bird.templatetags.django_bird",
+            ],
+        },
+    }
+]
+
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "django_bird.staticfiles.BirdAssetFinder",
+]
+```
+
+This configuration ensures that django-bird's templatetags are available globally and component assets can be properly discovered.
 Configuration of django-bird is done through a `DJANGO_BIRD` dictionary in your Django settings.
 
-All settings are optional. Here is an example configuration with the types and default values shown:
+## Application settings
+
+All app settings are optional. Here is an example configuration with the types and default values shown:
 
 ```{code-block} python
 :caption: settings.py
@@ -11,18 +57,17 @@ from pathlib import Path
 
 DJANGO_BIRD = {
     "COMPONENT_DIRS": list[Path | str] = [],
-    "ENABLE_AUTO_CONFIG": bool = True,
     "ENABLE_BIRD_ATTRS": bool = True,
 }
 ```
 
-## `COMPONENT_DIRS`
+### `COMPONENT_DIRS`
 
 Additional directories to scan for components. Takes a list of paths relative to the base directory of your project's templates directory. A path can either be a `str` or `Path`.
 
 By default, django-bird will look for components in a `bird` directory. Any directories specified here will take precedence and take priority when performing template resolution for components.
 
-### Example
+#### Example
 
 Suppose you want to store your components in a `components` directory, you're using a third-party library that provides its own bird components, and you have an alternate templates directory.
 
@@ -59,49 +104,8 @@ With this setup, django-bird will search for components in the following order:
 
 The default `bird` directory will always be checked last, ensuring that your custom directories take precedence in template resolution.
 
-## `ENABLE_AUTO_CONFIG`
 
-django-bird requires a few settings to be setup in your project's `DJANGO_SETTINGS_MODULE` before it will work properly. django-bird will automatically take care of this, during the app's initialization in `django_bird.apps.AppConfig.ready`.
-
-If you would like to disable this behavior and perform the setup manually, setting `ENABLE_AUTO_CONFIG` to `False` will allow you to do so.
-
-### Manual Setup
-
-When `ENABLE_AUTO_CONFIG` is set to `False`, you need to manually configure the following:
-
-1. Add django-bird's template tags to Django's built-ins.
-
-The complete setup in your settings file should look like this:
-
-```{code-block} python
-:caption: settings.py
-
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve(strict=True).parent
-
-DJANGO_BIRD = {
-    "ENABLE_AUTO_CONFIG": False,
-}
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            BASE_DIR / "templates",
-        ],
-        "OPTIONS": {
-            "builtins": [
-                "django_bird.templatetags.django_bird",
-            ],
-        },
-    }
-]
-```
-
-This configuration ensures that django-bird's templatetags are available globally.
-
-## `ENABLE_BIRD_ATTRS`
+### `ENABLE_BIRD_ATTRS`
 
 Controls whether components automatically receive data attributes related to django-bird in its `attrs` template context variable. Defaults to `True`.
 
