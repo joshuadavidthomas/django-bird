@@ -34,18 +34,10 @@ class Command(BaseCommand):
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
-        # Generate the manifest
         manifest_data = generate_asset_manifest()
-
-        # Determine output path
         output_path = options["output"] or default_manifest_path()
-
-        # Use pretty printing if requested, otherwise compact
         indent = 2 if options["pretty"] else None
-
-        # Save the manifest
         save_asset_manifest(manifest_data, output_path, indent=indent)
-
         self.stdout.write(
             self.style.SUCCESS(
                 f"Asset manifest generated successfully at {output_path}"
