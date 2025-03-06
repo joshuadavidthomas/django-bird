@@ -28,8 +28,8 @@ def normalize_path(path: str) -> str:
         if len(parts) > 1:
             return f"pkg:{parts[1]}"
 
-    if hasattr(settings, "BASE_DIR") and settings.BASE_DIR:
-        base_dir = Path(settings.BASE_DIR).resolve()
+    if hasattr(settings, "BASE_DIR") and settings.BASE_DIR:  # type: ignore[misc]
+        base_dir = Path(settings.BASE_DIR).resolve()  # type: ignore[misc]
         abs_path = Path(path).resolve()
         try:
             if str(abs_path).startswith(str(base_dir)):
