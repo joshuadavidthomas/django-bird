@@ -12,6 +12,7 @@ from django.template.context import Context
 
 from django_bird._typing import override
 from django_bird.manifest import load_asset_manifest
+from django_bird.manifest import normalize_path
 
 
 class AssetTag(Enum):
@@ -37,7 +38,6 @@ class AssetNode(template.Node):
     @override
     def render(self, context: Context) -> str:
         from django_bird.components import components
-        from django_bird.manifest import normalize_path
         from django_bird.staticfiles import Asset
         from django_bird.staticfiles import get_component_assets
 
