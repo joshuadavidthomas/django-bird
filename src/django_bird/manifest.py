@@ -62,7 +62,7 @@ def generate_asset_manifest() -> dict[str, list[str]]:
         template_component_map[str(template_path)] = component_names
 
     manifest: dict[str, list[str]] = {
-        template: list(components)
+        template: sorted(list(components))
         for template, components in template_component_map.items()
     }
 
@@ -80,7 +80,7 @@ def save_asset_manifest(manifest_data: dict[str, list[str]], path: Path | str) -
     path_obj.parent.mkdir(parents=True, exist_ok=True)
 
     with open(path_obj, "w") as f:
-        json.dump(manifest_data, f)
+        json.dump(manifest_data, f, indent=2)
 
 
 def default_manifest_path() -> Path:
