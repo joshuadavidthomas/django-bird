@@ -144,7 +144,20 @@ python manage.py generate_asset_manifest
 
 This command creates a manifest file at `STATIC_ROOT/django_bird/manifest.json` that maps templates to their used components. In production mode, this manifest is used to load assets without scanning templates at runtime.
 
-To include this in your deployment:
+### Integration with collectstatic
 
-1. Run the command during your build/deploy process
-2. Make sure the generated manifest file is included with your static files
+For optimal deployment, follow this sequence:
+
+1. Run `python manage.py collectstatic` first to collect all component assets
+2. Then run `python manage.py generate_asset_manifest` to create the manifest file in the collected static files
+
+This ensures that:
+- All component assets are properly collected by the Django staticfiles system
+- The manifest is generated with up-to-date component information
+- The manifest file is placed in the correct location within your static files directory
+
+For automated deployments, you can combine these commands:
+
+```bash
+python manage.py collectstatic --noinput && python manage.py generate_asset_manifest
+```
