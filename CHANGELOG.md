@@ -34,6 +34,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Fixed
 
 - Fixed bug where assets from components with the same name in different directories weren't being properly collected
+- Fixed template scanning on some platforms by improving error handling for invalid template files
 
 ### Removed
 

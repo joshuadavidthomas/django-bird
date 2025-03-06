@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import multiprocessing
 from collections.abc import Callable
 from collections.abc import Generator
@@ -27,6 +28,8 @@ from .conf import app_settings
 from .templatetags.tags.bird import BirdNode
 from .utils import get_files_from_dirs
 from .utils import unique_ordered
+
+logger = logging.getLogger(__name__)
 
 
 def get_template_names(name: str) -> list[str]:
@@ -155,8 +158,11 @@ def find_components_in_template(template_path: str | Path) -> set[str]:
         with context.bind_template(template):
             visitor.visit(template, context)
         return visitor.components
-    except (TemplateDoesNotExist, TemplateSyntaxError):
-        # If we can't load the template, return an empty set
+    except (TemplateDoesNotExist, TemplateSyntaxError, UnicodeDecodeError) as e:
+        # If we can't load or process the template for any reason, log the exception and return an empty set
+        logger.debug(
+            f"Could not process template {template_name!r}: {e.__class__.__name__}: {e}"
+        )
         return set()
 
 
@@ -209,6 +215,8 @@ class NodeVisitor:  # pragma: no cover
             for template_name in included_templates:
                 included_template = self.engine.get_template(template_name)
                 self.visit(included_template, context)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(
+                f"Error processing included template in NodeVisitor: {e.__class__.__name__}: {e}"
+            )
         self.generic_visit(node, context)
