@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 from typing import final
@@ -24,6 +25,9 @@ from .apps import DjangoBirdAppConfig
 from .conf import app_settings
 from .templates import get_component_directories
 from .templatetags.tags.asset import AssetTag
+
+if TYPE_CHECKING:
+    from .components import Component
 
 
 class AssetElement(Enum):
@@ -140,6 +144,24 @@ def collect_component_assets(template_path: Path) -> Iterable[Asset]:
         asset_path = template_path.with_suffix(asset_type.suffix)
         if asset_path.exists():
             assets.append(Asset(path=asset_path, type=asset_type))
+    return assets
+
+
+def get_component_assets(
+    component: Component, asset_type: str | None = None
+) -> list[Asset]:
+    """Get assets for a component, optionally filtered by type.
+
+    Args:
+        component: The component to get assets for
+        asset_type: Optional asset type extension to filter by (e.g., "css", "js")
+
+    Returns:
+        A list of assets for the component, filtered by type if specified
+    """
+    assets = list(component.assets)
+    if asset_type:
+        assets = [a for a in assets if a.type.extension == asset_type]
     return assets
 
 
