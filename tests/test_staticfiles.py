@@ -198,7 +198,14 @@ class TestAssetClass:
 
         assert asset.relative_path == Path("bird/nested/button.css")
 
-    def test_url(self, templates_dir):
+    @pytest.mark.parametrize(
+        "DEBUG,expected_prefix",
+        [
+            (False, "/static/django_bird"),
+            (True, "/static"),
+        ],
+    )
+    def test_url(self, DEBUG, expected_prefix, templates_dir):
         button = TestComponent(
             name="button",
             content="<button>Click me</button>",
@@ -212,40 +219,10 @@ class TestAssetClass:
         component = Component.from_name(button.name)
         asset = component.get_asset(button_css.file.name)
 
-        assert (
-            asset.url
-            == f"/static/django_bird/{button_css.file.parent.name}/{button_css.file.name}"
-        )
-
-    def test_url_debug_vs_production(self, templates_dir):
-        """Test that asset URLs are correctly generated in both debug and production modes."""
-        from django.test import override_settings
-
-        button = TestComponent(
-            name="button",
-            content="<button>Click me</button>",
-        ).create(templates_dir)
-        button_css = TestAsset(
-            component=button,
-            content=".button { color: blue; }",
-            asset_type=CSS,
-        ).create()
-
-        component = Component.from_name(button.name)
-        asset = component.get_asset(button_css.file.name)
-
-        # Test production mode (DEBUG=False)
-        with override_settings(DEBUG=False):
+        with override_settings(DEBUG=DEBUG):
             assert (
                 asset.url
-                == f"/static/django_bird/{button_css.file.parent.name}/{button_css.file.name}"
-            )
-
-        # Test development mode (DEBUG=True)
-        with override_settings(DEBUG=True):
-            assert (
-                asset.url
-                == f"/static/{button_css.file.parent.name}/{button_css.file.name}"
+                == f"{expected_prefix}/{button_css.file.parent.name}/{button_css.file.name}"
             )
 
     def test_url_nonexistent(self, templates_dir):
