@@ -380,3 +380,181 @@ class TestNode:
         node = AssetNode(CSS)
         context = Context({})
         assert node.render(context) == ""
+
+    def test_asset_tag_with_manifest_in_production(
+        self, create_template, templates_dir, registry, tmp_path
+    ):
+        """Test that asset tag works with manifest in production mode."""
+        from django.test import override_settings
+
+        from django_bird.manifest import generate_asset_manifest
+        from django_bird.manifest import save_asset_manifest
+
+        # Create button component for testing
+        button = TestComponent(
+            name="button", content="<button>{{ slot }}</button>"
+        ).create(templates_dir)
+
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        # Create the test template
+        template_path = templates_dir / "manifest_test.html"
+        template_path.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            {% bird button %}Test Button{% endbird %}
+        </body>
+        </html>
+        """)
+
+        # Make sure components are discovered
+        registry.discover_components()
+
+        # Generate a real manifest
+        manifest_data = generate_asset_manifest()
+
+        # Save it to a temporary file
+        manifest_path = tmp_path / "asset-manifest.json"
+        save_asset_manifest(manifest_data, manifest_path)
+
+        # Test with DEBUG=False to use the manifest
+        with override_settings(
+            DEBUG=False, DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}
+        ):
+            # Create template and render
+            template = create_template(template_path)
+            rendered = template.render({})
+
+            # Verify the assets are included from the manifest
+            assert (
+                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                in rendered
+            )
+
+    def test_asset_tag_in_debug_mode(
+        self, create_template, templates_dir, registry, tmp_path
+    ):
+        """Test that asset tag bypasses manifest in debug mode."""
+        from django.test import override_settings
+
+        from django_bird.manifest import save_asset_manifest
+
+        # Create button component for testing
+        button = TestComponent(
+            name="button", content="<button>{{ slot }}</button>"
+        ).create(templates_dir)
+
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        # Create the test template
+        template_path = templates_dir / "debug_test.html"
+        template_path.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            {% bird button %}Test Button{% endbird %}
+        </body>
+        </html>
+        """)
+
+        # Make sure components are discovered
+        registry.discover_components()
+
+        # Generate a real manifest with wrong data (this should be ignored in debug mode)
+        manifest_data = {"not/a/real/template.html": ["not-button"]}
+
+        # Save it to a temporary file
+        manifest_path = tmp_path / "debug-asset-manifest.json"
+        save_asset_manifest(manifest_data, manifest_path)
+
+        # Test with DEBUG=True to bypass the manifest
+        with override_settings(
+            DEBUG=True, DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}
+        ):
+            # Create template and render
+            template = create_template(template_path)
+            rendered = template.render({})
+
+            # Verify the assets are still included despite wrong manifest data (registry fallback)
+            assert (
+                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                in rendered
+            )
+
+    def test_asset_tag_fallback_when_template_not_in_manifest(
+        self, create_template, templates_dir, registry, tmp_path
+    ):
+        """Test that asset tag falls back to registry when template not in manifest."""
+        from django.test import override_settings
+
+        from django_bird.manifest import save_asset_manifest
+
+        # Create button component for testing
+        button = TestComponent(
+            name="button", content="<button>{{ slot }}</button>"
+        ).create(templates_dir)
+
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        # Create the test template
+        template_path = templates_dir / "not_in_manifest.html"
+        template_path.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            {% bird button %}Test Button{% endbird %}
+        </body>
+        </html>
+        """)
+
+        # Create a different template to put in the manifest
+        other_path = templates_dir / "other_template.html"
+        other_path.write_text("""
+        <html><body>Other template</body></html>
+        """)
+
+        # Make sure components are discovered
+        registry.discover_components()
+
+        # Create manifest with a different template
+        manifest_data = {str(other_path): ["button"]}
+
+        # Save it to a temporary file
+        manifest_path = tmp_path / "fallback-manifest.json"
+        save_asset_manifest(manifest_data, manifest_path)
+
+        # Test with DEBUG=False to try to use the manifest
+        with override_settings(
+            DEBUG=False, DJANGO_BIRD={"ASSET_MANIFEST": str(manifest_path)}
+        ):
+            # Create template and render
+            template = create_template(template_path)
+            rendered = template.render({})
+
+            # Verify the assets are included via registry fallback even though template isn't in manifest
+            assert (
+                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                in rendered
+            )
