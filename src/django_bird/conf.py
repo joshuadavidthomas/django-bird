@@ -19,6 +19,7 @@ DJANGO_BIRD_FINDER = "django_bird.staticfiles.BirdAssetFinder"
 class AppSettings:
     COMPONENT_DIRS: list[Path | str] = field(default_factory=list)
     ENABLE_BIRD_ATTRS: bool = True
+    ADD_ASSET_PREFIX: bool | None = None
 
     @override
     def __getattribute__(self, __name: str) -> object:
@@ -27,6 +28,14 @@ class AppSettings:
 
     def get_component_directory_names(self):
         return unique_ordered([*self.COMPONENT_DIRS, "bird"])
+
+    def should_add_asset_prefix(self) -> bool:
+        """Determine if the app label prefix should be added to asset URLs."""
+        if self.ADD_ASSET_PREFIX is not None:
+            return self.ADD_ASSET_PREFIX
+
+        # Fall back to the DEBUG setting (add prefix in production)
+        return not settings.DEBUG
 
 
 app_settings = AppSettings()
