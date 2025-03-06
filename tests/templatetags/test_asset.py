@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+
 import pytest
 from django.template.base import Parser
 from django.template.base import Token
@@ -7,7 +9,10 @@ from django.template.base import TokenType
 from django.template.context import Context
 from django.template.exceptions import TemplateSyntaxError
 from django.template.loader import get_template
+from django.test import override_settings
 
+from django_bird.manifest import generate_asset_manifest
+from django_bird.manifest import save_asset_manifest
 from django_bird.staticfiles import CSS
 from django_bird.staticfiles import JS
 from django_bird.templatetags.tags.asset import AssetNode
@@ -380,3 +385,173 @@ class TestNode:
         node = AssetNode(CSS)
         context = Context({})
         assert node.render(context) == ""
+
+
+class TestManifest:
+    @pytest.fixture
+    def static_root(self, tmp_path):
+        static_dir = tmp_path / "static"
+        static_dir.mkdir()
+
+        with override_settings(STATIC_ROOT=str(static_dir)):
+            yield static_dir
+
+        shutil.rmtree(static_dir)
+
+    def test_asset_tag_with_manifest_in_production(
+        self, create_template, templates_dir, static_root, registry
+    ):
+        button = TestComponent(
+            name="button", content="<button>{{ slot }}</button>"
+        ).create(templates_dir)
+
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        template_path = templates_dir / "manifest_test.html"
+        template_path.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            {% bird button %}Test Button{% endbird %}
+        </body>
+        </html>
+        """)
+
+        registry.discover_components()
+
+        manifest_data = generate_asset_manifest()
+
+        manifest_path = static_root / "django_bird"
+        manifest_path.mkdir(parents=True)
+        save_asset_manifest(manifest_data, manifest_path / "manifest.json")
+
+        with override_settings(DEBUG=False):
+            template = create_template(template_path)
+            rendered = template.render({})
+
+            assert (
+                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                in rendered
+            )
+
+    def test_asset_tag_in_debug_mode(
+        self, create_template, templates_dir, static_root, registry
+    ):
+        button = TestComponent(
+            name="button", content="<button>{{ slot }}</button>"
+        ).create(templates_dir)
+
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        template_path = templates_dir / "debug_test.html"
+        template_path.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            {% bird button %}Test Button{% endbird %}
+        </body>
+        </html>
+        """)
+
+        registry.discover_components()
+
+        manifest_data = {"not/a/real/template.html": ["not-button"]}
+
+        manifest_path = static_root / "django_bird"
+        manifest_path.mkdir(parents=True)
+        save_asset_manifest(manifest_data, manifest_path / "manifest.json")
+
+        with override_settings(DEBUG=True):
+            template = create_template(template_path)
+            rendered = template.render({})
+
+            assert (
+                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                in rendered
+            )
+
+    def test_asset_tag_fallback_when_template_not_in_manifest(
+        self, create_template, templates_dir, static_root, registry
+    ):
+        button = TestComponent(
+            name="button", content="<button>{{ slot }}</button>"
+        ).create(templates_dir)
+
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        template_path = templates_dir / "not_in_manifest.html"
+        template_path.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            {% bird button %}Test Button{% endbird %}
+        </body>
+        </html>
+        """)
+
+        # Create a different template to put in the manifest
+        other_path = templates_dir / "other_template.html"
+        other_path.write_text("""
+        <html><body>Other template</body></html>
+        """)
+
+        registry.discover_components()
+
+        manifest_data = {str(other_path): ["button"]}
+
+        manifest_path = static_root / "django_bird"
+        manifest_path.mkdir(parents=True)
+        save_asset_manifest(manifest_data, manifest_path / "manifest.json")
+
+        with override_settings(DEBUG=False):
+            template = create_template(template_path)
+            rendered = template.render({})
+
+            assert (
+                f'<link rel="stylesheet" href="/static/bird/{button_css.file.name}">'
+                in rendered
+            )
+
+    def test_asset_tag_renders_nothing_when_no_component_found(
+        self, create_template, templates_dir
+    ):
+        template_path = templates_dir / "no_components.html"
+        template_path.write_text("""
+        <html>
+        <head>
+            <title>Test</title>
+            {% bird:css %}
+        </head>
+        <body>
+            No bird components here
+            {% bird:js %}
+        </body>
+        </html>
+        """)
+
+        template = create_template(template_path)
+        rendered = template.render({})
+
+        assert '<link rel="stylesheet"' not in rendered
+        assert "<script src=" not in rendered
