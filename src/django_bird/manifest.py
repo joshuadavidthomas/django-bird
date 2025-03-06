@@ -16,7 +16,7 @@ _manifest_cache = None
 
 
 class PathPrefix(str, Enum):
-    """Enumeration of path prefixes used for normalizing template paths."""
+    """Path prefixes used for normalizing template paths."""
 
     PKG = "pkg:"
     APP = "app:"
