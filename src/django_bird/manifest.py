@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 from pathlib import Path
@@ -11,6 +12,43 @@ from django_bird.templates import gather_bird_tag_template_usage
 logger = logging.getLogger(__name__)
 
 _manifest_cache = None
+
+
+def normalize_path(path: str) -> str:
+    """Normalize a template path to remove system-specific information.
+
+    Args:
+        path: The template path to normalize
+
+    Returns:
+        str: A normalized path without system-specific details
+    """
+    # Handle site-packages paths (installed packages)
+    if "site-packages" in path:
+        parts = path.split("site-packages/")
+        if len(parts) > 1:
+            return f"pkg:{parts[1]}"
+
+    # Handle project paths - try to make them relative to project root
+    if hasattr(settings, "BASE_DIR") and settings.BASE_DIR:
+        base_dir = Path(settings.BASE_DIR).resolve()
+        abs_path = Path(path).resolve()
+        try:
+            if str(abs_path).startswith(str(base_dir)):
+                rel_path = abs_path.relative_to(base_dir)
+                return f"app:{rel_path}"
+        except ValueError:
+            # Path is not relative to BASE_DIR
+            pass
+
+    # Hash other paths to obscure them
+    if path.startswith("/"):
+        hash_val = hashlib.md5(path.encode()).hexdigest()[:8]
+        filename = Path(path).name
+        return f"ext:{hash_val}/{filename}"
+
+    # Return as is if it's already a relative path
+    return path
 
 
 def load_asset_manifest() -> dict[str, list[str]] | None:
@@ -58,8 +96,10 @@ def generate_asset_manifest() -> dict[str, list[str]]:
     """
     template_component_map: dict[str, set[str]] = {}
     for template_path, component_names in gather_bird_tag_template_usage():
-        # Convert Path objects to strings for JSON
-        template_component_map[str(template_path)] = component_names
+        # Convert Path objects to strings for JSON and normalize
+        original_path = str(template_path)
+        normalized_path = normalize_path(original_path)
+        template_component_map[normalized_path] = component_names
 
     manifest: dict[str, list[str]] = {
         template: sorted(list(components))
@@ -79,8 +119,14 @@ def save_asset_manifest(manifest_data: dict[str, list[str]], path: Path | str) -
     path_obj = Path(path)
     path_obj.parent.mkdir(parents=True, exist_ok=True)
 
+    # Normalize paths in the manifest data
+    normalized_manifest = {}
+    for template_path, components in manifest_data.items():
+        normalized_path = normalize_path(template_path)
+        normalized_manifest[normalized_path] = components
+
     with open(path_obj, "w") as f:
-        json.dump(manifest_data, f, indent=2)
+        json.dump(normalized_manifest, f, indent=2)
 
 
 def default_manifest_path() -> Path:

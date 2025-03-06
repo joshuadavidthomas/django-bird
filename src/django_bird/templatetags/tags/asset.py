@@ -37,6 +37,7 @@ class AssetNode(template.Node):
     @override
     def render(self, context: Context) -> str:
         from django_bird.components import components
+        from django_bird.manifest import normalize_path
         from django_bird.staticfiles import Asset
         from django_bird.staticfiles import get_component_assets
 
@@ -45,15 +46,16 @@ class AssetNode(template.Node):
             return ""
 
         template_path = template.origin.name
+        normalized_path = normalize_path(template_path)
 
         used_components = []
 
         # Only use manifest in production mode
         if not settings.DEBUG:
             manifest = load_asset_manifest()
-            if manifest and template_path in manifest:
+            if manifest and normalized_path in manifest:
                 # Use manifest for component names in production
-                component_names = manifest[template_path]
+                component_names = manifest[normalized_path]
                 used_components = [
                     components.get_component(name) for name in component_names
                 ]

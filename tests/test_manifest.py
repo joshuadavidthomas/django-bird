@@ -139,6 +139,37 @@ def test_load_asset_manifest_static_root_permission_error(static_root, monkeypat
     assert loaded_manifest is None
 
 
+def test_normalize_path():
+    # Test site-packages normalization
+    site_pkg_path = "/usr/local/lib/python3.12/site-packages/django_twc_ui/components/templates/bird/modal/modal.html"
+    from django_bird.manifest import normalize_path
+
+    assert (
+        normalize_path(site_pkg_path)
+        == "pkg:django_twc_ui/components/templates/bird/modal/modal.html"
+    )
+
+    # Test project path normalization (with BASE_DIR)
+    with override_settings(BASE_DIR="/var/home/user/project"):
+        project_path = (
+            "/var/home/user/project/app/templates/invoices/pending_invoice_list.html"
+        )
+        assert (
+            normalize_path(project_path)
+            == "app:app/templates/invoices/pending_invoice_list.html"
+        )
+
+    # Test other absolute path normalization
+    other_path = "/some/random/external/path.html"
+    normalized = normalize_path(other_path)
+    assert normalized.startswith("ext:")
+    assert "path.html" in normalized
+
+    # Test relative path remains unchanged
+    rel_path = "relative/path.html"
+    assert normalize_path(rel_path) == rel_path
+
+
 def test_generate_asset_manifest(templates_dir, registry):
     template1 = templates_dir / "test_manifest1.html"
     template1.write_text("""
@@ -181,18 +212,37 @@ def test_generate_asset_manifest(templates_dir, registry):
 
     manifest = generate_asset_manifest()
 
-    all_keys = list(manifest.keys())
-    template1_key = [k for k in all_keys if str(template1) in k][0]
-    template2_key = [k for k in all_keys if str(template2) in k][0]
+    # Check for normalized paths
+    for key in manifest.keys():
+        # Keys should not be absolute paths starting with /
+        assert not key.startswith("/"), f"Found absolute path in manifest: {key}"
 
-    assert sorted(manifest[template1_key]) == sorted(["button", "card"])
-    assert sorted(manifest[template2_key]) == sorted(["accordion", "tab"])
+    # Find the templates by looking for partial matches in the normalized paths
+    template1_components = []
+    template2_components = []
+
+    for key, components in manifest.items():
+        if "test_manifest1.html" in key:
+            template1_components = components
+        elif "test_manifest2.html" in key:
+            template2_components = components
+
+    assert sorted(template1_components) == sorted(["button", "card"])
+    assert sorted(template2_components) == sorted(["accordion", "tab"])
 
 
 def test_save_and_load_asset_manifest(tmp_path):
+    from django_bird.manifest import normalize_path
+
     test_manifest_data = {
         "/path/to/template1.html": ["button", "card"],
         "/path/to/template2.html": ["accordion", "tab"],
+    }
+
+    # Create the expected normalized data
+    expected_normalized_data = {
+        normalize_path("/path/to/template1.html"): ["button", "card"],
+        normalize_path("/path/to/template2.html"): ["accordion", "tab"],
     }
 
     output_path = tmp_path / "test-manifest.json"
@@ -204,7 +254,7 @@ def test_save_and_load_asset_manifest(tmp_path):
     with open(output_path) as f:
         loaded_data = json.load(f)
 
-    assert loaded_data == test_manifest_data
+    assert loaded_data == expected_normalized_data
 
 
 def test_default_manifest_path():
