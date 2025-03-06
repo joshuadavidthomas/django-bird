@@ -124,14 +124,12 @@ Controls whether the app label prefix (`django_bird/`) is added to component ass
 
 #### Example Use Cases
 
-**Testing Environment**
-In test environments, especially with Playwright or Selenium e2e tests, you may want to set:
+- **Testing Environment**: In test environments, especially with Playwright or Selenium e2e tests, you may want to set:
 
-```python
-DJANGO_BIRD = {"ADD_ASSET_PREFIX": False}
-```
+  ```python
+  DJANGO_BIRD = {"ADD_ASSET_PREFIX": False}
+  ```
 
-This ensures your tests can find static assets without the prefix, even when `DEBUG = False`.
+  This ensures your tests can find static assets without the prefix, even when `DEBUG = False`.
 
-**Custom Static File Handling**
-If you have a custom static file setup that doesn't follow Django's conventions, you can configure the appropriate value based on your needs.
+- **Custom Static File Handling**: If you have a custom static file setup that doesn't follow Django's conventions, you can configure the appropriate value based on your needs.
