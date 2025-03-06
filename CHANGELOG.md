@@ -21,6 +21,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Added
 
 - Added `get_component_names_used_in_template` method to ComponentRegistry to access component names used in a template
+- Added `get_component_assets` utility function to staticfiles.py to get assets for a component with optional filtering
 
 ## [0.16.2]
 
