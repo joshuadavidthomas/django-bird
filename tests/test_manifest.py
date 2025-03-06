@@ -9,6 +9,7 @@ import pytest
 from django.core.management import call_command
 from django.test import override_settings
 
+from django_bird.manifest import PathPrefix
 from django_bird.manifest import default_manifest_path
 from django_bird.manifest import generate_asset_manifest
 from django_bird.manifest import load_asset_manifest
@@ -145,8 +146,8 @@ def test_normalize_path_site_packages():
 
     normalized = normalize_path(site_pkg_path)
 
-    assert (
-        normalized == "pkg:django_third_party_pkg/components/templates/bird/button.html"
+    assert normalized == PathPrefix.PKG.prepend_to(
+        "django_third_party_pkg/components/templates/bird/button.html"
     )
 
 
@@ -157,7 +158,9 @@ def test_normalize_path_project_base_dir():
     with override_settings(BASE_DIR=base_dir):
         normalized = normalize_path(project_path)
 
-    assert normalized == "app:app/templates/invoices/pending_invoice_list.html"
+    assert normalized == PathPrefix.APP.prepend_to(
+        "app/templates/invoices/pending_invoice_list.html"
+    )
 
 
 def test_normalize_path_other_absolute_dir():
@@ -165,7 +168,7 @@ def test_normalize_path_other_absolute_dir():
 
     normalized = normalize_path(other_path)
 
-    assert normalized.startswith("ext:")
+    assert normalized.startswith(PathPrefix.EXT.value)
     assert "path.html" in normalized
 
 
@@ -180,15 +183,15 @@ def test_normalize_path_relative_dir():
 def test_normalize_path_already_normalized():
     """Test that already normalized paths are not double-normalized."""
     # Test app prefix
-    app_path = "app:some/template/path.html"
+    app_path = PathPrefix.APP.prepend_to("some/template/path.html")
     assert normalize_path(app_path) == app_path
 
     # Test pkg prefix
-    pkg_path = "pkg:django_package/templates/component.html"
+    pkg_path = PathPrefix.PKG.prepend_to("django_package/templates/component.html")
     assert normalize_path(pkg_path) == pkg_path
 
     # Test ext prefix
-    ext_path = "ext:abcd1234/external.html"
+    ext_path = PathPrefix.EXT.prepend_to("abcd1234/external.html")
     assert normalize_path(ext_path) == ext_path
 
 
@@ -254,8 +257,8 @@ def test_generate_asset_manifest(templates_dir, registry):
 def test_save_and_load_asset_manifest(tmp_path):
     # Pre-normalized paths
     test_manifest_data = {
-        "app:path/to/template1.html": ["button", "card"],
-        "pkg:some_package/template2.html": ["accordion", "tab"],
+        PathPrefix.APP.prepend_to("path/to/template1.html"): ["button", "card"],
+        PathPrefix.PKG.prepend_to("some_package/template2.html"): ["accordion", "tab"],
     }
 
     output_path = tmp_path / "test-manifest.json"
@@ -291,7 +294,7 @@ def test_save_and_load_asset_manifest(tmp_path):
     # With old code, paths would be normalized
     # So test for either the paths as-is, or the normalized paths
     assert loaded_data2 == absolute_paths_data or all(
-        key.startswith(("ext:", "app:")) for key in loaded_data2.keys()
+        PathPrefix.has_prefix(key) for key in loaded_data2.keys()
     )
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+from enum import Enum
 from pathlib import Path
 
 from django.conf import settings
@@ -14,6 +15,37 @@ logger = logging.getLogger(__name__)
 _manifest_cache = None
 
 
+class PathPrefix(str, Enum):
+    """Enumeration of path prefixes used for normalizing template paths."""
+
+    PKG = "pkg:"
+    APP = "app:"
+    EXT = "ext:"
+
+    def prepend_to(self, path: str) -> str:
+        """Generate a prefixed path string by prepending this prefix to a path.
+
+        Args:
+            path: The path to prefix
+
+        Returns:
+            str: A string with this prefix and the path
+        """
+        return f"{self.value}{path}"
+
+    @classmethod
+    def has_prefix(cls, path: str) -> bool:
+        """Check if a path already has one of the recognized prefixes.
+
+        Args:
+            path: The path to check
+
+        Returns:
+            bool: True if the path starts with any of the recognized prefixes
+        """
+        return any(path.startswith(prefix.value) for prefix in cls)
+
+
 def normalize_path(path: str) -> str:
     """Normalize a template path to remove system-specific information.
 
@@ -23,14 +55,13 @@ def normalize_path(path: str) -> str:
     Returns:
         str: A normalized path without system-specific details
     """
-    # Check if path is already normalized (has a prefix)
-    if path.startswith(("pkg:", "app:", "ext:")):
+    if PathPrefix.has_prefix(path):
         return path
 
     if "site-packages" in path:
         parts = path.split("site-packages/")
         if len(parts) > 1:
-            return f"pkg:{parts[1]}"
+            return PathPrefix.PKG.prepend_to(parts[1])
 
     if hasattr(settings, "BASE_DIR") and settings.BASE_DIR:  # type: ignore[misc]
         base_dir = Path(settings.BASE_DIR).resolve()  # type: ignore[misc]
@@ -38,7 +69,7 @@ def normalize_path(path: str) -> str:
         try:
             if str(abs_path).startswith(str(base_dir)):
                 rel_path = abs_path.relative_to(base_dir)
-                return f"app:{rel_path}"
+                return PathPrefix.APP.prepend_to(str(rel_path))
         except ValueError:
             # Path is not relative to BASE_DIR
             pass
@@ -46,7 +77,7 @@ def normalize_path(path: str) -> str:
     if path.startswith("/"):
         hash_val = hashlib.md5(path.encode()).hexdigest()[:8]
         filename = Path(path).name
-        return f"ext:{hash_val}/{filename}"
+        return PathPrefix.EXT.prepend_to(f"{hash_val}/{filename}")
 
     # Return as is if it's already a relative path
     return path
@@ -121,8 +152,6 @@ def save_asset_manifest(manifest_data: dict[str, list[str]], path: Path | str) -
     path_obj = Path(path)
     path_obj.parent.mkdir(parents=True, exist_ok=True)
 
-    # The paths in manifest_data should already be normalized from the generate_asset_manifest
-    # function, so we can just save it directly
     with open(path_obj, "w") as f:
         json.dump(manifest_data, f, indent=2)
 
