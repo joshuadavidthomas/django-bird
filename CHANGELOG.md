@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added `get_component_names_used_in_template` method to ComponentRegistry to access component names used in a template
+
 ## [0.16.2]
 
 ### Added
