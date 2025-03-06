@@ -38,6 +38,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Removed
 
 - Removed automatic component scanning at application startup for faster initialization
+- **Internal**: Removed `ComponentRegistry.discover_components` method.
 
 ## [0.16.2]
 
