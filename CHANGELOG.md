@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added new `ADD_ASSET_PREFIX` setting to control how the app label prefix is added to asset URLs. This setting provides more flexibility than the previous DEBUG-based behavior, especially useful in test environments.
+
 ### Fixed
 
 - Fixed path normalization in asset manifest to prevent double-prefixing of already normalized paths (e.g., preventing "app:app:templates/file.html").
