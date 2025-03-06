@@ -39,7 +39,9 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Removed
 
 - Removed automatic component scanning at application startup for faster initialization
+- Removed `ENABLE_AUTO_CONFIG` setting and autoconfiguration functionality (moved to django-bird-autoconf plugin)
 - **Internal**: Removed `ComponentRegistry.discover_components` method.
+- **Internal**: Removed `AutoConfigurator` class used for automatic setting configuration
 
 ## [0.16.2]
 
