@@ -223,11 +223,18 @@ class ComponentRegistry:
             self._component_usage[name] = set()
         return self._components[name]
 
+    def get_component_names_used_in_template(
+        self, template_path: str | Path
+    ) -> set[str]:
+        """Get names of components used in a template."""
+        path = Path(template_path) if isinstance(template_path, str) else template_path
+        return self._template_usage.get(path, set())
+
     def get_component_usage(
         self, template_path: str | Path
     ) -> Generator[Component, Any, None]:
-        path = Path(template_path) if isinstance(template_path, str) else template_path
-        for component_name in self._template_usage.get(path, set()):
+        """Get components used in a template."""
+        for component_name in self.get_component_names_used_in_template(template_path):
             yield Component.from_name(component_name)
 
 
