@@ -181,8 +181,8 @@ class BirdAssetStorage(StaticFilesStorage):
             return super().url(name)
         # Only add prefix in production (when DEBUG is False)
         # In development, asset paths don't include the app label prefix
-        # because they come directly from source directories
-        # In production, assets are collected to STATIC_ROOT/django_bird/
+        # because they come directly from source directories and in production,
+        # assets are collected to STATIC_ROOT/django_bird/
         if not settings.DEBUG and not name.startswith(f"{self.prefix}/"):
             name = f"{self.prefix}/{name}"
         return super().url(name)
