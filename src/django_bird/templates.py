@@ -68,7 +68,7 @@ def get_template_names(name: str) -> list[str]:
         list[str]: A list of potential template names in resolution order.
     """
     template_names: list[str] = []
-    component_dirs = app_settings.get_component_directory_names()
+    component_dirs = get_component_directory_names()
 
     name_parts = name.split(".")
     path_name = "/".join(name_parts)
@@ -103,6 +103,10 @@ def get_template_directories() -> Generator[Path, Any, None]:
         yield from hook_result
 
 
+def get_component_directory_names() -> list[Path | str]:
+    return unique_ordered([*app_settings.COMPONENT_DIRS, "bird"])
+
+
 def get_component_directories(
     template_dirs: Iterator[Path] | None = None,
 ) -> list[Path]:
@@ -112,7 +116,7 @@ def get_component_directories(
     return [
         Path(template_dir) / component_dir
         for template_dir in template_dirs
-        for component_dir in app_settings.get_component_directory_names()
+        for component_dir in get_component_directory_names()
     ]
 
 

@@ -5,6 +5,7 @@ from django.test import override_settings
 
 from django_bird.templates import find_components_in_template
 from django_bird.templates import gather_bird_tag_template_usage
+from django_bird.templates import get_component_directory_names
 from django_bird.templates import get_template_names
 
 
@@ -60,8 +61,8 @@ def test_get_template_names_invalid():
     assert "bird/input/label/invalid.html" not in template_names
 
 
-def test_get_template_names_duplicates():
-    with override_settings(DJANGO_BIRD={"COMPONENT_DIRS": ["bird"]}):
+def test_get_template_names_duplicates(override_app_settings):
+    with override_app_settings(COMPONENT_DIRS=["bird"]):
         template_names = get_template_names("button")
 
         template_counts = {}
@@ -70,6 +71,13 @@ def test_get_template_names_duplicates():
 
         for _, count in template_counts.items():
             assert count == 1
+
+
+def test_component_directory_names(override_app_settings):
+    assert get_component_directory_names() == ["bird"]
+
+    with override_app_settings(COMPONENT_DIRS=["components"]):
+        assert get_component_directory_names() == ["components", "bird"]
 
 
 def test_find_components_handles_errors():
