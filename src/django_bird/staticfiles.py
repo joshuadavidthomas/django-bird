@@ -25,6 +25,7 @@ from ._typing import override
 from .apps import DjangoBirdAppConfig
 from .conf import app_settings
 from .templates import get_component_directories
+from .templates import get_component_directory_names
 from .templatetags.tags.asset import AssetTag
 from .utils import get_files_from_dirs
 
@@ -125,7 +126,7 @@ class Asset:
     @property
     def template_dir(self):
         template_dir = self.path.parent
-        component_dirs = app_settings.get_component_directory_names()
+        component_dirs = get_component_directory_names()
         while (
             len(template_dir.parts) > 1 and template_dir.parts[-1] not in component_dirs
         ):
