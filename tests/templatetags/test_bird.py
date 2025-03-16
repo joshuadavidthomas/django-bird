@@ -53,12 +53,12 @@ class TestTagParsing:
     @pytest.mark.parametrize(
         "params,expected_attrs",
         [
-            ('class="btn"', ['class="btn"']),
-            ("class='btn'", ["class='btn'"]),
-            ('class="btn" id="my-btn"', ['class="btn"', 'id="my-btn"']),
-            ("disabled", ["disabled"]),
-            ("class=dynamic", ["class=dynamic"]),
-            ("class=item.name id=user.id", ["class=item.name", "id=user.id"]),
+            ('class="btn"', {"class": '"btn"'}),
+            ("class='btn'", {"class": "'btn'"}),
+            ('class="btn" id="my-btn"', {"class": '"btn"', "id": '"my-btn"'}),
+            ("disabled", {"disabled": "True"}),
+            ("class=dynamic", {"class": "dynamic"}),
+            ("class=item.name id=user.id", {"class": "item.name", "id": "user.id"}),
         ],
     )
     def test_attrs_do_bird(self, params, expected_attrs):
@@ -69,7 +69,9 @@ class TestTagParsing:
 
         node = do_bird(parser, start_token)
 
-        assert node.attrs == expected_attrs
+        for key, value in node.attrs.items():
+            assert key in expected_attrs
+            assert expected_attrs[key] == value.token
 
     @pytest.mark.parametrize(
         "test_case",
