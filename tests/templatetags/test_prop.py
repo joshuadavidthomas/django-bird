@@ -24,8 +24,9 @@ def test_do_prop(contents, expected):
     node = do_prop(Parser([]), start_token)
 
     assert node.name == expected.name
-    assert node.default == expected.default
-    assert node.attrs == expected.attrs
+    assert (node.default.token if node.default else node.default) == expected.default
+    for node_attr, expected_attr in zip(node.attrs, expected.attrs, strict=False):
+        assert node_attr.token == expected_attr
 
 
 def test_do_prop_no_args():
