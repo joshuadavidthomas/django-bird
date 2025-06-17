@@ -5,7 +5,8 @@ from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
 
-from django import template
+from django.template.base import FilterExpression
+from django.template.base import VariableDoesNotExist
 from django.template.context import Context
 from django.utils.safestring import SafeString
 from django.utils.safestring import mark_safe
@@ -55,7 +56,7 @@ class Params:
     @classmethod
     def from_node(cls, node: BirdNode) -> Params:
         return cls(
-            attrs=[Param.from_bit(bit) for bit in node.attrs],
+            attrs=[Param(key, Value(value)) for key, value in node.attrs.items()],
             props=[],
         )
 
@@ -63,10 +64,13 @@ class Params:
 @dataclass
 class Param:
     name: str
-    value: Value
+    value: Value | str | bool
 
     def render_attr(self, context: Context) -> str:
-        value = self.value.resolve(context)
+        if isinstance(self.value, Value):
+            value = self.value.resolve(context, is_attr=True)
+        else:
+            value = self.value
         if value is None:
             return ""
         name = self.name.replace("_", "-")
@@ -75,47 +79,21 @@ class Param:
         return f'{name}="{value}"'
 
     def render_prop(self, context: Context) -> str | bool | None:
-        return self.value.resolve(context)
-
-    @classmethod
-    def from_bit(cls, bit: str) -> Param:
-        if "=" in bit:
-            name, raw_value = bit.split("=", 1)
-            value = Value(raw_value.strip())
-        else:
-            name, value = bit, Value(True)
-        return cls(name, value)
+        return (
+            self.value.resolve(context) if isinstance(self.value, Value) else self.value
+        )
 
 
 @dataclass
 class Value:
-    raw: str | bool | None
+    raw: FilterExpression
 
-    def resolve(self, context: Context | dict[str, Any]) -> Any:
-        match (self.raw, self.is_quoted):
-            case (None, _):
-                return None
-
-            case (str(raw_str), False) if raw_str == "False":
-                return None
-            case (str(raw_str), False) if raw_str == "True":
-                return True
-
-            case (bool(b), _):
-                return b if b else None
-
-            case (str(raw_str), False):
-                try:
-                    return template.Variable(raw_str).resolve(context)
-                except template.VariableDoesNotExist:
-                    return raw_str
-
-            case (_, True):
-                return str(self.raw)[1:-1]
-
-    @property
-    def is_quoted(self) -> bool:
-        if self.raw is None or isinstance(self.raw, bool):
-            return False
-
-        return self.raw.startswith(("'", '"')) and self.raw.endswith(self.raw[0])
+    def resolve(self, context: Context | dict[str, Any], is_attr=False) -> Any:
+        if is_attr and self.raw.token == "False":
+            return None
+        if self.raw.is_var:
+            try:
+                self.raw.var.resolve(context)
+            except VariableDoesNotExist:
+                return self.raw.token
+        return self.raw.resolve(context)

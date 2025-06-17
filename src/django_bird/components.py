@@ -22,7 +22,6 @@ from django.template.loader import select_template
 from .conf import app_settings
 from .params import Param
 from .params import Params
-from .params import Value
 from .plugins import pm
 from .staticfiles import Asset
 from .staticfiles import AssetType
@@ -143,9 +142,9 @@ class BoundComponent:
             data_attrs = [
                 Param(
                     f"data-bird-{self.component.data_attribute_name}",
-                    Value(True),
+                    True,
                 ),
-                Param("data-bird-id", Value(f'"{self.component.id}-{self.id}"')),
+                Param("data-bird-id", f"{self.component.id}-{self.id}"),
             ]
             self.params.attrs.extend(data_attrs)
 
