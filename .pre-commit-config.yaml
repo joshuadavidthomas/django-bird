@@ -14,7 +14,7 @@ repos:
         args: [--target-version, "4.2"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.13
+    rev: v0.12.1
     hooks:
       - id: ruff
         args: [--fix]
@@ -59,7 +59,7 @@ repos:
         types_or: [html, jsx, tsx]
 
   - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.14.0
+    rev: v2.15.0
     hooks:
       - id: pretty-format-toml
         args: [--autofix]
