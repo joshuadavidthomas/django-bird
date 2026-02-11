@@ -19,6 +19,7 @@ class AppSettings:
     ADD_ASSET_PREFIX: bool | None = None
     COMPONENT_DIRS: list[Path | str] = field(default_factory=list)
     ENABLE_BIRD_ATTRS: bool = True
+    DEFAULT_ONLY: bool = False
 
     @override
     def __getattribute__(self, __name: str) -> object:

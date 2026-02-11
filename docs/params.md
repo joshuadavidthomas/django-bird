@@ -415,6 +415,22 @@ When `only` is used:
 - Props, slots, and other component-specific context still work normally
 - Default values in the component template will be used when parent context variables are not available
 
+You can also make isolation the default globally with [`DEFAULT_ONLY`](configuration.md#default_only):
+
+```python
+DJANGO_BIRD = {
+    "DEFAULT_ONLY": True,
+}
+```
+
+When `DEFAULT_ONLY=True`, use `inherit` to allow parent context for a specific render:
+
+```htmldjango
+{% bird button inherit %}
+    {{ user.name }}
+{% endbird %}
+```
+
 ### Examples
 
 Without `only`, components can access parent context:

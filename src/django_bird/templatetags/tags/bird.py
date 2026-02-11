@@ -12,6 +12,7 @@ from django.template.context import Context
 from django_bird._typing import ParsedTagBits
 from django_bird._typing import RawTagBits
 from django_bird._typing import override
+from django_bird.conf import app_settings
 
 TAG = "bird"
 END_TAG = "endbird"
@@ -25,12 +26,17 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
 
     name = bits.pop(0)
     attrs: ParsedTagBits = {}
-    isolated_context = False
+    isolated_context = app_settings.DEFAULT_ONLY
+    explicit_context_mode: str | None = None
 
     for bit in bits:
         match bit:
-            case "only":
-                isolated_context = True
+            case "only" | "inherit":
+                if explicit_context_mode and explicit_context_mode != bit:
+                    msg = f"{TAG} tag cannot use both 'only' and 'inherit'"
+                    raise template.TemplateSyntaxError(msg)
+                explicit_context_mode = bit
+                isolated_context = bit == "only"
             case "/":
                 continue
             case _:

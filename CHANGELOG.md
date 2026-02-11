@@ -20,6 +20,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Added
 
+- Added `DEFAULT_ONLY` app setting to make `{% bird %}` components use isolated context by default.
+- Added `inherit` keyword for `{% bird %}` to opt back into parent-context access when `DEFAULT_ONLY=True`.
 - Added support for Django template filter expressions in `{% bird %}` tag arguments for both attributes and props (for example, `badge_count=users|length`).
 - Documented filter expression argument support in `docs/params.md`.
 - Thanks to [@benbacardi](https://github.com/benbacardi) for the contribution that introduced filter-expression argument support.

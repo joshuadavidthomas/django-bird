@@ -50,6 +50,18 @@ class TestTagParsing:
         with pytest.raises(TemplateSyntaxError):
             do_bird(parser, start_token)
 
+    def test_conflicting_context_modes_do_bird(self):
+        start_token = Token(TokenType.BLOCK, f"{TAG} button only inherit")
+        end_token = Token(TokenType.BLOCK, f"{END_TAG} button")
+
+        parser = Parser([end_token])
+
+        with pytest.raises(
+            TemplateSyntaxError,
+            match="cannot use both 'only' and 'inherit'",
+        ):
+            do_bird(parser, start_token)
+
     @pytest.mark.parametrize(
         "params,expected_attrs",
         [
@@ -1488,6 +1500,48 @@ def test_only_flag(test_case, templates_dir):
     rendered = template.render(Context(test_case.template_context))
 
     assert normalize_whitespace(rendered) == test_case.expected
+
+
+def test_default_only_setting_isolates_component_context(
+    templates_dir,
+    override_app_settings,
+):
+    component = TestComponent(
+        name="button",
+        content="""
+            <button>
+                {{ user.name|default:"Anonymous" }}
+            </button>
+        """,
+    )
+    component.create(templates_dir)
+
+    with override_app_settings(DEFAULT_ONLY=True):
+        template = Template("{% bird button %}{% endbird %}")
+        rendered = template.render(Context({"user": {"name": "John"}}))
+
+    assert normalize_whitespace(rendered) == "<button>Anonymous</button>"
+
+
+def test_inherit_keyword_overrides_default_only_setting(
+    templates_dir,
+    override_app_settings,
+):
+    component = TestComponent(
+        name="button",
+        content="""
+            <button>
+                {{ user.name|default:"Anonymous" }}
+            </button>
+        """,
+    )
+    component.create(templates_dir)
+
+    with override_app_settings(DEFAULT_ONLY=True):
+        template = Template("{% bird button inherit %}{% endbird %}")
+        rendered = template.render(Context({"user": {"name": "John"}}))
+
+    assert normalize_whitespace(rendered) == "<button>John</button>"
 
 
 class TestBirdNode:
