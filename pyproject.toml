@@ -64,6 +64,9 @@ name = "django-bird"
 readme = "README.md"
 requires-python = ">=3.10"
 
+[project.optional-dependencies]
+angles = ["dj-angles>=0.26.0"]
+
 [project.urls]
 Documentation = "https://django-bird.readthedocs.io/"
 Issues = "https://github.com/joshuadavidthomas/django-bird/issues"
