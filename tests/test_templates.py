@@ -85,6 +85,21 @@ def test_find_components_handles_errors():
     assert result == set()
 
 
+def test_find_components_includes_bird_load_declarations(templates_dir):
+    template_file = templates_dir / "load_tag_usage.html"
+    template_file.write_text("""
+    <html>
+    <body>
+        {% bird:load modal modal.trigger %}
+    </body>
+    </html>
+    """)
+
+    result = find_components_in_template(template_file.name)
+
+    assert result == {"modal", "modal.trigger"}
+
+
 def test_find_components_handles_encoding_errors(templates_dir):
     binary_file = templates_dir / "binary_file.html"
     with open(binary_file, "wb") as f:

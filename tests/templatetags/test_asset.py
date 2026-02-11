@@ -383,6 +383,50 @@ class TestTemplateTag:
             not in rendered
         )
 
+    def test_bird_load_adds_assets_without_rendering_component(
+        self, create_template, templates_dir, registry
+    ):
+        modal = TestComponent(
+            name="modal",
+            content='<dialog>{{ slot }}</dialog>',
+        ).create(templates_dir)
+        modal_css = TestAsset(
+            component=modal,
+            content=".modal { display: none; }",
+            asset_type=CSS,
+        ).create()
+        modal_js = TestAsset(
+            component=modal,
+            content="console.log('modal');",
+            asset_type=JS,
+        ).create()
+
+        template_path = templates_dir / "load_assets.html"
+        template_path.write_text("""
+            <html>
+            <head>
+                {% bird:css %}
+            </head>
+            <body>
+                {% bird:load modal %}
+                {{ partial_content }}
+                {% bird:js %}
+            </body>
+            </html>
+        """)
+
+        template = create_template(template_path)
+        rendered = template.render({"partial_content": "<dialog>From string</dialog>"})
+
+        assert (
+            f'<link rel="stylesheet" href="/static/django_bird/bird/{modal_css.file.name}">'
+            in rendered
+        )
+        assert (
+            f'<script src="/static/django_bird/bird/{modal_js.file.name}"></script>'
+            in rendered
+        )
+
 
 class TestNode:
     def test_no_template(self):
@@ -528,6 +572,45 @@ class TestManifest:
 
             assert (
                 f'<link rel="stylesheet" href="/static/django_bird/bird/{button_css.file.name}">'
+                in rendered
+            )
+
+    def test_asset_tag_with_manifest_and_bird_load(
+        self, create_template, templates_dir, static_root, registry
+    ):
+        modal = TestComponent(
+            name="modal",
+            content="<dialog>{{ slot }}</dialog>",
+        ).create(templates_dir)
+
+        modal_js = TestAsset(
+            component=modal,
+            content="console.log('modal');",
+            asset_type=JS,
+        ).create()
+
+        template_path = templates_dir / "load_manifest_test.html"
+        template_path.write_text("""
+        <html>
+        <body>
+            {% bird:load modal %}
+            {% bird:js %}
+        </body>
+        </html>
+        """)
+
+        manifest_data = generate_asset_manifest()
+
+        manifest_path = static_root / "django_bird"
+        manifest_path.mkdir(parents=True)
+        save_asset_manifest(manifest_data, manifest_path / "manifest.json")
+
+        with override_settings(DEBUG=False):
+            template = create_template(template_path)
+            rendered = template.render({})
+
+            assert (
+                f'<script src="/static/django_bird/bird/{modal_js.file.name}"></script>'
                 in rendered
             )
 

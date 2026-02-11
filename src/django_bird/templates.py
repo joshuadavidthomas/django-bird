@@ -26,6 +26,7 @@ from django_bird import hookimpl
 
 from .conf import app_settings
 from .templatetags.tags.bird import BirdNode
+from .templatetags.tags.load import LoadNode
 from .utils import get_files_from_dirs
 from .utils import unique_ordered
 
@@ -204,6 +205,10 @@ class NodeVisitor:  # pragma: no cover
     def visit_BirdNode(self, node: BirdNode, context: Context) -> None:
         component_name = node.name.strip("\"'")
         self.components.add(component_name)
+        self.generic_visit(node, context)
+
+    def visit_LoadNode(self, node: LoadNode, context: Context) -> None:
+        self.components.update(node.component_names)
         self.generic_visit(node, context)
 
     def visit_ExtendsNode(self, node: ExtendsNode, context: Context) -> None:

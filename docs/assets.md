@@ -28,10 +28,11 @@ This organization can be particularly useful when components have multiple relat
 
 ## Using Assets
 
-django-bird provides two templatetags for automatically loading your CSS and Javascript assets into your project's templates:
+django-bird provides templatetags for automatically loading your CSS and Javascript assets into your project's templates:
 
 - `{% bird:css %}`
 - `{% bird:js %}`
+- `{% bird:load ... %}` (declare components for asset loading without rendering them in the current template)
 
 To include component assets in your templates, add the templatetags to your base template:
 
@@ -74,6 +75,23 @@ The asset tags will render:
 ```
 
 Assets are automatically deduplicated, so each component's assets are included only once even if the component is used multiple times in your templates. Only assets from components actually used in the template (or its parent templates) will be included - unused components' assets won't be loaded, keeping your pages lean.
+
+## Declaring Components for Pre-rendered HTML
+
+When component HTML is generated outside the current template (for example via `render_to_string`, django-tables2 render functions, or HTMX partial responses passed in as strings), django-bird cannot always detect those component usages from `{% bird %}` tags in the current template.
+
+Use `{% bird:load %}` to explicitly declare which components should have their assets loaded:
+
+```htmldjango
+{# page.html #}
+{% bird:load modal modal.trigger %}
+
+<div class="table-wrapper">
+    {{ rendered_table_html }}
+</div>
+```
+
+`{% bird:load %}` does not render any HTML by itself. It only marks components as used for `{% bird:css %}` and `{% bird:js %}`.
 
 ## Template Inheritance
 
