@@ -388,7 +388,7 @@ class TestTemplateTag:
     ):
         modal = TestComponent(
             name="modal",
-            content='<dialog>{{ slot }}</dialog>',
+            content="<dialog>{{ slot }}</dialog>",
         ).create(templates_dir)
         modal_css = TestAsset(
             component=modal,
