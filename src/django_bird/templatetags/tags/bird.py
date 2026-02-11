@@ -9,7 +9,8 @@ from django.template.base import Parser
 from django.template.base import Token
 from django.template.context import Context
 
-from django_bird._typing import TagBits
+from django_bird._typing import ParsedTagBits
+from django_bird._typing import RawTagBits
 from django_bird._typing import override
 
 TAG = "bird"
@@ -23,7 +24,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
         raise template.TemplateSyntaxError(msg)
 
     name = bits.pop(0)
-    attrs: TagBits = []
+    attrs: ParsedTagBits = {}
     isolated_context = False
 
     for bit in bits:
@@ -33,13 +34,18 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
             case "/":
                 continue
             case _:
-                attrs.append(bit)
+                if "=" in bit:
+                    key, value = bit.split("=", 1)
+                else:
+                    key = bit
+                    value = "True"
+                attrs[key] = parser.compile_filter(value)
 
     nodelist = parse_nodelist(bits, parser)
     return BirdNode(name, attrs, nodelist, isolated_context)
 
 
-def parse_nodelist(bits: TagBits, parser: Parser) -> NodeList | None:
+def parse_nodelist(bits: RawTagBits, parser: Parser) -> NodeList | None:
     # self-closing tag
     # {% bird name / %}
     if len(bits) > 0 and bits[-1] == "/":
@@ -55,7 +61,7 @@ class BirdNode(template.Node):
     def __init__(
         self,
         name: str,
-        attrs: TagBits,
+        attrs: ParsedTagBits,
         nodelist: NodeList | None,
         isolated_context: bool = False,
     ) -> None:

@@ -512,7 +512,7 @@ class TestFindersFind:
             asset_type=CSS,
         ).create()
 
-        assert finders.find("bird/button.css", all=True) == [str(button_css.file)]
+        assert finders.find("bird/button.css", True) == [str(button_css.file)]
 
 
 class TestStaticCollection:

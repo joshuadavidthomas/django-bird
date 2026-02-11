@@ -128,7 +128,7 @@ def coverage(session):
         # 2 -> code coverage percent unmet
         success_codes = [0, 2]
 
-        report_cmd = ["python", "-m", "coverage", "report"]
+        report_cmd = ["python", "-m", "coverage", "report", "--show-missing"]
         session.run(*report_cmd, success_codes=success_codes)
 
         if summary := os.getenv("GITHUB_STEP_SUMMARY"):

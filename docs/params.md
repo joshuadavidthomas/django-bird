@@ -283,8 +283,8 @@ Both attributes and properties support literal (quoted) and dynamic (unquoted) v
 The rules for value resolution are:
 
 - Quoted values (`"value"` or `'value'`) are treated as literal strings
-- Unquoted values are first attempted to be resolved from the template context
-    - If resolution fails, the literal value is used as a fallback
+- Unquoted values are compiled as Django template expressions (including filters)
+    - If a plain variable expression cannot be resolved, the literal value is used as a fallback
 - Boolean values can be passed directly (`disabled=True`) or as strings (`disabled="True"`)
 - Both attributes and properties follow these same resolution rules
 
@@ -329,6 +329,30 @@ Renders as:
 ```html
 <button class="btn-secondary" variant="small" disabled>Click me</button>
 ```
+
+### Filter Expressions
+
+You can pass full Django template filter expressions in `bird` tag arguments:
+
+```htmldjango
+{% bird button badge_count=users|length title=user.name|default:"Anonymous" %}
+    Click me
+{% endbird %}
+```
+
+With this context:
+
+```python
+{
+    "users": ["Ada", "Grace", "Linus"],
+    "user": {},
+}
+```
+
+The component receives:
+
+- `badge_count = 3`
+- `title = "Anonymous"`
 
 If an unquoted value cannot be resolved from the context, it falls back to using the literal string:
 

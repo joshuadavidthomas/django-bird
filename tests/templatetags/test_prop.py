@@ -14,7 +14,7 @@ from django_bird.templatetags.tags.prop import do_prop
 @pytest.mark.parametrize(
     "contents,expected",
     [
-        ("id", PropNode(name="id", default=None, attrs=[])),
+        ("id", PropNode(name="id", default="None", attrs=[])),
         ("class='btn'", PropNode(name="class", default="'btn'", attrs=[])),
     ],
 )
@@ -24,7 +24,7 @@ def test_do_prop(contents, expected):
     node = do_prop(Parser([]), start_token)
 
     assert node.name == expected.name
-    assert node.default == expected.default
+    assert (node.default.token if node.default else node.default) == expected.default
     assert node.attrs == expected.attrs
 
 
