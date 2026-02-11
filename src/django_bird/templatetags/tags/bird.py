@@ -9,8 +9,8 @@ from django.template.base import Parser
 from django.template.base import Token
 from django.template.context import Context
 
+from django_bird._typing import ParsedTagBits
 from django_bird._typing import RawTagBits
-from django_bird._typing import TagBits
 from django_bird._typing import override
 
 TAG = "bird"
@@ -24,7 +24,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
         raise template.TemplateSyntaxError(msg)
 
     name = bits.pop(0)
-    attrs: TagBits = {}
+    attrs: ParsedTagBits = {}
     isolated_context = False
 
     for bit in bits:
@@ -35,7 +35,7 @@ def do_bird(parser: Parser, token: Token) -> BirdNode:
                 continue
             case _:
                 if "=" in bit:
-                    key, value = bit.split("=")
+                    key, value = bit.split("=", 1)
                 else:
                     key = bit
                     value = "True"
@@ -61,7 +61,7 @@ class BirdNode(template.Node):
     def __init__(
         self,
         name: str,
-        attrs: dict[str, str],
+        attrs: ParsedTagBits,
         nodelist: NodeList | None,
         isolated_context: bool = False,
     ) -> None:

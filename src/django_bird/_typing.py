@@ -12,4 +12,4 @@ else:
 override = typing_override
 
 RawTagBits = list[str]
-TagBits = dict[str, FilterExpression]
+ParsedTagBits = dict[str, FilterExpression]
