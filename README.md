@@ -130,7 +130,7 @@ django-bird offers features for creating flexible components, such as:
 - Passing [attributes and properties](https://django-bird.readthedocs.io/en/latest/params.html) to components
 - [Named slots](https://django-bird.readthedocs.io/en/latest/slots.html#named-slots) for organizing content within components
 - [Subcomponents](https://django-bird.readthedocs.io/en/latest/organization.html) for building complex component structures
-- Automatic [asset management](https://django-bird.readthedocs.io/en/latest/assets.html) for component CSS and JavaScript files
+- Automatic [asset management](https://django-bird.readthedocs.io/en/latest/assets.html) for component CSS and JavaScript files, including explicit declarations for pre-rendered partials via `{% bird:load %}`
 
 For a full overview of the features and configuration options, please refer to the [documentation](https://django-bird.readthedocs.io).
 

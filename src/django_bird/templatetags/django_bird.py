@@ -4,6 +4,7 @@ from django import template
 
 from .tags import asset
 from .tags import bird
+from .tags import load
 from .tags import prop
 from .tags import slot
 from .tags import var
@@ -14,6 +15,7 @@ register = template.Library()
 register.tag(asset.AssetTag.CSS.value, asset.do_asset)
 register.tag(asset.AssetTag.JS.value, asset.do_asset)
 register.tag(bird.TAG, bird.do_bird)
+register.tag(load.TAG, load.do_load)
 register.tag(prop.TAG, prop.do_prop)
 register.tag(slot.TAG, slot.do_slot)
 register.tag(var.TAG, var.do_var)
