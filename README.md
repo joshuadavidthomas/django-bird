@@ -27,6 +27,9 @@ High-flying components for perfectionists with deadlines.
     ```bash
     python -m pip install django-bird
 
+    # optional: install dj-angles integration helpers too
+    python -m pip install 'django-bird[angles]'
+
     # or if you like the new hotness
 
     uv add django-bird
@@ -131,6 +134,7 @@ django-bird offers features for creating flexible components, such as:
 - [Named slots](https://django-bird.readthedocs.io/en/latest/slots.html#named-slots) for organizing content within components
 - [Subcomponents](https://django-bird.readthedocs.io/en/latest/organization.html) for building complex component structures
 - Automatic [asset management](https://django-bird.readthedocs.io/en/latest/assets.html) for component CSS and JavaScript files, including explicit declarations for pre-rendered partials via `{% bird:load %}`
+- Optional [dj-angles integration](https://django-bird.readthedocs.io/en/latest/angles.html) for HTML-like component tags
 
 For a full overview of the features and configuration options, please refer to the [documentation](https://django-bird.readthedocs.io).
 

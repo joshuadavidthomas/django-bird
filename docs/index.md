@@ -16,6 +16,7 @@ Attributes/Properties <params>
 Variables <vars>
 slots
 Assets <assets>
+Angles Integration <angles>
 Organization <organization>
 Plugins <plugins>
 configuration

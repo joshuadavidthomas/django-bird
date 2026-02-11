@@ -23,6 +23,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 - Added `DEFAULT_ONLY` app setting to make `{% bird %}` components use isolated context by default.
 - Added `inherit` keyword for `{% bird %}` to opt back into parent-context access when `DEFAULT_ONLY=True`.
 - Added `{% bird:load %}` tag to explicitly declare component usage for asset loading in templates that render component HTML from pre-rendered strings/partials.
+- Added `angles` optional dependency extra (`django-bird[angles]`) for installing `dj-angles` integration support.
+- Added docs for `dj-angles` integration, including common tag styles and configuration guidance.
 - Added support for Django template filter expressions in `{% bird %}` tag arguments for both attributes and props (for example, `badge_count=users|length`).
 - Documented filter expression argument support in `docs/params.md`.
 - Thanks to [@benbacardi](https://github.com/benbacardi) for the contribution that introduced filter-expression argument support.

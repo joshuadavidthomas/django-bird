@@ -240,6 +240,10 @@ In this example, we're using an `on` attribute to specify when each button's Jav
 
 ## Custom HTML Tag
 
+> **Update, 2026-02-11**
+> For now, this will be handled via [dj-angles](https://github.com/adamghill/dj-angles) integration rather than building a custom compiler directly in django-bird.
+> See [docs/angles.md](docs/angles.md) for setup and usage.
+
 I'm a huge fan of the approaches taken by libraries like [django-cotton](https://github.com/wrabit/django-cotton), [dj-angles](https://github.com/adamghill/dj-angles), and Laravel's [Flux](https://fluxui.dev). They let you use custom HTML-like elements that compile down to native templatetags during loading.
 
 This gives you the full power of Django's template language, but in a much nicer package. Compare [this django-allauth template](https://github.com/pennersr/django-allauth/blob/f03ff4dd48e5b1680a57dca56617bf94c928f2cf/allauth/templates/account/email.html) with [these django-cotton examples](https://github.com/wrabit/django-cotton#walkthrough). The allauth template, while powerful, is a mess of tags that barely resembles HTML. The cotton templates, on the other hand, look like clean, custom web elements.
