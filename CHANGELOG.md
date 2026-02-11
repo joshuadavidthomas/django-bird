@@ -26,6 +26,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Fixed
 
+- Fixed isolated components rendered with `only` so prop and attribute expressions still resolve against the parent context (for example, `{% bird basic_component text=a_string_var only / %}` now receives `Hello World`, not `a_string_var`).
 - Fixed `bird` and `bird:prop` argument parsing to split on only the first `=` character, preserving values that contain additional `=` characters.
 - Preserved fallback behavior for unresolved plain variables while still correctly resolving filtered expressions.
 
