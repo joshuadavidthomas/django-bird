@@ -90,7 +90,9 @@ from django.template.loader import render_to_string
 
 
 def invoice_page(request):
-    modal_html = render_to_string("invoices/partials/adjust_rate.html", {"invoice": ...})
+    modal_html = render_to_string(
+        "invoices/partials/adjust_rate.html", {"invoice": ...}
+    )
     return render(request, "invoices/page.html", {"modal_html": modal_html})
 ```
 
