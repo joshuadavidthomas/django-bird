@@ -121,26 +121,6 @@ class TestParam:
     def test_render_prop(self, param, context, expected):
         assert param.render_prop(context) == expected
 
-    @pytest.mark.parametrize(
-        "bit,expected",
-        [
-            ("class='btn'", Param(name="class", value=Value("'btn'"))),
-            ('class="btn"', Param(name="class", value=Value('"btn"'))),
-            ("class=btn", Param(name="class", value=Value("btn"))),
-            ("disabled", Param(name="disabled", value=Value(True))),
-            (
-                "class=item.name",
-                Param(name="class", value=Value("item.name")),
-            ),
-            (
-                'class="item.name"',
-                Param(name="class", value=Value('"item.name"')),
-            ),
-        ],
-    )
-    def test_from_bit(self, bit, expected):
-        assert Param.from_bit(bit) == expected
-
 
 class TestParams:
     @pytest.mark.parametrize(
@@ -269,11 +249,11 @@ class TestParams:
         "attrs,expected",
         [
             (
-                ['class="btn"'],
+                {"class": '"btn"'},
                 Params(attrs=[Param(name="class", value=Value('"btn"'))]),
             ),
             (
-                ['class="btn"', 'id="my-btn"'],
+                {"class": '"btn"', "id": '"my-btn"'},
                 Params(
                     attrs=[
                         Param(name="class", value=Value('"btn"')),
@@ -282,15 +262,15 @@ class TestParams:
                 ),
             ),
             (
-                ["disabled"],
+                {"disabled": True},
                 Params(attrs=[Param(name="disabled", value=Value(True))]),
             ),
             (
-                ["class=dynamic"],
+                {"class": "dynamic"},
                 Params(attrs=[Param(name="class", value=Value("dynamic"))]),
             ),
             (
-                ["class=item.name", "id=user.id"],
+                {"class": "item.name", "id": "user.id"},
                 Params(
                     attrs=[
                         Param(name="class", value=Value("item.name")),
