@@ -52,6 +52,7 @@ To include component assets in your templates, add the templatetags to your base
 The asset tags will automatically:
 
 - Find all components used in the template (including extends and includes)
+- Include components explicitly declared via `{% bird:load %}`
 - Collect their associated assets
 - Output the appropriate HTML tags
 
@@ -82,16 +83,29 @@ When component HTML is generated outside the current template (for example via `
 
 Use `{% bird:load %}` to explicitly declare which components should have their assets loaded:
 
+```python
+# views.py
+from django.shortcuts import render
+from django.template.loader import render_to_string
+
+
+def invoice_page(request):
+    modal_html = render_to_string("invoices/partials/adjust_rate.html", {"invoice": ...})
+    return render(request, "invoices/page.html", {"modal_html": modal_html})
+```
+
 ```htmldjango
-{# page.html #}
+{# invoices/page.html #}
 {% bird:load modal modal.trigger %}
 
 <div class="table-wrapper">
-    {{ rendered_table_html }}
+    {{ modal_html }}
 </div>
 ```
 
 `{% bird:load %}` does not render any HTML by itself. It only marks components as used for `{% bird:css %}` and `{% bird:js %}`.
+
+Use plain component names (the same names you would use with `{% bird ... %}`), including nested names like `modal.trigger`.
 
 ## Template Inheritance
 
@@ -125,7 +139,7 @@ Assets are collected from all components used in your template hierarchy:
 {% endblock %}
 ```
 
-The `{% bird:css %}` tag will include CSS and the `[% bird:js %}` tag will include JavaScript from both the `nav` and `content` components.
+The `{% bird:css %}` tag will include CSS and the `{% bird:js %}` tag will include JavaScript from both the `nav` and `content` components.
 
 ## Serving Assets
 
