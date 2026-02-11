@@ -1429,6 +1429,21 @@ def test_parent_context_access(test_case, templates_dir):
             expected='<button id="foo">Click Content Anonymous</button>',
         ),
         TestComponentCase(
+            description="Only flag resolves prop expressions from parent context",
+            component=TestComponent(
+                name="button",
+                content="""
+                    {% bird:prop text %}
+                    <p>{{ props.text }}</p>
+                """,
+            ),
+            template_content="""
+                {% bird button text=a_string_var only / %}
+            """,
+            template_context={"a_string_var": "Hello World"},
+            expected="<p>Hello World</p>",
+        ),
+        TestComponentCase(
             description="Only flag with named slots",
             component=TestComponent(
                 name="button",
