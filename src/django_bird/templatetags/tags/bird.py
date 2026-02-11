@@ -79,9 +79,12 @@ class BirdNode(template.Node):
         bound_component = component.get_bound_component(node=self)
 
         if self.isolated_context:
-            return bound_component.render(context.new())
-        else:
-            return bound_component.render(context)
+            isolated_context = context.new()
+            return bound_component.render(
+                context=isolated_context,
+                resolution_context=context,
+            )
+        return bound_component.render(context)
 
     def get_component_name(self, context: Context) -> str:
         try:

@@ -137,7 +137,11 @@ class BoundComponent:
     nodelist: NodeList | None
     _sequence: SequenceGenerator = field(default_factory=SequenceGenerator)
 
-    def render(self, context: Context):
+    def render(
+        self,
+        context: Context,
+        resolution_context: Context | None = None,
+    ):
         if app_settings.ENABLE_BIRD_ATTRS:
             data_attrs = [
                 Param(
@@ -148,8 +152,9 @@ class BoundComponent:
             ]
             self.params.attrs.extend(data_attrs)
 
-        props = self.params.render_props(self.component, context)
-        attrs = self.params.render_attrs(context)
+        expression_context = resolution_context or context
+        props = self.params.render_props(self.component, expression_context)
+        attrs = self.params.render_attrs(expression_context)
         slots = self.fill_slots(context)
 
         with context.push(
