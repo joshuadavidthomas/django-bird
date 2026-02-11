@@ -58,6 +58,7 @@ from pathlib import Path
 DJANGO_BIRD = {
     "COMPONENT_DIRS": list[Path | str] = [],
     "ENABLE_BIRD_ATTRS": bool = True,
+    "DEFAULT_ONLY": bool = False,
     "ADD_ASSET_PREFIX": bool | None = None,
 }
 ```
@@ -111,6 +112,21 @@ The default `bird` directory will always be checked last, ensuring that your cus
 Controls whether components automatically receive data attributes related to django-bird in its `attrs` template context variable. Defaults to `True`.
 
 See [Component ID Attribute](params.md#component-id-attribute) for more details on how this works.
+
+### `DEFAULT_ONLY`
+
+Controls whether components are isolated from their parent context by default. Defaults to `False`.
+
+- `False` (default): Components inherit parent context unless you use `only`.
+- `True`: Components are isolated by default (as if `only` is always set).
+
+When `DEFAULT_ONLY=True`, you can opt into parent-context access for a single component render by using `inherit`:
+
+```htmldjango
+{% bird button inherit %}
+    Click me
+{% endbird %}
+```
 
 ### `ADD_ASSET_PREFIX`
 
