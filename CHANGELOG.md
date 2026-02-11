@@ -18,6 +18,17 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added support for Django template filter expressions in `{% bird %}` tag arguments for both attributes and props (for example, `badge_count=users|length`).
+- Documented filter expression argument support in `docs/params.md`.
+- Thanks to [@benbacardi](https://github.com/benbacardi) for the contribution that introduced filter-expression argument support.
+
+### Fixed
+
+- Fixed `bird` and `bird:prop` argument parsing to split on only the first `=` character, preserving values that contain additional `=` characters.
+- Preserved fallback behavior for unresolved plain variables while still correctly resolving filtered expressions.
+
 ## [0.17.3]
 
 ### Added

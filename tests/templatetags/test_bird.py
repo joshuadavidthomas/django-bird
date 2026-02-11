@@ -53,12 +53,13 @@ class TestTagParsing:
     @pytest.mark.parametrize(
         "params,expected_attrs",
         [
-            ('class="btn"', ['class="btn"']),
-            ("class='btn'", ["class='btn'"]),
-            ('class="btn" id="my-btn"', ['class="btn"', 'id="my-btn"']),
-            ("disabled", ["disabled"]),
-            ("class=dynamic", ["class=dynamic"]),
-            ("class=item.name id=user.id", ["class=item.name", "id=user.id"]),
+            ('class="btn"', {"class": '"btn"'}),
+            ("class='btn'", {"class": "'btn'"}),
+            ('class="btn" id="my-btn"', {"class": '"btn"', "id": '"my-btn"'}),
+            ("disabled", {"disabled": "True"}),
+            ("class=dynamic", {"class": "dynamic"}),
+            ("class=item.name id=user.id", {"class": "item.name", "id": "user.id"}),
+            ('data-foo="bar=qux"', {"data-foo": '"bar=qux"'}),
         ],
     )
     def test_attrs_do_bird(self, params, expected_attrs):
@@ -69,7 +70,9 @@ class TestTagParsing:
 
         node = do_bird(parser, start_token)
 
-        assert node.attrs == expected_attrs
+        for key, value in node.attrs.items():
+            assert key in expected_attrs
+            assert expected_attrs[key] == value.token
 
     @pytest.mark.parametrize(
         "test_case",
@@ -199,11 +202,11 @@ class TestTagParsing:
                     """,
                 ),
                 template_content="""
-                    {% bird dynamic-name %}
+                    {% bird dynamic_name %}
                         Click me
                     {% endbird %}
                 """,
-                template_context={"dynamic-name": "button"},
+                template_context={"dynamic_name": "button"},
                 expected="<button>Click me</button>",
             ),
             TestComponentCase(
@@ -692,6 +695,48 @@ class TestProperties:
                 """,
                 expected="<button id='foo'>Click me</button>",
             ),
+            TestComponentCase(
+                description="No default prop resolves to None",
+                component=TestComponent(
+                    name="button",
+                    content="""
+                        {% bird:prop id %}
+                        {% if props.id is None %}
+                            <button>
+                                Missing id
+                            </button>
+                        {% else %}
+                            <button id='{{ props.id }}'>
+                                {{ slot }}
+                            </button>
+                        {% endif %}
+                    """,
+                ),
+                template_content="""
+                    {% bird button %}
+                        Click me
+                    {% endbird %}
+                """,
+                expected="<button>Missing id</button>",
+            ),
+            TestComponentCase(
+                description="Quoted None is a string",
+                component=TestComponent(
+                    name="button",
+                    content="""
+                        {% bird:prop id %}
+                        <button id='{{ props.id }}'>
+                            {{ slot }}
+                        </button>
+                    """,
+                ),
+                template_content="""
+                    {% bird button id='None' %}
+                        Click me
+                    {% endbird %}
+                """,
+                expected="<button id='None'>Click me</button>",
+            ),
         ],
         ids=lambda x: x.description,
     )
@@ -768,10 +813,73 @@ class TestProperties:
                 },
                 expected="<button class='dynamic_class'>Click me</button>",
             ),
+            TestComponentCase(
+                description="Filter expression in prop argument",
+                component=TestComponent(
+                    name="button",
+                    content="""
+                        {% bird:prop badge_count %}
+                        <button>
+                            {{ props.badge_count }}
+                        </button>
+                    """,
+                ),
+                template_content="""
+                    {% bird button badge_count=users|length %}
+                        Click me
+                    {% endbird %}
+                """,
+                template_context={
+                    "users": ["Ada", "Grace", "Linus"],
+                },
+                expected="<button>3</button>",
+            ),
+            TestComponentCase(
+                description="Missing variable with filter uses filter behavior",
+                component=TestComponent(
+                    name="button",
+                    content="""
+                        {% bird:prop label %}
+                        <button>
+                            {{ props.label }}
+                        </button>
+                    """,
+                ),
+                template_content="""
+                    {% bird button label=missing|default:'Fallback' %}
+                        Click me
+                    {% endbird %}
+                """,
+                expected="<button>Fallback</button>",
+            ),
         ],
         ids=lambda x: x.description,
     )
     def test_dynamic(self, test_case, templates_dir):
+        test_case.component.create(templates_dir)
+
+        template = Template(test_case.template_content)
+        rendered = template.render(Context(test_case.template_context))
+
+        assert normalize_whitespace(rendered) == test_case.expected
+
+    def test_filter_expression_in_attrs(self, templates_dir):
+        test_case = TestComponentCase(
+            component=TestComponent(
+                name="button",
+                content="""
+                    <button {{ attrs }}>
+                        {{ slot }}
+                    </button>
+                """,
+            ),
+            template_content="""
+                {% bird button title=user.name|default:'Anonymous' %}
+                    Click me
+                {% endbird %}
+            """,
+            expected='<button title="Anonymous">Click me</button>',
+        )
         test_case.component.create(templates_dir)
 
         template = Template(test_case.template_content)
