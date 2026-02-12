@@ -4,4 +4,4 @@ from django_bird import __version__
 
 
 def test_version():
-    assert __version__ == "0.18.0"
+    assert __version__ == "0.18.1"
