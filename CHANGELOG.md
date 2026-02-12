@@ -18,6 +18,16 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Added
+
+- Added support for Django 6.0.
+- Added support for Python 3.14.
+
+### Removed
+
+- Dropped support for Django 5.0.
+- Dropped support for Django 5.1.
+
 ### Fixed
 
 - Fixed `NodeVisitor` crash when templates use Django's built-in `{% load %}` tag, caused by a class name collision between Django's `LoadNode` and django-bird's `{% bird:load %}` `LoadNode`.

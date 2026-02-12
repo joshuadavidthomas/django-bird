@@ -13,17 +13,17 @@ PY310 = "3.10"
 PY311 = "3.11"
 PY312 = "3.12"
 PY313 = "3.13"
-PY_VERSIONS = [PY310, PY311, PY312, PY313]
+PY314 = "3.14"
+PY_VERSIONS = [PY310, PY311, PY312, PY313, PY314]
 PY_DEFAULT = PY_VERSIONS[0]
 PY_LATEST = PY_VERSIONS[-1]
 
 DJ42 = "4.2"
-DJ50 = "5.0"
-DJ51 = "5.1"
-DJ52 = "5.2b1"
+DJ52 = "5.2"
+DJ60 = "6.0"
 DJMAIN = "main"
 DJMAIN_MIN_PY = PY312
-DJ_VERSIONS = [DJ42, DJ50, DJ51, DJ52, DJMAIN]
+DJ_VERSIONS = [DJ42, DJ52, DJ60, DJMAIN]
 DJ_LTS = [
     version for version in DJ_VERSIONS if version.endswith(".2") and version != DJMAIN
 ]
@@ -40,19 +40,14 @@ def should_skip(python: str, django: str) -> bool:
     """Return True if the test should be skipped"""
 
     if django == DJMAIN and version(python) < version(DJMAIN_MIN_PY):
-        # Django main requires Python 3.10+
         return True
 
-    if django == DJ52 and version(python) < version(PY310):
-        # Django 5.2a1 requires Python 3.10+
+    if django == DJ60 and version(python) < version(PY312):
+        # Django 6.0 requires Python 3.12+
         return True
 
-    if django == DJ51 and version(python) < version(PY310):
-        # Django 5.1 requires Python 3.10+
-        return True
-
-    if django == DJ50 and version(python) < version(PY310):
-        # Django 5.0 requires Python 3.10+
+    if django == DJ42 and version(python) > version(PY312):
+        # Django 4.2 only supports Python up to 3.12
         return True
 
     return False
