@@ -54,9 +54,10 @@ Available recipes:
     lint
     lock *ARGS
     manage *COMMAND
+    mypy *ARGS
+    pyright *ARGS
     test *ARGS
     testall *ARGS
-    types *ARGS
     copier:
         copy TEMPLATE_PATH DESTINATION_PATH="." # Create a copier answers file
         recopy ANSWERS_FILE *ARGS               # Recopy the project from the original template
