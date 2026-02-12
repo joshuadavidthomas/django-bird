@@ -3,9 +3,9 @@
 
 [![PyPI](https://img.shields.io/pypi/v/django-bird)](https://pypi.org/project/django-bird/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django-bird)
-![Django Version](https://img.shields.io/badge/django-4.2%20%7C%205.0%20%7C%205.1%20%7C%205.2-%2344B78B?labelColor=%23092E20)
+![Django Version](https://img.shields.io/badge/django-4.2%20%7C%205.2%20%7C%206.0-%2344B78B?labelColor=%23092E20)
 <!-- https://shields.io/badges -->
-<!-- django-4.2 | 5.0 | 5.1 | 5.2-#44B78B -->
+<!-- django-4.2 | 5.2 | 6.0-#44B78B -->
 <!-- labelColor=%23092E20 -->
 
 High-flying components for perfectionists with deadlines.
