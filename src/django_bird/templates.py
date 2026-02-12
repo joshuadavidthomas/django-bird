@@ -6,7 +6,6 @@ from collections.abc import Callable
 from collections.abc import Generator
 from collections.abc import Iterator
 from itertools import chain
-from multiprocessing import Pool
 from pathlib import Path
 from typing import Any
 from typing import TypeGuard
@@ -128,7 +127,20 @@ def gather_bird_tag_template_usage() -> Generator[tuple[Path, set[str]], Any, No
     chunks = [
         templates[i : i + chunk_size] for i in range(0, len(templates), chunk_size)
     ]
-    with Pool() as pool:
+
+    try:
+        # Use fork context explicitly since child processes need access to
+        # Django's configured settings. On Python 3.14+, the default changed
+        # to forkserver which starts fresh processes without the parent's
+        # Django configuration.
+        ctx = multiprocessing.get_context("fork")
+    except ValueError:
+        # fork is not available (e.g., Windows), fall back to sequential
+        for chunk in chunks:
+            yield from _process_template_chunk(chunk)
+        return
+
+    with ctx.Pool() as pool:
         results = pool.map(_process_template_chunk, chunks)
     yield from chain.from_iterable(results)
 
