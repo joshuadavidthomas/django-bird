@@ -184,7 +184,7 @@ class NodeVisitor:  # pragma: no cover
         self.engine = engine
         self.components: set[str] = set()
         self.visited_templates: set[str] = set()
-        self._dispatch: dict[type, NodeVisitorMethod] = {
+        self._dispatch: dict[type, Callable[..., None]] = {
             BirdNode: self.visit_BirdNode,
             ExtendsNode: self.visit_ExtendsNode,
             IncludeNode: self.visit_IncludeNode,
