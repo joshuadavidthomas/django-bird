@@ -89,8 +89,6 @@ def test_find_components_ignores_django_load_tag(templates_dir):
     """Django's built-in {% load %} tag produces a LoadNode with the same class
     name as django-bird's LoadNode.  The visitor must not crash when it
     encounters the built-in one (which has no ``component_names`` attribute).
-
-    Regression test for https://github.com/joshuadavidthomas/django-bird/issues/XXX
     """
     template_file = templates_dir / "django_load_tag.html"
     template_file.write_text("""
@@ -105,6 +103,26 @@ def test_find_components_ignores_django_load_tag(templates_dir):
     result = find_components_in_template(template_file.name)
 
     assert result == {"button"}
+
+
+def test_find_components_django_load_and_bird_load_coexist(templates_dir):
+    """Both Django's {% load %} and django-bird's {% bird:load %} can appear
+    in the same template without conflict.
+    """
+    template_file = templates_dir / "both_load_tags.html"
+    template_file.write_text("""
+    {% load static %}
+    <html>
+    <body>
+        {% bird:load modal modal.trigger %}
+        {% bird button %}Click{% endbird %}
+    </body>
+    </html>
+    """)
+
+    result = find_components_in_template(template_file.name)
+
+    assert result == {"button", "modal", "modal.trigger"}
 
 
 def test_find_components_includes_bird_load_declarations(templates_dir):
