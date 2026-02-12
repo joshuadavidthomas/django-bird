@@ -21,9 +21,10 @@ for command in help.stdout.decode('utf-8').split(' '):
 - [lint](#lint)
 - [lock](#lock)
 - [manage](#manage)
+- [mypy](#mypy)
+- [pyright](#pyright)
 - [test](#test)
 - [testall](#testall)
-- [types](#types)
 - [copier::copy](#copier::copy)
 - [copier::recopy](#copier::recopy)
 - [copier::recopy-all](#copier::recopy-all)
@@ -58,9 +59,10 @@ Available recipes:
     lint
     lock *ARGS
     manage *COMMAND
+    mypy *ARGS
+    pyright *ARGS
     test *ARGS
     testall *ARGS
-    types *ARGS
     copier ...
     docs ...
     project ...
@@ -170,6 +172,32 @@ manage *COMMAND:
     execute_from_command_line(sys.argv + "{{ COMMAND }}".split(" "))
 ```
 
+### mypy
+
+```{code-block} shell
+:class: copy
+
+$ just mypy
+```
+
+```{code-block} shell
+mypy *ARGS:
+    @just nox mypy {{ ARGS }}
+```
+
+### pyright
+
+```{code-block} shell
+:class: copy
+
+$ just pyright
+```
+
+```{code-block} shell
+pyright *ARGS:
+    @just nox pyright {{ ARGS }}
+```
+
 ### test
 
 ```{code-block} shell
@@ -194,19 +222,6 @@ $ just testall
 ```{code-block} shell
 testall *ARGS:
     @just nox tests {{ ARGS }}
-```
-
-### types
-
-```{code-block} shell
-:class: copy
-
-$ just types
-```
-
-```{code-block} shell
-types *ARGS:
-    @just nox types {{ ARGS }}
 ```
 
 ### copier::copy
