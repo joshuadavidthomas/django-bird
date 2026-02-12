@@ -184,10 +184,16 @@ class NodeVisitor:  # pragma: no cover
         self.engine = engine
         self.components: set[str] = set()
         self.visited_templates: set[str] = set()
+        self._dispatch: dict[type, Callable[..., None]] = {
+            BirdNode: self.visit_BirdNode,
+            ExtendsNode: self.visit_ExtendsNode,
+            IncludeNode: self.visit_IncludeNode,
+            LoadNode: self.visit_LoadNode,
+            Template: self.visit_Template,
+        }
 
     def visit(self, node: Template | Node, context: Context) -> None:
-        method_name = f"visit_{node.__class__.__name__}"
-        visitor: NodeVisitorMethod = getattr(self, method_name, self.generic_visit)
+        visitor = self._dispatch.get(type(node), self.generic_visit)
         return visitor(node, context)
 
     def generic_visit(self, node: Template | Node, context: Context) -> None:
@@ -196,19 +202,9 @@ class NodeVisitor:  # pragma: no cover
         for child_node in node.nodelist:
             self.visit(child_node, context)
 
-    def visit_Template(self, template: Template, context: Context) -> None:
-        if template.name is None or template.name in self.visited_templates:
-            return
-        self.visited_templates.add(template.name)
-        self.generic_visit(template, context)
-
     def visit_BirdNode(self, node: BirdNode, context: Context) -> None:
         component_name = node.name.strip("\"'")
         self.components.add(component_name)
-        self.generic_visit(node, context)
-
-    def visit_LoadNode(self, node: LoadNode, context: Context) -> None:
-        self.components.update(node.component_names)
         self.generic_visit(node, context)
 
     def visit_ExtendsNode(self, node: ExtendsNode, context: Context) -> None:
@@ -229,3 +225,13 @@ class NodeVisitor:  # pragma: no cover
                 f"Error processing included template in NodeVisitor: {e.__class__.__name__}: {e}"
             )
         self.generic_visit(node, context)
+
+    def visit_LoadNode(self, node: LoadNode, context: Context) -> None:
+        self.components.update(node.component_names)
+        self.generic_visit(node, context)
+
+    def visit_Template(self, template: Template, context: Context) -> None:
+        if template.name is None or template.name in self.visited_templates:
+            return
+        self.visited_templates.add(template.name)
+        self.generic_visit(template, context)

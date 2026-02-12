@@ -18,6 +18,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed `NodeVisitor` crash when templates use Django's built-in `{% load %}` tag, caused by a class name collision between Django's `LoadNode` and django-bird's `{% bird:load %}` `LoadNode`.
+
 ## [0.18.0]
 
 ### Added
