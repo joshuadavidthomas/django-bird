@@ -134,7 +134,7 @@ def gather_bird_tag_template_usage() -> Generator[tuple[Path, set[str]], Any, No
         # to forkserver which starts fresh processes without the parent's
         # Django configuration.
         ctx = multiprocessing.get_context("fork")
-    except ValueError:
+    except ValueError:  # pragma: no cover
         # fork is not available (e.g., Windows), fall back to sequential
         for chunk in chunks:
             yield from _process_template_chunk(chunk)

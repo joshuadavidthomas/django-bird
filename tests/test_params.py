@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+from unittest.mock import PropertyMock
+from unittest.mock import patch
+
 import pytest
+from django.template.base import FilterExpression
 
 from django_bird.components import Component
 from django_bird.params import Param
@@ -28,6 +32,18 @@ class TestValue:
     )
     def test_resolve(self, value, context, expected):
         assert value.resolve(context) == expected
+
+    def test_resolve_unsupported_type(self):
+        value = Value.__new__(Value)
+        value.raw = 42
+        with pytest.raises(TypeError, match="Unsupported value type"):
+            value.resolve({})
+
+    def test_resolve_expression_is_attr_false_value(self):
+        expression = FilterExpression("my_var", parser=None)
+        value = Value(expression)
+        result = value.resolve({"my_var": False}, is_attr=True)
+        assert result is None
 
 
 class TestParam:
@@ -283,3 +299,18 @@ class TestParams:
     def test_from_node(self, attrs, expected):
         node = BirdNode(name="test", attrs=attrs, nodelist=None)
         assert Params.from_node(node) == expected
+
+    def test_render_props_nodelist_none(self, templates_dir):
+        """render_props returns None when component.nodelist is None."""
+        test_component = TestComponent(name="test", content="<div>test</div>")
+        test_component.create(templates_dir)
+        component = Component.from_name(test_component.name)
+
+        params = Params(attrs=[Param(name="class", value=Value("btn"))])
+
+        with patch.object(
+            type(component), "nodelist", new_callable=PropertyMock, return_value=None
+        ):
+            result = params.render_props(component, {})
+
+        assert result is None
