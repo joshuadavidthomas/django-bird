@@ -163,6 +163,22 @@ def test_normalize_path_project_base_dir():
     )
 
 
+def test_normalize_path_base_dir_prefix_but_not_relative():
+    """Path string starts with BASE_DIR but is not actually a child of it.
+
+    e.g. BASE_DIR=/home/user/project and path=/home/user/project-extra/file.html
+    """
+    base_dir = "/home/user/project"
+    other_path = "/home/user/project-extra/templates/file.html"
+
+    with override_settings(BASE_DIR=base_dir):
+        normalized = normalize_path(other_path)
+
+    # Should fall through to the EXT prefix since it's not truly under BASE_DIR
+    assert normalized.startswith(PathPrefix.EXT.value)
+    assert "file.html" in normalized
+
+
 def test_normalize_path_other_absolute_dir():
     other_path = "/some/random/external/path.html"
 

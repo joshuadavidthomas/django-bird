@@ -3,6 +3,9 @@ from __future__ import annotations
 import pytest
 from django.template.base import FilterExpression
 
+from unittest.mock import PropertyMock
+from unittest.mock import patch
+
 from django_bird.components import Component
 from django_bird.params import Param
 from django_bird.params import Params
@@ -296,3 +299,18 @@ class TestParams:
     def test_from_node(self, attrs, expected):
         node = BirdNode(name="test", attrs=attrs, nodelist=None)
         assert Params.from_node(node) == expected
+
+    def test_render_props_nodelist_none(self, templates_dir):
+        """render_props returns None when component.nodelist is None."""
+        test_component = TestComponent(name="test", content="<div>test</div>")
+        test_component.create(templates_dir)
+        component = Component.from_name(test_component.name)
+
+        params = Params(attrs=[Param(name="class", value=Value("btn"))])
+
+        with patch.object(
+            type(component), "nodelist", new_callable=PropertyMock, return_value=None
+        ):
+            result = params.render_props(component, {})
+
+        assert result is None

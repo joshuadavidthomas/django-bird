@@ -20,7 +20,9 @@ from django_bird.staticfiles import AssetElement
 from django_bird.staticfiles import AssetType
 from django_bird.staticfiles import AssetTypes
 from django_bird.staticfiles import BirdAssetFinder
+from django_bird.staticfiles import BirdAssetStorage
 from django_bird.staticfiles import collect_component_assets
+from django_bird.staticfiles import get_component_assets
 from django_bird.templatetags.tags.asset import AssetTag
 
 from .utils import TestAsset
@@ -53,6 +55,14 @@ class TestAssetTypes:
         assert new_type in asset_types.types
 
         pm.unregister(name="NewAssetTypePlugin")
+
+    def test_reset(self, asset_types):
+        pm.hook.register_asset_types(register_type=asset_types.register_type)
+        assert len(asset_types.types) > 0
+
+        asset_types.reset()
+
+        assert len(asset_types.types) == 0
 
 
 class TestAssetClass:
@@ -277,6 +287,40 @@ class TestAssetClass:
 
         assert asset.url is None
 
+    def test_render_nonexistent(self, templates_dir):
+        button = TestComponent(
+            name="button",
+            content="<button>Click me</button>",
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        component = Component.from_name(button.name)
+        asset = component.get_asset(button_css.file.name)
+
+        button_css.file.unlink()
+
+        assert asset.render() == ""
+
+    def test_absolute_path(self, templates_dir):
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        component = Component.from_name(button.name)
+        asset = component.get_asset(button_css.file.name)
+
+        assert asset.absolute_path == button_css.file.resolve()
+        assert asset.absolute_path.is_absolute()
+
 
 def test_asset_collection(templates_dir):
     button = TestComponent(name="button", content="<button>Click me</button>").create(
@@ -310,6 +354,40 @@ def test_asset_collection_nested(templates_dir):
     assets = collect_component_assets(button.file)
 
     assert Asset(button_css.file, button_css.asset_type) in assets
+
+
+def test_get_component_assets_filtered(templates_dir):
+    button = TestComponent(name="button", content="<button>Click me</button>").create(
+        templates_dir
+    )
+    TestAsset(
+        component=button,
+        content=".button { color: blue; }",
+        asset_type=CSS,
+    ).create()
+    TestAsset(
+        component=button, content="console.log('button');", asset_type=JS
+    ).create()
+
+    component = Component.from_name(button.name)
+
+    css_assets = get_component_assets(component, asset_type="css")
+    js_assets = get_component_assets(component, asset_type="js")
+
+    assert len(css_assets) == 1
+    assert css_assets[0].type == CSS
+    assert len(js_assets) == 1
+    assert js_assets[0].type == JS
+
+
+class TestBirdAssetStorage:
+    def test_url_with_none(self, settings):
+        storage = BirdAssetStorage(prefix="django_bird")
+
+        with override_settings(STATIC_URL="/static/"):
+            url = storage.url(None)
+
+        assert url == "/static/"
 
 
 class TestBirdAssetFinder:
@@ -405,6 +483,49 @@ class TestBirdAssetFinder:
 
         assert str(button_css.relative_file_path) in asset_files
         assert str(custom_button_css.relative_file_path) in asset_files
+
+    def test_find_with_legacy_all_param(self, templates_dir):
+        """Test the find method using the legacy 'all' parameter (pre-Django 5.2)."""
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        button_css = TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        finder = BirdAssetFinder()
+
+        result = finder.find("bird/button.css", all=True)
+
+        assert result == [str(button_css.file)]
+
+    def test_list_error_handling(self, templates_dir, monkeypatch):
+        """Test that errors during component loading are handled gracefully."""
+        button = TestComponent(
+            name="button", content="<button>Click me</button>"
+        ).create(templates_dir)
+        TestAsset(
+            component=button,
+            content=".button { color: blue; }",
+            asset_type=CSS,
+        ).create()
+
+        finder = BirdAssetFinder()
+
+        original_from_abs_path = Component.from_abs_path
+
+        def error_from_abs_path(path):
+            if "button" in str(path):
+                raise RuntimeError("Simulated error")
+            return original_from_abs_path(path)
+
+        monkeypatch.setattr(Component, "from_abs_path", staticmethod(error_from_abs_path))
+
+        listed = list(finder.list(None))
+
+        assert listed == []
 
 
 class TestFindersFind:
