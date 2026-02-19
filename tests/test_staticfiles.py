@@ -521,7 +521,9 @@ class TestBirdAssetFinder:
                 raise RuntimeError("Simulated error")
             return original_from_abs_path(path)
 
-        monkeypatch.setattr(Component, "from_abs_path", staticmethod(error_from_abs_path))
+        monkeypatch.setattr(
+            Component, "from_abs_path", staticmethod(error_from_abs_path)
+        )
 
         listed = list(finder.list(None))
 

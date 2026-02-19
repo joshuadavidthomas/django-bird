@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import pytest
-from django.template.base import FilterExpression
-
 from unittest.mock import PropertyMock
 from unittest.mock import patch
+
+import pytest
+from django.template.base import FilterExpression
 
 from django_bird.components import Component
 from django_bird.params import Param

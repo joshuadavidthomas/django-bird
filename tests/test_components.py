@@ -214,7 +214,6 @@ class TestComponentClass:
 
         assert comp.data_attribute_name == "nested-button"
 
-
     def test_from_template_fallback_name(self, templates_dir, create_template):
         """When template isn't in any component directory, name falls back to stem."""
         standalone = templates_dir / "standalone.html"
