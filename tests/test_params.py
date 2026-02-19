@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from django.template.base import FilterExpression
 
 from django_bird.components import Component
 from django_bird.params import Param
@@ -28,6 +29,18 @@ class TestValue:
     )
     def test_resolve(self, value, context, expected):
         assert value.resolve(context) == expected
+
+    def test_resolve_unsupported_type(self):
+        value = Value.__new__(Value)
+        value.raw = 42
+        with pytest.raises(TypeError, match="Unsupported value type"):
+            value.resolve({})
+
+    def test_resolve_expression_is_attr_false_value(self):
+        expression = FilterExpression("my_var", parser=None)
+        value = Value(expression)
+        result = value.resolve({"my_var": False}, is_attr=True)
+        assert result is None
 
 
 class TestParam:
