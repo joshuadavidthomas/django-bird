@@ -40,9 +40,9 @@ authors = [{name = "Josh Thomas", email = "josh@joshthomas.dev"}]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Framework :: Django",
-  "Framework :: Django :: 4.2",
   "Framework :: Django :: 5.2",
   "Framework :: Django :: 6.0",
+  "Framework :: Django :: 6.1",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
@@ -55,7 +55,7 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython"
 ]
-dependencies = ["django>=4.2", "pluggy>=1.5.0"]
+dependencies = ["django>=5.2", "pluggy>=1.5.0"]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
 keywords = []
