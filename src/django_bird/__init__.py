@@ -2,6 +2,6 @@ from __future__ import annotations
 
 from pluggy import HookimplMarker
 
-__version__ = "0.18.1"
+__version__ = "0.19.0"
 
 hookimpl = HookimplMarker("django_bird")
