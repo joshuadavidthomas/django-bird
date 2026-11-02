@@ -36,7 +36,7 @@ types = [
 ]
 
 [project]
-authors = [{name = "Josh Thomas", email = "josh@joshthomas.dev"}]
+authors = [{ name = "Josh Thomas", email = "josh@joshthomas.dev" }]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Framework :: Django",
@@ -59,7 +59,7 @@ dependencies = ["django>=5.2", "pluggy>=1.5.0"]
 description = "High-flying components for perfectionists with deadlines"
 dynamic = ["version"]
 keywords = []
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 name = "django-bird"
 readme = "README.md"
 requires-python = ">=3.10"
